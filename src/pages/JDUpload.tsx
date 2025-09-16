@@ -1,0 +1,228 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Upload, FileText, Plus, ChevronRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+
+const JDUpload = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedRole, setSelectedRole] = useState("");
+  const [customRole, setCustomRole] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [instructions, setInstructions] = useState("");
+  const [showCustomRole, setShowCustomRole] = useState(false);
+
+  const predefinedRoles = [
+    "Software Engineer - RPA",
+    "RPA Developer",
+    "Business Analyst",
+    "Project Manager",
+    "Data Scientist",
+    "Full Stack Developer",
+    "DevOps Engineer",
+    "Product Manager",
+    "UX/UI Designer",
+    "Quality Assurance Engineer"
+  ];
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = event.target.files?.[0];
+    if (uploadedFile) {
+      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      if (validTypes.includes(uploadedFile.type)) {
+        setFile(uploadedFile);
+        toast({
+          title: "File uploaded successfully",
+          description: `${uploadedFile.name} has been uploaded.`,
+        });
+      } else {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF, DOC, DOCX, or TXT file.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleSubmit = () => {
+    const role = showCustomRole ? customRole : selectedRole;
+    
+    if (!role) {
+      toast({
+        title: "Role required",
+        description: "Please select or enter a role.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!file) {
+      toast({
+        title: "File required",
+        description: "Please upload a job description file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Store data in localStorage for demo purposes
+    localStorage.setItem('jdData', JSON.stringify({
+      role,
+      fileName: file.name,
+      instructions,
+      timestamp: Date.now()
+    }));
+
+    toast({
+      title: "Processing job description",
+      description: "Analyzing your JD and generating recommendations...",
+    });
+
+    // Navigate to comparison page
+    setTimeout(() => {
+      navigate('/jd-comparison');
+    }, 1500);
+  };
+
+  return (
+    <Layout currentStep={1}>
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold text-foreground">Upload Job Description</h1>
+          <p className="text-lg text-muted-foreground">
+            Start by selecting a role and uploading your job description for AI analysis
+          </p>
+        </div>
+
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <FileText className="w-5 h-5 text-primary" />
+              <span>Job Details</span>
+            </CardTitle>
+            <CardDescription>
+              Provide the role information and upload your job description document
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              {!showCustomRole ? (
+                <div className="flex space-x-2">
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {predefinedRoles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCustomRole(true)}
+                    className="flex items-center space-x-1"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Custom</span>
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Enter custom role..."
+                    value={customRole}
+                    onChange={(e) => setCustomRole(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowCustomRole(false);
+                      setCustomRole("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* File Upload */}
+            <div className="space-y-2">
+              <Label htmlFor="file">Job Description Document</Label>
+              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-smooth">
+                <input
+                  type="file"
+                  id="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.txt"
+                  onChange={handleFileUpload}
+                />
+                <label htmlFor="file" className="cursor-pointer">
+                  <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  {file ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">File uploaded successfully</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium text-foreground">
+                        Click to upload or drag and drop
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        PDF, DOC, DOCX, or TXT (Max 10MB)
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="space-y-2">
+              <Label htmlFor="instructions">Additional Instructions (Optional)</Label>
+              <Textarea
+                id="instructions"
+                placeholder="Add any specific requirements, preferences, or areas of focus for this role..."
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Provide any additional context or specific areas you want to emphasize in the job description analysis.
+              </p>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end pt-4">
+              <Button
+                onClick={handleSubmit}
+                className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
+              >
+                <span>Analyze Job Description</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
+  );
+};
+
+export default JDUpload;
