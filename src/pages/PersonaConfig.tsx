@@ -318,13 +318,24 @@ const PersonaConfig = () => {
                                 </div>
                               </div>
                             </div>
-                            <Textarea
-                              placeholder="Notes..."
-                              value={skill.notes}
-                              onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                              className="text-xs resize-none"
-                              rows={2}
-                            />
+                            <div className="space-y-2">
+                              <div className="text-xs text-muted-foreground bg-background/50 rounded p-3 border">
+                                {skill.notes.split('**').map((part, index) => 
+                                  index % 2 === 1 ? (
+                                    <span key={index} className="font-semibold text-foreground bg-primary/10 px-1 rounded">{part}</span>
+                                  ) : (
+                                    <span key={index}>{part}</span>
+                                  )
+                                )}
+                              </div>
+                              <Textarea
+                                placeholder="Add custom notes or modifications..."
+                                value=""
+                                onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
+                                className="text-xs resize-none"
+                                rows={2}
+                              />
+                            </div>
                           </div>
                         ))}
                       </div>
