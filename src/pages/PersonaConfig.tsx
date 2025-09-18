@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, Save, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,7 +16,12 @@ interface SkillCategory {
   id: string;
   name: string;
   weight: number;
-  skills: { name: string; weight: number }[];
+  skills: { 
+    name: string; 
+    weight: number; 
+    requiredLevel: number; 
+    notes: string; 
+  }[];
 }
 
 const PersonaConfig = () => {
@@ -25,63 +32,69 @@ const PersonaConfig = () => {
     {
       id: "technical",
       name: "Technical Skills",
-      weight: 35,
+      weight: 54,
       skills: [
-        { name: "RPA Platform Expertise (UiPath/Blue Prism)", weight: 40 },
-        { name: "Programming Languages (C#, Python, Java)", weight: 25 },
-        { name: "Database Knowledge (SQL)", weight: 20 },
-        { name: "Web Technologies (APIs, HTML/CSS)", weight: 15 }
+        { name: "Automation Frameworks (Selenium/Java, TestNG/Cucumber, POM/BDD)", weight: 18, requiredLevel: 4, notes: "Stable suites; POM/BDD; maintainable code." },
+        { name: "Functional & Regression Testing (Web/Mobile)", weight: 15, requiredLevel: 4, notes: "End‑to‑end coverage; regression discipline." },
+        { name: "API Testing (Postman/RestAssured)", weight: 12, requiredLevel: 4, notes: "Schema/contract tests; neg cases; auth." },
+        { name: "Performance/Load (JMeter)", weight: 10, requiredLevel: 3, notes: "Basic load plans; KPIs; trends." },
+        { name: "Database/SQL Testing", weight: 10, requiredLevel: 3, notes: "CRUD validations; joins; data integrity." },
+        { name: "Test Strategy & Planning (Plans/Cases/Traceability)", weight: 12, requiredLevel: 4, notes: "Risk‑based plans; RTM; data design." },
+        { name: "Defect Management & Reporting (Jira/Xray)", weight: 13, requiredLevel: 4, notes: "Good triage; root cause; dashboards." },
+        { name: "CI/CD & Version Control (Jenkins/Git)", weight: 10, requiredLevel: 3, notes: "Trigger suites; artifacts; Git hygiene." }
       ]
     },
     {
       id: "cognitive",
       name: "Cognitive Demands",
-      weight: 20,
+      weight: 24,
       skills: [
-        { name: "Problem-solving and Analytical Thinking", weight: 35 },
-        { name: "Process Analysis and Optimization", weight: 30 },
-        { name: "Logical Reasoning", weight: 20 },
-        { name: "Attention to Detail", weight: 15 }
+        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "SDLC/STLC, coverage types, definitions." },
+        { name: "Apply", weight: 25, requiredLevel: 4, notes: "Execute plans; stable automation runs." },
+        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "RCA; logs; data‑driven debugging." },
+        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "Weigh risks; choose tools/approach." },
+        { name: "Create", weight: 15, requiredLevel: 3, notes: "Build test data/utilities; improve suites." }
       ]
     },
     {
-      id: "experience",
-      name: "Experience Level",
-      weight: 15,
+      id: "values",
+      name: "Values (Schwartz)",
+      weight: 6,
       skills: [
-        { name: "Years of RPA Development (5+ years)", weight: 50 },
-        { name: "Enterprise Project Experience", weight: 30 },
-        { name: "Leadership/Mentoring Experience", weight: 20 }
+        { name: "Achievement / Power", weight: 30, requiredLevel: 4, notes: "Owns quality outcomes; leakage ↓" },
+        { name: "Security / Conformity", weight: 30, requiredLevel: 4, notes: "Compliance; audit trail; DoD/DoR." },
+        { name: "Self-direction / Stimulation", weight: 25, requiredLevel: 3, notes: "Tooling experiments; learning." },
+        { name: "Benevolence / Universalism", weight: 15, requiredLevel: 3, notes: "User empathy; team-first." }
       ]
     },
     {
-      id: "communication",
-      name: "Communication Skills",
-      weight: 15,
-      skills: [
-        { name: "Stakeholder Management", weight: 40 },
-        { name: "Technical Documentation", weight: 30 },
-        { name: "Team Collaboration", weight: 30 }
-      ]
-    },
-    {
-      id: "certifications",
-      name: "Certifications & Qualifications",
+      id: "foundational",
+      name: "Foundational Behaviors",
       weight: 10,
       skills: [
-        { name: "RPA Platform Certifications", weight: 60 },
-        { name: "Cloud Certifications (Azure/AWS)", weight: 25 },
-        { name: "Agile/Scrum Certifications", weight: 15 }
+        { name: "Communication", weight: 35, requiredLevel: 4, notes: "Concise risk comms; clear bugs." },
+        { name: "Resilience / Stress Tolerance", weight: 25, requiredLevel: 3, notes: "Calm during hotfixes/incidents." },
+        { name: "Decision‑Making under Uncertainty", weight: 20, requiredLevel: 3, notes: "Time‑box spikes; escalate smartly." },
+        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 4, notes: "Traceability; crisp docs." }
       ]
     },
     {
-      id: "adaptability",
-      name: "Adaptability & Learning",
-      weight: 5,
+      id: "leadership",
+      name: "Leadership Skills",
+      weight: 4,
       skills: [
-        { name: "Continuous Learning Mindset", weight: 50 },
-        { name: "Technology Adaptation", weight: 30 },
-        { name: "Change Management", weight: 20 }
+        { name: "Peer Mentoring & Reviews", weight: 50, requiredLevel: 3, notes: "Review cases/scripts; coach peers." },
+        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "Align with Dev/PO/BA; gates." },
+        { name: "Quality Advocacy / Process Improvement", weight: 20, requiredLevel: 3, notes: "Improve workflows; templates." }
+      ]
+    },
+    {
+      id: "education",
+      name: "Education & Experience",
+      weight: 2,
+      skills: [
+        { name: "Education (Bachelor's / Equivalent)", weight: 30, requiredLevel: 3, notes: "Degree or proven equivalent." },
+        { name: "Experience (3–6 yrs QA)", weight: 70, requiredLevel: 4, notes: "Sustained QA in Agile; releases." }
       ]
     }
   ]);
@@ -100,6 +113,32 @@ const PersonaConfig = () => {
         if (cat.id === categoryId) {
           const newSkills = [...cat.skills];
           newSkills[skillIndex] = { ...newSkills[skillIndex], weight: newWeight };
+          return { ...cat, skills: newSkills };
+        }
+        return cat;
+      })
+    );
+  };
+
+  const updateSkillLevel = (categoryId: string, skillIndex: number, newLevel: number) => {
+    setCategories(prev =>
+      prev.map(cat => {
+        if (cat.id === categoryId) {
+          const newSkills = [...cat.skills];
+          newSkills[skillIndex] = { ...newSkills[skillIndex], requiredLevel: newLevel };
+          return { ...cat, skills: newSkills };
+        }
+        return cat;
+      })
+    );
+  };
+
+  const updateSkillNotes = (categoryId: string, skillIndex: number, newNotes: string) => {
+    setCategories(prev =>
+      prev.map(cat => {
+        if (cat.id === categoryId) {
+          const newSkills = [...cat.skills];
+          newSkills[skillIndex] = { ...newSkills[skillIndex], notes: newNotes };
           return { ...cat, skills: newSkills };
         }
         return cat;
@@ -246,19 +285,49 @@ const PersonaConfig = () => {
                     <CardContent className="pt-0 space-y-4">
                       <div className="grid gap-4">
                         {category.skills.map((skill, index) => (
-                          <div key={index} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                            <Label className="flex-1 text-sm font-medium">{skill.name}</Label>
-                            <div className="flex items-center space-x-2">
-                              <Input
-                                type="number"
-                                value={skill.weight}
-                                onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
-                                className="w-20 h-8 text-center"
-                                min="0"
-                                max="100"
-                              />
-                              <span className="text-sm text-muted-foreground w-4">%</span>
+                          <div key={index} className="p-4 bg-muted rounded-lg space-y-3">
+                            <div className="flex items-start justify-between">
+                              <Label className="flex-1 text-sm font-medium">{skill.name}</Label>
+                              <div className="flex items-center space-x-4">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs text-muted-foreground">Weight:</span>
+                                  <Input
+                                    type="number"
+                                    value={skill.weight}
+                                    onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
+                                    className="w-16 h-8 text-center"
+                                    min="0"
+                                    max="100"
+                                  />
+                                  <span className="text-sm text-muted-foreground">%</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs text-muted-foreground">Level:</span>
+                                  <Select 
+                                    value={skill.requiredLevel.toString()} 
+                                    onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
+                                  >
+                                    <SelectTrigger className="w-20 h-8">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="1">1 - Basic</SelectItem>
+                                      <SelectItem value="2">2 - Working</SelectItem>
+                                      <SelectItem value="3">3 - Proficient</SelectItem>
+                                      <SelectItem value="4">4 - Advanced</SelectItem>
+                                      <SelectItem value="5">5 - Expert</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
                             </div>
+                            <Textarea
+                              placeholder="Notes..."
+                              value={skill.notes}
+                              onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
+                              className="text-xs resize-none"
+                              rows={2}
+                            />
                           </div>
                         ))}
                       </div>
