@@ -208,8 +208,19 @@ const PersonaConfig = () => {
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
           <p className="text-lg text-muted-foreground">
-            Define the weightage for different skills and attributes to create your ideal candidate profile
+            Define weightage and cognitive levels using <span className="font-semibold text-primary">Bloom's Taxonomy</span> to create your ideal candidate profile based on JD requirements
           </p>
+          <div className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-4 border">
+            <p className="font-medium mb-2">Bloom's Taxonomy Levels:</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+              <div><span className="font-medium">Remember:</span> Recall facts & basic concepts</div>
+              <div><span className="font-medium">Understand:</span> Explain ideas & concepts</div>
+              <div><span className="font-medium">Apply:</span> Use information in new situations</div>
+              <div><span className="font-medium">Analyze:</span> Draw connections among ideas</div>
+              <div><span className="font-medium">Evaluate:</span> Justify decisions & stands</div>
+              <div><span className="font-medium">Create:</span> Produce new or original work</div>
+            </div>
+          </div>
         </div>
 
         {/* Overall Progress */}
@@ -299,20 +310,51 @@ const PersonaConfig = () => {
                                   <span className="text-sm text-muted-foreground">%</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <span className="text-xs text-muted-foreground">Level:</span>
+                                  <span className="text-xs text-muted-foreground">Bloom's Level:</span>
                                   <Select 
                                     value={skill.requiredLevel.toString()} 
                                     onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
                                   >
-                                    <SelectTrigger className="w-20 h-8">
+                                    <SelectTrigger className="w-32 h-8">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="1">1 - Basic</SelectItem>
-                                      <SelectItem value="2">2 - Working</SelectItem>
-                                      <SelectItem value="3">3 - Proficient</SelectItem>
-                                      <SelectItem value="4">4 - Advanced</SelectItem>
-                                      <SelectItem value="5">5 - Expert</SelectItem>
+                                    <SelectContent className="bg-background border shadow-lg">
+                                      <SelectItem value="1" className="bg-background hover:bg-muted">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">1 - Remember</span>
+                                          <span className="text-xs text-muted-foreground">Recall facts</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="2" className="bg-background hover:bg-muted">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">2 - Understand</span>
+                                          <span className="text-xs text-muted-foreground">Explain concepts</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="3" className="bg-background hover:bg-muted">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">3 - Apply</span>
+                                          <span className="text-xs text-muted-foreground">Use in new situations</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="4" className="bg-background hover:bg-muted">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">4 - Analyze</span>
+                                          <span className="text-xs text-muted-foreground">Draw connections</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="5" className="bg-background hover:bg-muted">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">5 - Evaluate</span>
+                                          <span className="text-xs text-muted-foreground">Justify decisions</span>
+                                        </div>
+                                      </SelectItem>
+                                      <SelectItem value="6" className="bg-background hover:bg-muted">
+                                        <div className="flex flex-col">
+                                          <span className="font-medium">6 - Create</span>
+                                          <span className="text-xs text-muted-foreground">Produce original work</span>
+                                        </div>
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
