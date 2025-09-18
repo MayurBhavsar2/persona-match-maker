@@ -32,69 +32,66 @@ const PersonaConfig = () => {
     {
       id: "technical",
       name: "Technical Skills",
-      weight: 54,
+      weight: 40,
       skills: [
-        { name: "Automation Frameworks (Selenium/Java, TestNG/Cucumber, POM/BDD)", weight: 18, requiredLevel: 4, notes: "Stable suites; POM/BDD; maintainable code." },
-        { name: "Functional & Regression Testing (Web/Mobile)", weight: 15, requiredLevel: 4, notes: "End‑to‑end coverage; regression discipline." },
-        { name: "API Testing (Postman/RestAssured)", weight: 12, requiredLevel: 4, notes: "Schema/contract tests; neg cases; auth." },
-        { name: "Performance/Load (JMeter)", weight: 10, requiredLevel: 3, notes: "Basic load plans; KPIs; trends." },
-        { name: "Database/SQL Testing", weight: 10, requiredLevel: 3, notes: "CRUD validations; joins; data integrity." },
-        { name: "Test Strategy & Planning (Plans/Cases/Traceability)", weight: 12, requiredLevel: 4, notes: "Risk‑based plans; RTM; data design." },
-        { name: "Defect Management & Reporting (Jira/Xray)", weight: 13, requiredLevel: 4, notes: "Good triage; root cause; dashboards." },
-        { name: "CI/CD & Version Control (Jenkins/Git)", weight: 10, requiredLevel: 3, notes: "Trigger suites; artifacts; Git hygiene." }
+        { name: "Core Technology Stack", weight: 30, requiredLevel: 4, notes: "Primary technologies required for the role" },
+        { name: "Programming Languages", weight: 25, requiredLevel: 4, notes: "Languages specified in job requirements" },
+        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, notes: "Frameworks and development tools" },
+        { name: "Database & Data Management", weight: 15, requiredLevel: 3, notes: "Database technologies and data handling" },
+        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, notes: "Cloud platforms and infrastructure knowledge" }
       ]
     },
     {
       id: "cognitive",
       name: "Cognitive Demands",
-      weight: 24,
+      weight: 25,
       skills: [
-        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "SDLC/STLC, coverage types, definitions." },
-        { name: "Apply", weight: 25, requiredLevel: 4, notes: "Execute plans; stable automation runs." },
-        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "RCA; logs; data‑driven debugging." },
-        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "Weigh risks; choose tools/approach." },
-        { name: "Create", weight: 15, requiredLevel: 3, notes: "Build test data/utilities; improve suites." }
+        { name: "Problem Solving", weight: 30, requiredLevel: 4, notes: "Analytical and logical problem-solving abilities" },
+        { name: "Critical Thinking", weight: 25, requiredLevel: 4, notes: "Ability to analyze and evaluate information" },
+        { name: "Learning & Adaptation", weight: 20, requiredLevel: 3, notes: "Continuous learning and adapting to change" },
+        { name: "Decision Making", weight: 15, requiredLevel: 3, notes: "Making informed decisions under pressure" },
+        { name: "Attention to Detail", weight: 10, requiredLevel: 4, notes: "Precision and accuracy in work" }
       ]
     },
     {
       id: "values",
       name: "Values (Schwartz)",
-      weight: 6,
+      weight: 10,
       skills: [
-        { name: "Achievement / Power", weight: 30, requiredLevel: 4, notes: "Owns quality outcomes; leakage ↓" },
-        { name: "Security / Conformity", weight: 30, requiredLevel: 4, notes: "Compliance; audit trail; DoD/DoR." },
-        { name: "Self-direction / Stimulation", weight: 25, requiredLevel: 3, notes: "Tooling experiments; learning." },
-        { name: "Benevolence / Universalism", weight: 15, requiredLevel: 3, notes: "User empathy; team-first." }
+        { name: "Achievement & Excellence", weight: 30, requiredLevel: 4, notes: "Drive for success and quality outcomes" },
+        { name: "Security & Reliability", weight: 25, requiredLevel: 4, notes: "Commitment to stability and dependability" },
+        { name: "Innovation & Self-Direction", weight: 25, requiredLevel: 3, notes: "Creative thinking and independent work" },
+        { name: "Collaboration & Benevolence", weight: 20, requiredLevel: 3, notes: "Team-oriented and helpful attitude" }
       ]
     },
     {
       id: "foundational",
       name: "Foundational Behaviors",
-      weight: 10,
+      weight: 15,
       skills: [
-        { name: "Communication", weight: 35, requiredLevel: 4, notes: "Concise risk comms; clear bugs." },
-        { name: "Resilience / Stress Tolerance", weight: 25, requiredLevel: 3, notes: "Calm during hotfixes/incidents." },
-        { name: "Decision‑Making under Uncertainty", weight: 20, requiredLevel: 3, notes: "Time‑box spikes; escalate smartly." },
-        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 4, notes: "Traceability; crisp docs." }
+        { name: "Communication Skills", weight: 35, requiredLevel: 4, notes: "Clear verbal and written communication" },
+        { name: "Time Management", weight: 25, requiredLevel: 3, notes: "Efficient planning and execution" },
+        { name: "Stress Management", weight: 20, requiredLevel: 3, notes: "Composure under pressure and deadlines" },
+        { name: "Documentation & Reporting", weight: 20, requiredLevel: 3, notes: "Thorough documentation practices" }
       ]
     },
     {
       id: "leadership",
       name: "Leadership Skills",
-      weight: 4,
+      weight: 6,
       skills: [
-        { name: "Peer Mentoring & Reviews", weight: 50, requiredLevel: 3, notes: "Review cases/scripts; coach peers." },
-        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "Align with Dev/PO/BA; gates." },
-        { name: "Quality Advocacy / Process Improvement", weight: 20, requiredLevel: 3, notes: "Improve workflows; templates." }
+        { name: "Team Collaboration", weight: 40, requiredLevel: 3, notes: "Working effectively within teams" },
+        { name: "Mentoring & Knowledge Sharing", weight: 30, requiredLevel: 3, notes: "Guiding and supporting colleagues" },
+        { name: "Project Coordination", weight: 30, requiredLevel: 3, notes: "Organizing and leading project activities" }
       ]
     },
     {
       id: "education",
       name: "Education & Experience",
-      weight: 2,
+      weight: 4,
       skills: [
-        { name: "Education (Bachelor's / Equivalent)", weight: 30, requiredLevel: 3, notes: "Degree or proven equivalent." },
-        { name: "Experience (3–6 yrs QA)", weight: 70, requiredLevel: 4, notes: "Sustained QA in Agile; releases." }
+        { name: "Educational Background", weight: 40, requiredLevel: 3, notes: "Relevant degree or equivalent experience" },
+        { name: "Professional Experience", weight: 60, requiredLevel: 4, notes: "Years of relevant industry experience" }
       ]
     }
   ]);
