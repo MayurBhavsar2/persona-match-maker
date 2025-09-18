@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Plus, ChevronRight } from "lucide-react";
+import { Upload, FileText, Plus, ChevronRight, Type, File } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const JDUpload = () => {
@@ -16,8 +16,10 @@ const JDUpload = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [customRole, setCustomRole] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [jdText, setJdText] = useState("");
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
+  const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
 
   const predefinedRoles = [
     "Software Engineer - RPA",
@@ -64,7 +66,7 @@ const JDUpload = () => {
       return;
     }
 
-    if (!file) {
+    if (inputMethod === "upload" && !file) {
       toast({
         title: "File required",
         description: "Please upload a job description file.",
@@ -73,10 +75,20 @@ const JDUpload = () => {
       return;
     }
 
+    if (inputMethod === "text" && !jdText.trim()) {
+      toast({
+        title: "Job description required",
+        description: "Please enter the job description text.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Store data in localStorage for demo purposes
     localStorage.setItem('jdData', JSON.stringify({
       role,
-      fileName: file.name,
+      fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
+      jdContent: inputMethod === "text" ? jdText : null,
       instructions,
       timestamp: Date.now()
     }));
@@ -160,36 +172,77 @@ const JDUpload = () => {
               )}
             </div>
 
-            {/* File Upload */}
-            <div className="space-y-2">
-              <Label htmlFor="file">Job Description Document</Label>
-              <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-smooth">
-                <input
-                  type="file"
-                  id="file"
-                  className="hidden"
-                  accept=".pdf,.doc,.docx,.txt"
-                  onChange={handleFileUpload}
-                />
-                <label htmlFor="file" className="cursor-pointer">
-                  <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  {file ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">{file.name}</p>
-                      <p className="text-xs text-muted-foreground">File uploaded successfully</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-foreground">
-                        Click to upload or drag and drop
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        PDF, DOC, DOCX, or TXT (Max 10MB)
-                      </p>
-                    </div>
-                  )}
-                </label>
+            {/* Job Description Input Method Selection */}
+            <div className="space-y-4">
+              <Label>Job Description Input Method</Label>
+              <div className="flex space-x-2">
+                <Button
+                  type="button"
+                  variant={inputMethod === "upload" ? "default" : "outline"}
+                  onClick={() => setInputMethod("upload")}
+                  className="flex items-center space-x-2"
+                >
+                  <File className="w-4 h-4" />
+                  <span>Upload Document</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant={inputMethod === "text" ? "default" : "outline"}
+                  onClick={() => setInputMethod("text")}
+                  className="flex items-center space-x-2"
+                >
+                  <Type className="w-4 h-4" />
+                  <span>Copy & Paste</span>
+                </Button>
               </div>
+
+              {inputMethod === "upload" ? (
+                <div className="space-y-2">
+                  <Label htmlFor="file">Job Description Document</Label>
+                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-smooth">
+                    <input
+                      type="file"
+                      id="file"
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.txt"
+                      onChange={handleFileUpload}
+                    />
+                    <label htmlFor="file" className="cursor-pointer">
+                      <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      {file ? (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-foreground">{file.name}</p>
+                          <p className="text-xs text-muted-foreground">File uploaded successfully</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-foreground">
+                            Click to upload or drag and drop
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            PDF, DOC, DOCX, or TXT (Max 10MB)
+                          </p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="jdText">Job Description Text</Label>
+                  <Textarea
+                    id="jdText"
+                    placeholder="Copy and paste your job description here..."
+                    value={jdText}
+                    onChange={(e) => setJdText(e.target.value)}
+                    rows={12}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Paste the complete job description content here.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Instructions */}
