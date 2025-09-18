@@ -19,7 +19,8 @@ interface SkillCategory {
   skills: { 
     name: string; 
     weight: number; 
-    requiredLevel: number; 
+    requiredLevel: number;
+    bloomLevel: number;
     notes: string; 
   }[];
 }
@@ -34,11 +35,11 @@ const PersonaConfig = () => {
       name: "Technical Skills",
       weight: 40,
       skills: [
-        { name: "Core Technology Stack", weight: 30, requiredLevel: 3, notes: "Must have **5+ years experience** with **React**, **Node.js**, **TypeScript**. Strong proficiency in modern **JavaScript ES6+**, **REST APIs**, and **microservices architecture**." },
-        { name: "Programming Languages", weight: 25, requiredLevel: 4, notes: "**Expert level JavaScript/TypeScript** required. **Python** or **Java** preferred for backend services. Familiarity with **SQL** for database queries." },
-        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, notes: "Experience with **React ecosystem** (**Redux**, **React Query**), **Express.js**, **Git version control**, **Docker containers**, and **CI/CD pipelines** (**Jenkins**/**GitHub Actions**)." },
-        { name: "Database & Data Management", weight: 15, requiredLevel: 4, notes: "Proficient in **PostgreSQL/MySQL**, **NoSQL databases** (**MongoDB**), **data modeling**, **query optimization**, and **ETL processes**." },
-        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, notes: "**AWS/Azure** experience with **EC2**, **S3**, **Lambda functions**. Understanding of **serverless architecture**, **load balancing**, and **monitoring tools**." }
+        { name: "Core Technology Stack", weight: 30, requiredLevel: 4, bloomLevel: 3, notes: "Must have **5+ years experience** with **React**, **Node.js**, **TypeScript**. Strong proficiency in modern **JavaScript ES6+**, **REST APIs**, and **microservices architecture**." },
+        { name: "Programming Languages", weight: 25, requiredLevel: 5, bloomLevel: 4, notes: "**Expert level JavaScript/TypeScript** required. **Python** or **Java** preferred for backend services. Familiarity with **SQL** for database queries." },
+        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, bloomLevel: 3, notes: "Experience with **React ecosystem** (**Redux**, **React Query**), **Express.js**, **Git version control**, **Docker containers**, and **CI/CD pipelines** (**Jenkins**/**GitHub Actions**)." },
+        { name: "Database & Data Management", weight: 15, requiredLevel: 4, bloomLevel: 4, notes: "Proficient in **PostgreSQL/MySQL**, **NoSQL databases** (**MongoDB**), **data modeling**, **query optimization**, and **ETL processes**." },
+        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, bloomLevel: 3, notes: "**AWS/Azure** experience with **EC2**, **S3**, **Lambda functions**. Understanding of **serverless architecture**, **load balancing**, and **monitoring tools**." }
       ]
     },
     {
@@ -46,11 +47,11 @@ const PersonaConfig = () => {
       name: "Cognitive Demands",
       weight: 25,
       skills: [
-        { name: "Problem Solving", weight: 30, requiredLevel: 5, notes: "Must demonstrate ability to **break down complex technical challenges**, **debug issues systematically**, and implement **efficient solutions** under **tight deadlines**." },
-        { name: "Critical Thinking", weight: 25, requiredLevel: 5, notes: "Strong **analytical skills** to evaluate **trade-offs** between different technical approaches, **assess risk vs benefit**, and make **data-driven architectural decisions**." },
-        { name: "Learning & Adaptation", weight: 20, requiredLevel: 3, notes: "Proven track record of **quickly learning new technologies**, **adapting to changing requirements**, and staying current with **industry trends** and **best practices**." },
-        { name: "Decision Making", weight: 15, requiredLevel: 5, notes: "Experience making **informed technical decisions** with incomplete information, **prioritizing features** based on **business impact**, and **escalating when appropriate**." },
-        { name: "Attention to Detail", weight: 10, requiredLevel: 4, notes: "Demonstrated ability to write **clean, maintainable code**, conduct **thorough code reviews**, and catch **edge cases** that could impact **system reliability**." }
+        { name: "Problem Solving", weight: 30, requiredLevel: 5, bloomLevel: 5, notes: "Must demonstrate ability to **break down complex technical challenges**, **debug issues systematically**, and implement **efficient solutions** under **tight deadlines**." },
+        { name: "Critical Thinking", weight: 25, requiredLevel: 5, bloomLevel: 5, notes: "Strong **analytical skills** to evaluate **trade-offs** between different technical approaches, **assess risk vs benefit**, and make **data-driven architectural decisions**." },
+        { name: "Learning & Adaptation", weight: 20, requiredLevel: 4, bloomLevel: 3, notes: "Proven track record of **quickly learning new technologies**, **adapting to changing requirements**, and staying current with **industry trends** and **best practices**." },
+        { name: "Decision Making", weight: 15, requiredLevel: 4, bloomLevel: 5, notes: "Experience making **informed technical decisions** with incomplete information, **prioritizing features** based on **business impact**, and **escalating when appropriate**." },
+        { name: "Attention to Detail", weight: 10, requiredLevel: 5, bloomLevel: 4, notes: "Demonstrated ability to write **clean, maintainable code**, conduct **thorough code reviews**, and catch **edge cases** that could impact **system reliability**." }
       ]
     },
     {
@@ -58,10 +59,10 @@ const PersonaConfig = () => {
       name: "Values (Schwartz)",
       weight: 10,
       skills: [
-        { name: "Achievement & Excellence", weight: 30, requiredLevel: 3, notes: "Strong drive to deliver **high-quality software solutions**, meet **project milestones**, and continuously improve **technical skills** and **code quality standards**." },
-        { name: "Security & Reliability", weight: 25, requiredLevel: 4, notes: "Commitment to building **secure, scalable systems**. Values **code reliability**, **comprehensive testing**, and following **security best practices** in all implementations." },
-        { name: "Innovation & Self-Direction", weight: 25, requiredLevel: 6, notes: "Seeks **creative solutions** to technical challenges, proposes **process improvements**, and works **independently** with **minimal supervision** while meeting deliverables." },
-        { name: "Collaboration & Benevolence", weight: 20, requiredLevel: 3, notes: "Values **teamwork**, **knowledge sharing**, **mentoring junior developers**, and contributing to a **positive team culture** through helpful and supportive interactions." }
+        { name: "Achievement & Excellence", weight: 30, requiredLevel: 4, bloomLevel: 3, notes: "Strong drive to deliver **high-quality software solutions**, meet **project milestones**, and continuously improve **technical skills** and **code quality standards**." },
+        { name: "Security & Reliability", weight: 25, requiredLevel: 5, bloomLevel: 4, notes: "Commitment to building **secure, scalable systems**. Values **code reliability**, **comprehensive testing**, and following **security best practices** in all implementations." },
+        { name: "Innovation & Self-Direction", weight: 25, requiredLevel: 4, bloomLevel: 6, notes: "Seeks **creative solutions** to technical challenges, proposes **process improvements**, and works **independently** with **minimal supervision** while meeting deliverables." },
+        { name: "Collaboration & Benevolence", weight: 20, requiredLevel: 4, bloomLevel: 3, notes: "Values **teamwork**, **knowledge sharing**, **mentoring junior developers**, and contributing to a **positive team culture** through helpful and supportive interactions." }
       ]
     },
     {
@@ -69,10 +70,10 @@ const PersonaConfig = () => {
       name: "Foundational Behaviors",
       weight: 15,
       skills: [
-        { name: "Communication Skills", weight: 35, requiredLevel: 3, notes: "Excellent **written and verbal communication**. Must **present technical concepts** to **non-technical stakeholders**, participate in **code reviews**, and provide **clear status updates**." },
-        { name: "Time Management", weight: 25, requiredLevel: 3, notes: "Proven ability to **manage multiple projects** simultaneously, meet **sprint deadlines**, accurately **estimate task complexity**, and **prioritize work** effectively." },
-        { name: "Stress Management", weight: 20, requiredLevel: 3, notes: "Maintains **productivity** and **code quality** during **high-pressure situations**, **production incidents**, and **tight project deadlines** without compromising team morale." },
-        { name: "Documentation & Reporting", weight: 20, requiredLevel: 3, notes: "Consistently creates and maintains **technical documentation**, **API docs**, **architectural decisions**, and provides detailed **project status reports**." }
+        { name: "Communication Skills", weight: 35, requiredLevel: 4, bloomLevel: 3, notes: "Excellent **written and verbal communication**. Must **present technical concepts** to **non-technical stakeholders**, participate in **code reviews**, and provide **clear status updates**." },
+        { name: "Time Management", weight: 25, requiredLevel: 4, bloomLevel: 3, notes: "Proven ability to **manage multiple projects** simultaneously, meet **sprint deadlines**, accurately **estimate task complexity**, and **prioritize work** effectively." },
+        { name: "Stress Management", weight: 20, requiredLevel: 4, bloomLevel: 3, notes: "Maintains **productivity** and **code quality** during **high-pressure situations**, **production incidents**, and **tight project deadlines** without compromising team morale." },
+        { name: "Documentation & Reporting", weight: 20, requiredLevel: 3, bloomLevel: 3, notes: "Consistently creates and maintains **technical documentation**, **API docs**, **architectural decisions**, and provides detailed **project status reports**." }
       ]
     },
     {
@@ -80,9 +81,9 @@ const PersonaConfig = () => {
       name: "Leadership Skills",
       weight: 6,
       skills: [
-        { name: "Team Collaboration", weight: 40, requiredLevel: 3, notes: "Experience working in **cross-functional teams** with **designers**, **product managers**, and **QA**. Participates effectively in **agile ceremonies** and **pair programming sessions**." },
-        { name: "Mentoring & Knowledge Sharing", weight: 30, requiredLevel: 4, notes: "Willingness to **onboard new team members**, conduct **technical training sessions**, and share knowledge through **code reviews** and **internal tech talks**." },
-        { name: "Project Coordination", weight: 30, requiredLevel: 4, notes: "Experience **leading technical initiatives**, **coordinating with stakeholders**, managing **technical risks**, and ensuring project deliverables meet **quality standards**." }
+        { name: "Team Collaboration", weight: 40, requiredLevel: 4, bloomLevel: 3, notes: "Experience working in **cross-functional teams** with **designers**, **product managers**, and **QA**. Participates effectively in **agile ceremonies** and **pair programming sessions**." },
+        { name: "Mentoring & Knowledge Sharing", weight: 30, requiredLevel: 4, bloomLevel: 4, notes: "Willingness to **onboard new team members**, conduct **technical training sessions**, and share knowledge through **code reviews** and **internal tech talks**." },
+        { name: "Project Coordination", weight: 30, requiredLevel: 4, bloomLevel: 4, notes: "Experience **leading technical initiatives**, **coordinating with stakeholders**, managing **technical risks**, and ensuring project deliverables meet **quality standards**." }
       ]
     },
     {
@@ -90,8 +91,8 @@ const PersonaConfig = () => {
       name: "Education & Experience",
       weight: 4,
       skills: [
-        { name: "Educational Background", weight: 40, requiredLevel: 2, notes: "**Bachelor's degree** in **Computer Science**, **Software Engineering**, or **equivalent practical experience**. Relevant **certifications** in **cloud platforms** or **modern frameworks** preferred." },
-        { name: "Professional Experience", weight: 60, requiredLevel: 2, notes: "Minimum **5+ years** of **full-stack development** experience. Previous experience in **similar industry/domain** preferred. Track record of **successful project deliveries**." }
+        { name: "Educational Background", weight: 40, requiredLevel: 3, bloomLevel: 2, notes: "**Bachelor's degree** in **Computer Science**, **Software Engineering**, or **equivalent practical experience**. Relevant **certifications** in **cloud platforms** or **modern frameworks** preferred." },
+        { name: "Professional Experience", weight: 60, requiredLevel: 4, bloomLevel: 2, notes: "Minimum **5+ years** of **full-stack development** experience. Previous experience in **similar industry/domain** preferred. Track record of **successful project deliveries**." }
       ]
     }
   ]);
@@ -101,7 +102,7 @@ const PersonaConfig = () => {
     if (!category) return { level: 3, name: "Apply" };
     
     const levelCounts = category.skills.reduce((acc, skill) => {
-      acc[skill.requiredLevel] = (acc[skill.requiredLevel] || 0) + 1;
+      acc[skill.bloomLevel] = (acc[skill.bloomLevel] || 0) + 1;
       return acc;
     }, {} as Record<number, number>);
     
@@ -147,6 +148,19 @@ const PersonaConfig = () => {
         if (cat.id === categoryId) {
           const newSkills = [...cat.skills];
           newSkills[skillIndex] = { ...newSkills[skillIndex], requiredLevel: newLevel };
+          return { ...cat, skills: newSkills };
+        }
+        return cat;
+      })
+    );
+  };
+
+  const updateSkillBloomLevel = (categoryId: string, skillIndex: number, newLevel: number) => {
+    setCategories(prev =>
+      prev.map(cat => {
+        if (cat.id === categoryId) {
+          const newSkills = [...cat.skills];
+          newSkills[skillIndex] = { ...newSkills[skillIndex], bloomLevel: newLevel };
           return { ...cat, skills: newSkills };
         }
         return cat;
@@ -340,10 +354,28 @@ const PersonaConfig = () => {
                                   <span className="text-sm text-muted-foreground">%</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
-                                  <span className="text-xs text-muted-foreground">Bloom's Level:</span>
+                                  <span className="text-xs text-muted-foreground">Required Level:</span>
                                   <Select 
                                     value={skill.requiredLevel.toString()} 
                                     onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
+                                  >
+                                    <SelectTrigger className="w-24 h-8">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-background border shadow-lg">
+                                      <SelectItem value="1" className="bg-background hover:bg-muted">1 - Basic</SelectItem>
+                                      <SelectItem value="2" className="bg-background hover:bg-muted">2 - Working</SelectItem>
+                                      <SelectItem value="3" className="bg-background hover:bg-muted">3 - Proficient</SelectItem>
+                                      <SelectItem value="4" className="bg-background hover:bg-muted">4 - Advanced</SelectItem>
+                                      <SelectItem value="5" className="bg-background hover:bg-muted">5 - Expert</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs text-muted-foreground">Bloom's Level:</span>
+                                  <Select 
+                                    value={skill.bloomLevel.toString()} 
+                                    onValueChange={(value) => updateSkillBloomLevel(category.id, index, parseInt(value))}
                                   >
                                     <SelectTrigger className="w-32 h-8">
                                       <SelectValue />
