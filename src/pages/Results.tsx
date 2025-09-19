@@ -76,8 +76,21 @@ const Results = () => {
       
       // Generate detailed evaluation data if not present
       const candidatesWithDetailedData = data.candidates.map((candidate: any) => {
-        if (!candidate.categories) {
-          candidate.categories = generateDetailedEvaluation(candidate);
+        if (!candidate.detailedEvaluation) {
+          const categories = generateDetailedEvaluation(candidate);
+          candidate.detailedEvaluation = {
+            categories: categories,
+            summary: [
+              { attribute: "Technical Skills", weight: "54%", percentScored: `${candidate.technicalSkills}%`, attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%` },
+              { attribute: "Cognitive Demands", weight: "24%", percentScored: "93.8%", attributeScore: "22.50%" },
+              { attribute: "Values", weight: "6%", percentScored: "92.5%", attributeScore: "5.55%" },
+              { attribute: "Foundational Behaviors", weight: "10%", percentScored: `${candidate.communication}%`, attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%` },
+              { attribute: "Leadership Skills", weight: "4%", percentScored: "100.0%", attributeScore: "4.00%" },
+              { attribute: "Education & Experience", weight: "2%", percentScored: `${candidate.experience}%`, attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%` }
+            ]
+          };
+          // Also keep the categories for backward compatibility
+          candidate.categories = categories;
         }
         return candidate;
       });
