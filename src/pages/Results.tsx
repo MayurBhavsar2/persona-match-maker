@@ -377,18 +377,19 @@ const Results = () => {
   };
 
   const CandidateDetailSheet = ({ candidate }: { candidate: Candidate }) => (
-    <SheetContent className="w-[800px] sm:w-[900px] max-w-[95vw]">
-      <SheetHeader>
-        <SheetTitle className="flex items-center space-x-2">
-          {getFitIcon(candidate.fitCategory)}
-          <span>{candidate.name}</span>
-        </SheetTitle>
-        <SheetDescription>
-          Detailed evaluation results and comprehensive skill breakdown
-        </SheetDescription>
-      </SheetHeader>
+    <SheetContent className="w-full max-w-none h-full max-h-none p-0 m-0" side="right">
+      <div className="h-full flex flex-col">
+        <SheetHeader className="p-6 border-b bg-background">
+          <SheetTitle className="flex items-center space-x-2">
+            {getFitIcon(candidate.fitCategory)}
+            <span>{candidate.name}</span>
+          </SheetTitle>
+          <SheetDescription>
+            Detailed evaluation results and comprehensive skill breakdown
+          </SheetDescription>
+        </SheetHeader>
       
-      <div className="mt-6 space-y-6 max-h-[80vh] overflow-y-auto">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {/* Overall Score */}
         <Card>
           <CardHeader>
@@ -534,6 +535,7 @@ const Results = () => {
             <Star className="w-4 h-4 mr-2" />
             Shortlist
           </Button>
+          </div>
         </div>
       </div>
     </SheetContent>
