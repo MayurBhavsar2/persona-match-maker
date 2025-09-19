@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { ArrowRight, Save, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SkillCategory {
@@ -328,6 +328,115 @@ const PersonaConfig = () => {
         notes
       };
     });
+  };
+  
+  // AI Analysis function to provide improvement suggestions
+  const generateAIAnalysis = () => {
+    const storedJD = localStorage.getItem('selectedJD');
+    const jdContent = storedJD ? JSON.parse(storedJD).content.toLowerCase() : '';
+    
+    const suggestions = [];
+    const insights = [];
+    const optimizations = [];
+
+    // Analyze weight distribution
+    const totalWeight = getTotalWeight();
+    if (totalWeight !== 100) {
+      suggestions.push({
+        type: "critical",
+        title: "Weight Distribution",
+        description: `Total category weights are ${totalWeight}%. Adjust to exactly 100% for optimal scoring.`,
+        action: "Redistribute category weights proportionally"
+      });
+    }
+
+    // Analyze cognitive demands based on JD
+    const cognitiveCategory = categories.find(cat => cat.id === "cognitive");
+    if (cognitiveCategory && jdContent.includes("complex") || jdContent.includes("analyze")) {
+      const analyzeSkill = cognitiveCategory.skills.find(skill => skill.name === "Analyze");
+      if (analyzeSkill && analyzeSkill.weight < 30) {
+        suggestions.push({
+          type: "improvement",
+          title: "Cognitive Analysis Weight",
+          description: "JD emphasizes complex analysis. Consider increasing 'Analyze' weight to 30%+",
+          action: "Increase analytical requirements based on JD complexity"
+        });
+      }
+    }
+
+    // Analyze technical vs behavioral balance
+    const technicalWeight = categories.find(cat => cat.id === "technical")?.weight || 0;
+    const behavioralWeight = (categories.find(cat => cat.id === "foundational")?.weight || 0) + 
+                            (categories.find(cat => cat.id === "cognitive")?.weight || 0);
+    
+    if (technicalWeight > 50) {
+      insights.push({
+        icon: "TrendingUp",
+        title: "Technical Focus Detected",
+        description: `${technicalWeight}% weight on technical skills suggests a highly technical role`,
+        recommendation: "Ensure soft skills aren't undervalued for team collaboration"
+      });
+    }
+
+    // Leadership requirements analysis
+    const leadershipCategory = categories.find(cat => cat.id === "leadership");
+    if (jdContent.includes("lead") || jdContent.includes("mentor") || jdContent.includes("senior")) {
+      if (leadershipCategory && leadershipCategory.weight < 10) {
+        suggestions.push({
+          type: "improvement",
+          title: "Leadership Weight",
+          description: "JD indicates leadership responsibilities. Consider increasing leadership weight to 10%+",
+          action: "Align leadership requirements with JD expectations"
+        });
+      }
+    }
+
+    // Experience level optimization
+    const avgRequiredLevel = categories.reduce((sum, cat) => 
+      sum + cat.skills.reduce((skillSum, skill) => skillSum + skill.requiredLevel, 0) / cat.skills.length, 0
+    ) / categories.length;
+
+    if (avgRequiredLevel > 4) {
+      insights.push({
+        icon: "Target",
+        title: "High Standards Configuration",
+        description: `Average required level is ${avgRequiredLevel.toFixed(1)} - targeting expert-level candidates`,
+        recommendation: "Ensure salary and benefits align with senior-level expectations"
+      });
+    } else if (avgRequiredLevel < 3) {
+      insights.push({
+        icon: "Target",
+        title: "Balanced Expectations",
+        description: `Average required level is ${avgRequiredLevel.toFixed(1)} - suitable for mid-level candidates`,
+        recommendation: "Consider if some critical skills need higher requirements"
+      });
+    }
+
+    // Documentation and quality focus
+    if (jdContent.includes("documentation") || jdContent.includes("quality")) {
+      const foundationalCategory = categories.find(cat => cat.id === "foundational");
+      const docSkill = foundationalCategory?.skills.find(skill => 
+        skill.name.includes("Documentation") || skill.name.includes("Detail")
+      );
+      if (docSkill && docSkill.weight < 25) {
+        optimizations.push({
+          category: "Foundational Behaviors",
+          suggestion: "Increase documentation/detail focus to 25%+ based on JD requirements",
+          impact: "Better alignment with quality expectations"
+        });
+      }
+    }
+
+    // Industry-specific optimizations
+    if (jdContent.includes("agile") || jdContent.includes("scrum")) {
+      optimizations.push({
+        category: "Leadership Skills",
+        suggestion: "Emphasize cross-functional collaboration for agile environment",
+        impact: "Better fit for agile team dynamics"
+      });
+    }
+
+    return { suggestions, insights, optimizations };
   };
   
   const [categories, setCategories] = useState<SkillCategory[]>([
@@ -748,6 +857,99 @@ const PersonaConfig = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* AI Analysis & Suggestions */}
+        {validation.totalValid && validation.categoriesValid && (
+          <Card className="shadow-card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Lightbulb className="w-5 h-5 text-blue-600" />
+                <span>AI Analysis & Improvement Suggestions</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {(() => {
+                const analysis = generateAIAnalysis();
+                
+                return (
+                  <>
+                    {analysis.suggestions.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm flex items-center space-x-2">
+                          <Target className="w-4 h-4 text-orange-600" />
+                          <span>Priority Improvements</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {analysis.suggestions.map((suggestion, index) => (
+                            <div key={index} className={`p-3 rounded-lg border-l-4 ${
+                              suggestion.type === 'critical' 
+                                ? 'bg-red-50 border-red-400 dark:bg-red-950/20' 
+                                : 'bg-orange-50 border-orange-400 dark:bg-orange-950/20'
+                            }`}>
+                              <div className="font-medium text-sm text-foreground">{suggestion.title}</div>
+                              <div className="text-xs text-muted-foreground mt-1">{suggestion.description}</div>
+                              <div className="text-xs text-blue-600 mt-2 font-medium">💡 {suggestion.action}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysis.insights.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm flex items-center space-x-2">
+                          <TrendingUp className="w-4 h-4 text-green-600" />
+                          <span>Configuration Insights</span>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {analysis.insights.map((insight, index) => (
+                            <div key={index} className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+                              <div className="font-medium text-sm text-foreground">{insight.title}</div>
+                              <div className="text-xs text-muted-foreground mt-1">{insight.description}</div>
+                              <div className="text-xs text-green-700 dark:text-green-400 mt-2">📋 {insight.recommendation}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysis.optimizations.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-sm flex items-center space-x-2">
+                          <Lightbulb className="w-4 h-4 text-purple-600" />
+                          <span>Optimization Opportunities</span>
+                        </h4>
+                        <div className="space-y-2">
+                          {analysis.optimizations.map((opt, index) => (
+                            <div key={index} className="p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-200 dark:border-purple-800">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="font-medium text-sm text-foreground">{opt.category}</div>
+                                  <div className="text-xs text-muted-foreground mt-1">{opt.suggestion}</div>
+                                </div>
+                                <div className="text-xs text-purple-600 bg-purple-100 dark:bg-purple-900/30 px-2 py-1 rounded ml-2">
+                                  {opt.impact}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {analysis.suggestions.length === 0 && analysis.insights.length === 0 && analysis.optimizations.length === 0 && (
+                      <div className="text-center py-6">
+                        <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                        <div className="text-sm font-medium text-foreground">Excellent Configuration!</div>
+                        <div className="text-xs text-muted-foreground">Your persona is well-balanced and aligned with the job requirements.</div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Action Buttons */}
         <div className="flex justify-between pt-6">
