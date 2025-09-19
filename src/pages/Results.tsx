@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Trophy, 
@@ -493,72 +492,63 @@ const Results = () => {
             </CardContent>
           </Card>
 
-          {/* Detailed Categories in Accordion */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Attribute Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="multiple" className="w-full">
-                {candidate.detailedEvaluation.categories.map((category, index) => (
-                  <AccordionItem key={index} value={`category-${index}`}>
-                    <AccordionTrigger className="text-left">
-                      <div className="flex items-center justify-between w-full mr-4">
-                        <span className="font-medium">{category.name}</span>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline" className="text-xs">Weight: {category.weight}</Badge>
-                          <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
-                            {category.percentScored} scored
-                          </Badge>
-                          <Badge variant="secondary">
-                            Score: {category.attributeScore}
+          {/* Detailed Categories */}
+          {candidate.detailedEvaluation.categories.map((category, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{category.name}</span>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">Weight: {category.weight}</Badge>
+                    <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
+                      {category.percentScored} scored
+                    </Badge>
+                    <Badge variant="secondary">
+                      Score: {category.attributeScore}
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {category.subAttributes.map((subAttr, subIndex) => (
+                      <div key={subIndex} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm">{subAttr.name}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            {subAttr.weightage}% weight
                           </Badge>
                         </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4 pt-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {category.subAttributes.map((subAttr, subIndex) => (
-                            <div key={subIndex} className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-sm">{subAttr.name}</h4>
-                                <Badge variant="outline" className="text-xs">
-                                  {subAttr.weightage}% weight
-                                </Badge>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Expected:</span>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
-                                    <span className="font-medium">Level {subAttr.expectedLevel}</span>
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Actual:</span>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
-                                    <span className="font-medium">Level {subAttr.actualLevel}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="bg-muted/50 rounded p-2 text-xs">
-                                <div className="font-medium text-muted-foreground mb-1">Analysis:</div>
-                                <div>{subAttr.notes}</div>
-                              </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Expected:</span>
+                            <div className="flex items-center space-x-1">
+                              {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
+                              <span className="font-medium">Level {subAttr.expectedLevel}</span>
                             </div>
-                          ))}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Actual:</span>
+                            <div className="flex items-center space-x-1">
+                              {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
+                              <span className="font-medium">Level {subAttr.actualLevel}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-muted/50 rounded p-2 text-xs">
+                          <div className="font-medium text-muted-foreground mb-1">Analysis:</div>
+                          <div>{subAttr.notes}</div>
                         </div>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
 
           {/* Action Buttons */}
           <div className="flex space-x-4 pt-4 pb-8">
