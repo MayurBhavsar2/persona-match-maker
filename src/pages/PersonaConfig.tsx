@@ -28,6 +28,119 @@ const PersonaConfig = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
+  // Helper function to analyze JD and generate cognitive demands
+  const generateCognitiveDemands = () => {
+    const storedJD = localStorage.getItem('selectedJD');
+    if (!storedJD) {
+      // Return default values if no JD is found
+      return [
+        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**SDLC/STLC**, **coverage types**, **definitions**. Understanding of **software development lifecycle**, **testing methodologies**, and **quality assurance principles**." },
+        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Execute plans**; **stable automation runs**. Implement **test strategies**, execute **test cases**, and maintain **consistent automation frameworks**." },
+        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**RCA**; **logs**; **data‑driven debugging**. Perform **root cause analysis**, interpret **system logs**, and use **metrics** for **troubleshooting**." },
+        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Weigh risks**; **choose tools/approach**. Assess **testing strategies**, select **appropriate tools**, and make **informed decisions** about **test coverage**." },
+        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Build test data/utilities**; **improve suites**. Develop **custom testing tools**, create **test datasets**, and enhance **existing test frameworks**." }
+      ];
+    }
+
+    const jdData = JSON.parse(storedJD);
+    const jdContent = jdData.content.toLowerCase();
+    
+    // Analyze JD content to determine cognitive demands
+    const cognitiveSkills = [
+      {
+        name: "Remember / Understand",
+        keywords: ["knowledge", "understand", "familiar", "awareness", "concepts", "principles", "fundamentals"],
+        defaultWeight: 10,
+        defaultLevel: 3
+      },
+      {
+        name: "Apply",
+        keywords: ["implement", "execute", "apply", "use", "perform", "operate", "run", "deploy"],
+        defaultWeight: 25,
+        defaultLevel: 4
+      },
+      {
+        name: "Analyze",
+        keywords: ["analyze", "debug", "troubleshoot", "investigate", "examine", "review", "assess"],
+        defaultWeight: 25,
+        defaultLevel: 4
+      },
+      {
+        name: "Evaluate",
+        keywords: ["evaluate", "compare", "select", "choose", "decide", "recommend", "optimize"],
+        defaultWeight: 25,
+        defaultLevel: 4
+      },
+      {
+        name: "Create",
+        keywords: ["create", "build", "develop", "design", "architect", "innovate", "improve"],
+        defaultWeight: 15,
+        defaultLevel: 3
+      }
+    ];
+
+    // Calculate weights based on keyword frequency in JD
+    const skillScores = cognitiveSkills.map(skill => {
+      const keywordCount = skill.keywords.reduce((count, keyword) => {
+        const regex = new RegExp(keyword, 'gi');
+        const matches = jdContent.match(regex);
+        return count + (matches ? matches.length : 0);
+      }, 0);
+      
+      return {
+        ...skill,
+        score: keywordCount,
+        adjustedWeight: Math.max(5, skill.defaultWeight + (keywordCount * 3)), // Minimum 5%, increase by 3% per keyword match
+        adjustedLevel: Math.min(5, skill.defaultLevel + Math.floor(keywordCount / 3)) // Max level 5, increase level every 3 keyword matches
+      };
+    });
+
+    // Normalize weights to total 100%
+    const totalWeight = skillScores.reduce((sum, skill) => sum + skill.adjustedWeight, 0);
+    const normalizedSkills = skillScores.map(skill => ({
+      ...skill,
+      finalWeight: Math.round((skill.adjustedWeight / totalWeight) * 100)
+    }));
+
+    // Generate dynamic notes based on JD content
+    return normalizedSkills.map(skill => {
+      let notes = "";
+      switch (skill.name) {
+        case "Remember / Understand":
+          notes = jdContent.includes("sdlc") || jdContent.includes("software development") 
+            ? "**SDLC/STLC**, **coverage types**, **definitions** as mentioned in JD. Understanding of **software development lifecycle**, **testing methodologies**, and **quality assurance principles**."
+            : "**Domain knowledge**, **technical concepts**, **industry standards**. Understanding of **core principles**, **methodologies**, and **best practices** relevant to the role.";
+          break;
+        case "Apply":
+          notes = jdContent.includes("automation") || jdContent.includes("testing")
+            ? "**Execute plans**; **stable automation runs** as per JD requirements. Implement **test strategies**, execute **workflows**, and maintain **consistent automation frameworks**."
+            : "**Implement solutions**; **execute strategies**. Apply **technical skills**, implement **best practices**, and maintain **consistent delivery** of project requirements.";
+          break;
+        case "Analyze":
+          notes = jdContent.includes("debug") || jdContent.includes("troubleshoot")
+            ? "**RCA**; **logs**; **data‑driven debugging** as emphasized in JD. Perform **root cause analysis**, interpret **system logs**, and use **metrics** for **troubleshooting**."
+            : "**Problem analysis**; **data interpretation**; **systematic investigation**. Perform **root cause analysis**, examine **system behavior**, and use **analytical thinking** for **issue resolution**.";
+          break;
+        case "Evaluate":
+          notes = jdContent.includes("risk") || jdContent.includes("assessment")
+            ? "**Weigh risks**; **choose tools/approach** based on JD criteria. Assess **strategies**, select **appropriate solutions**, and make **informed decisions** about **implementation approaches**."
+            : "**Solution evaluation**; **technology selection**; **strategic decisions**. Assess **alternatives**, select **optimal approaches**, and make **informed choices** about **technical direction**.";
+          break;
+        case "Create":
+          notes = jdContent.includes("develop") || jdContent.includes("build")
+            ? "**Build solutions/utilities**; **improve systems** as outlined in JD. Develop **custom tools**, create **innovative approaches**, and enhance **existing frameworks**."
+            : "**Innovation**; **solution development**; **system improvement**. Develop **creative solutions**, build **custom tools**, and enhance **existing processes** and **frameworks**.";
+          break;
+      }
+      return {
+        name: skill.name,
+        weight: skill.finalWeight,
+        requiredLevel: skill.adjustedLevel,
+        notes
+      };
+    });
+  };
+  
   const [categories, setCategories] = useState<SkillCategory[]>([
     {
       id: "technical",
@@ -45,13 +158,7 @@ const PersonaConfig = () => {
       id: "cognitive",
       name: "Cognitive Demands",
       weight: 25,
-      skills: [
-        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**SDLC/STLC**, **coverage types**, **definitions**. Understanding of **software development lifecycle**, **testing methodologies**, and **quality assurance principles**." },
-        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Execute plans**; **stable automation runs**. Implement **test strategies**, execute **test cases**, and maintain **consistent automation frameworks**." },
-        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**RCA**; **logs**; **data‑driven debugging**. Perform **root cause analysis**, interpret **system logs**, and use **metrics** for **troubleshooting**." },
-        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Weigh risks**; **choose tools/approach**. Assess **testing strategies**, select **appropriate tools**, and make **informed decisions** about **test coverage**." },
-        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Build test data/utilities**; **improve suites**. Develop **custom testing tools**, create **test datasets**, and enhance **existing test frameworks**." }
-      ]
+      skills: generateCognitiveDemands()
     },
     {
       id: "values",
