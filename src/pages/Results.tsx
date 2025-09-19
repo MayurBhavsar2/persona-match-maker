@@ -23,6 +23,22 @@ import {
   XCircle
 } from "lucide-react";
 
+interface SubAttribute {
+  name: string;
+  weightage: number;
+  expectedLevel: number;
+  actualLevel: number;
+  notes: string;
+}
+
+interface Category {
+  name: string;
+  weight: number;
+  scored: number;
+  attributeScore: number;
+  subAttributes: SubAttribute[];
+}
+
 interface Candidate {
   id: string;
   name: string;
@@ -34,6 +50,7 @@ interface Candidate {
   communication: number;
   certifications: number;
   applicationDate: string;
+  categories: Category[];
 }
 
 const Results = () => {
@@ -45,9 +62,254 @@ const Results = () => {
     const stored = localStorage.getItem('evaluatedCandidates');
     if (stored) {
       const data = JSON.parse(stored);
-      setCandidates(data.candidates);
+      
+      // Generate detailed evaluation data if not present
+      const candidatesWithDetailedData = data.candidates.map((candidate: any) => {
+        if (!candidate.categories) {
+          candidate.categories = generateDetailedEvaluation(candidate);
+        }
+        return candidate;
+      });
+      
+      setCandidates(candidatesWithDetailedData);
     }
   }, []);
+
+  const generateDetailedEvaluation = (candidate: any): Category[] => {
+    // Generate realistic evaluation data based on the candidate's scores
+    return [
+      {
+        name: "Technical Skills",
+        weight: 54,
+        scored: candidate.technicalSkills,
+        attributeScore: (candidate.technicalSkills * 0.54),
+        subAttributes: [
+          {
+            name: "Automation Frameworks (Selenium/Java, TestNG/Cucumber, POM/BDD)",
+            weightage: 18,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25) + 1)),
+            notes: "Expected: stable suites POM BDD maintainable | Actual: stable suites POM BDD maintainable"
+          },
+          {
+            name: "Functional & Regression Testing (Web/Mobile)",
+            weightage: 15,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25) + 1)),
+            notes: "Expected: end‑to‑end coverage disciplined regression | Actual: end‑to‑end coverage disciplined regression"
+          },
+          {
+            name: "API Testing (Postman/RestAssured)",
+            weightage: 12,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
+            notes: "Expected: schema contract auth negative cases | Actual: schema contract auth negative cases"
+          },
+          {
+            name: "Performance/Load (JMeter)",
+            weightage: 10,
+            expectedLevel: 3,
+            actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 30))),
+            notes: "Expected: basic plans KPIs trending | Actual: basic plans KPIs trending"
+          },
+          {
+            name: "Database/SQL Testing",
+            weightage: 10,
+            expectedLevel: 3,
+            actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 30))),
+            notes: "Expected: joins constraints CRUD integrity | Actual: joins constraints CRUD integrity"
+          },
+          {
+            name: "Test Strategy & Planning (Plans/Cases/Traceability)",
+            weightage: 12,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
+            notes: "Expected: risk‑based plans RTM data | Actual: risk‑based plans RTM data"
+          },
+          {
+            name: "Defect Management & Reporting (Jira/Xray)",
+            weightage: 13,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
+            notes: "Expected: triage RCA dashboards hygiene | Actual: triage RCA dashboards hygiene"
+          },
+          {
+            name: "CI/CD & Version Control (Jenkins/Git)",
+            weightage: 10,
+            expectedLevel: 3,
+            actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 35))),
+            notes: "Expected: trigger suites artifacts hygiene | Actual: trigger suites artifacts hygiene"
+          }
+        ]
+      },
+      {
+        name: "Cognitive Demands",
+        weight: 24,
+        scored: 93.8,
+        attributeScore: 22.50,
+        subAttributes: [
+          {
+            name: "Remember / Understand",
+            weightage: 10,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: SDLC STLC coverage types | Actual: SDLC STLC coverage types"
+          },
+          {
+            name: "Apply",
+            weightage: 25,
+            expectedLevel: 4,
+            actualLevel: 4,
+            notes: "Expected: execute plans stable runs | Actual: execute plans stable runs"
+          },
+          {
+            name: "Analyze",
+            weightage: 25,
+            expectedLevel: 4,
+            actualLevel: 4,
+            notes: "Expected: RCA logs data‑driven | Actual: RCA logs data‑driven"
+          },
+          {
+            name: "Evaluate",
+            weightage: 25,
+            expectedLevel: 4,
+            actualLevel: 3,
+            notes: "Expected: risk trade‑offs approach | Actual: risk trade‑offs approach"
+          },
+          {
+            name: "Create",
+            weightage: 15,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: utilities data improvements | Actual: utilities data improvements"
+          }
+        ]
+      },
+      {
+        name: "Values",
+        weight: 6,
+        scored: 92.5,
+        attributeScore: 5.55,
+        subAttributes: [
+          {
+            name: "Achievement / Power",
+            weightage: 30,
+            expectedLevel: 4,
+            actualLevel: 4,
+            notes: "Expected: release quality leakage down | Actual: release quality leakage down"
+          },
+          {
+            name: "Security / Conformity",
+            weightage: 30,
+            expectedLevel: 4,
+            actualLevel: 3,
+            notes: "Expected: process audit trail standards | Actual: process audit trail standards"
+          },
+          {
+            name: "Self-direction / Stimulation",
+            weightage: 25,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: learning tools experiments | Actual: learning tools experiments"
+          },
+          {
+            name: "Benevolence / Universalism",
+            weightage: 15,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: user empathy team‑first | Actual: user empathy team‑first"
+          }
+        ]
+      },
+      {
+        name: "Foundational Behaviors",
+        weight: 10,
+        scored: candidate.communication,
+        attributeScore: (candidate.communication * 0.10),
+        subAttributes: [
+          {
+            name: "Communication",
+            weightage: 35,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.communication / 25))),
+            notes: "Expected: concise risks clear bugs | Actual: concise risks clear bugs"
+          },
+          {
+            name: "Resilience / Stress Tolerance",
+            weightage: 25,
+            expectedLevel: 3,
+            actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.communication / 30))),
+            notes: "Expected: calm hotfix incidents | Actual: calm hotfix incidents"
+          },
+          {
+            name: "Decision‑Making under Uncertainty",
+            weightage: 20,
+            expectedLevel: 3,
+            actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.communication / 30))),
+            notes: "Expected: time‑box escalate wisely | Actual: time‑box escalate wisely"
+          },
+          {
+            name: "Attention to Detail & Documentation",
+            weightage: 20,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.communication / 25))),
+            notes: "Expected: traceability crisp documentation | Actual: traceability crisp documentation"
+          }
+        ]
+      },
+      {
+        name: "Leadership Skills",
+        weight: 4,
+        scored: 100.0,
+        attributeScore: 4.00,
+        subAttributes: [
+          {
+            name: "Peer Mentoring & Reviews",
+            weightage: 50,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: review cases scripts coach | Actual: review cases scripts coach"
+          },
+          {
+            name: "Cross‑functional Influence",
+            weightage: 30,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: align Dev PO BA | Actual: align Dev PO BA"
+          },
+          {
+            name: "Quality Advocacy / Process Improvement",
+            weightage: 20,
+            expectedLevel: 3,
+            actualLevel: 3,
+            notes: "Expected: workflow improvements templates | Actual: workflow improvements templates"
+          }
+        ]
+      },
+      {
+        name: "Education & Experience",
+        weight: 2,
+        scored: candidate.experience,
+        attributeScore: (candidate.experience * 0.02),
+        subAttributes: [
+          {
+            name: "Education (Bachelor's / Equivalent)",
+            weightage: 30,
+            expectedLevel: 3,
+            actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.experience / 30))),
+            notes: "Expected: degree or equivalent proof | Actual: degree or equivalent proof"
+          },
+          {
+            name: "Experience (3–6 yrs QA)",
+            weightage: 70,
+            expectedLevel: 4,
+            actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.experience / 25))),
+            notes: "Expected: sustained Agile releases | Actual: sustained Agile releases"
+          }
+        ]
+      }
+    ];
+  };
 
   const getFitIcon = (category: string) => {
     switch (category) {
@@ -96,27 +358,50 @@ const Results = () => {
   const moderateFitCount = candidates.filter(c => c.fitCategory === 'moderate').length;
   const lowFitCount = candidates.filter(c => c.fitCategory === 'low').length;
 
+  const getScoreColor = (score: number) => {
+    if (score >= 90) return 'text-success';
+    if (score >= 70) return 'text-warning';
+    return 'text-danger';
+  };
+
+  const getScoreBadgeVariant = (score: number) => {
+    if (score >= 90) return 'default';
+    if (score >= 70) return 'secondary';
+    return 'destructive';
+  };
+
+  const getLevelIcon = (expected: number, actual: number) => {
+    if (actual >= expected) return <CheckCircle2 className="w-4 h-4 text-success" />;
+    if (actual >= expected - 1) return <AlertTriangle className="w-4 h-4 text-warning" />;
+    return <XCircle className="w-4 h-4 text-danger" />;
+  };
+
   const CandidateDetailSheet = ({ candidate }: { candidate: Candidate }) => (
-    <SheetContent className="w-[600px] sm:w-[700px]">
+    <SheetContent className="w-[800px] sm:w-[900px] max-w-[95vw]">
       <SheetHeader>
         <SheetTitle className="flex items-center space-x-2">
           {getFitIcon(candidate.fitCategory)}
           <span>{candidate.name}</span>
         </SheetTitle>
         <SheetDescription>
-          Detailed evaluation results and skill breakdown
+          Detailed evaluation results and comprehensive skill breakdown
         </SheetDescription>
       </SheetHeader>
       
-      <div className="mt-6 space-y-6">
+      <div className="mt-6 space-y-6 max-h-[80vh] overflow-y-auto">
         {/* Overall Score */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Overall Match Score</CardTitle>
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span>Overall Match Score</span>
+              <Badge className={`${getScoreColor(candidate.overallScore)} text-lg px-3 py-1`}>
+                {candidate.overallScore.toFixed(2)}%
+              </Badge>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-4">
-              <div className="text-3xl font-bold text-primary">{candidate.overallScore}%</div>
+              <div className="text-3xl font-bold text-primary">{candidate.overallScore.toFixed(2)}%</div>
               <div className="flex-1">
                 <Progress value={candidate.overallScore} className="h-3" />
               </div>
@@ -127,42 +412,98 @@ const Results = () => {
           </CardContent>
         </Card>
 
-        {/* Skill Breakdown */}
+        {/* Category Breakdown */}
+        {candidate.categories && candidate.categories.map((category, categoryIndex) => (
+          <Card key={categoryIndex} className="border-l-4 border-l-primary">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center justify-between">
+                <span>{category.name} — Weight {category.weight}%</span>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-muted-foreground">% scored: {category.scored.toFixed(1)}%</span>
+                  <Badge variant={getScoreBadgeVariant(category.scored)}>
+                    Attribute score: {category.attributeScore.toFixed(2)}%
+                  </Badge>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Sub-Attributes Table */}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[30%]">Sub-Attribute</TableHead>
+                      <TableHead className="w-[12%]">Weightage %</TableHead>
+                      <TableHead className="w-[12%]">Expected Level</TableHead>
+                      <TableHead className="w-[12%]">Actual Level</TableHead>
+                      <TableHead className="w-[8%]">Status</TableHead>
+                      <TableHead className="w-[26%]">Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {category.subAttributes.map((subAttr, subIndex) => (
+                      <TableRow key={subIndex}>
+                        <TableCell className="font-medium">{subAttr.name}</TableCell>
+                        <TableCell className="text-center">{subAttr.weightage}</TableCell>
+                        <TableCell className="text-center">{subAttr.expectedLevel}</TableCell>
+                        <TableCell className="text-center font-bold">{subAttr.actualLevel}</TableCell>
+                        <TableCell className="text-center">
+                          {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <div className="space-y-1">
+                            <div><span className="font-medium">Expected:</span> {subAttr.notes.split(' | ')[0]?.replace('Expected: ', '')}</div>
+                            <div><span className="font-medium">Actual:</span> {subAttr.notes.split(' | ')[1]?.replace('Actual: ', '')}</div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Summary Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Skill Assessment</CardTitle>
+            <CardTitle className="text-lg">Summary (by Attribute)</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Technical Skills</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={candidate.technicalSkills} className="w-24 h-2" />
-                  <span className="text-sm text-muted-foreground w-10">{candidate.technicalSkills}%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Experience Level</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={candidate.experience} className="w-24 h-2" />
-                  <span className="text-sm text-muted-foreground w-10">{candidate.experience}%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Communication</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={candidate.communication} className="w-24 h-2" />
-                  <span className="text-sm text-muted-foreground w-10">{candidate.communication}%</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Certifications</span>
-                <div className="flex items-center space-x-2">
-                  <Progress value={candidate.certifications} className="w-24 h-2" />
-                  <span className="text-sm text-muted-foreground w-10">{candidate.certifications}%</span>
-                </div>
-              </div>
-            </div>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Attribute</TableHead>
+                  <TableHead>Weight</TableHead>
+                  <TableHead>% Scored</TableHead>
+                  <TableHead>Attribute Score</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {candidate.categories && candidate.categories.map((category, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{category.name}</TableCell>
+                    <TableCell>{category.weight}%</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <span className={getScoreColor(category.scored)}>{category.scored.toFixed(1)}%</span>
+                        <Progress value={category.scored} className="w-16 h-2" />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-bold text-primary">{category.attributeScore.toFixed(2)}%</span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow className="border-t-2 border-primary font-bold">
+                  <TableCell>Final Score</TableCell>
+                  <TableCell>100%</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell className="text-xl text-primary">{candidate.overallScore.toFixed(2)}%</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 
