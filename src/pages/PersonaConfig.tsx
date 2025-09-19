@@ -141,6 +141,94 @@ const PersonaConfig = () => {
     });
   };
   
+  // Helper function to analyze JD and generate leadership skills
+  const generateLeadershipSkills = () => {
+    const storedJD = localStorage.getItem('selectedJD');
+    if (!storedJD) {
+      // Return default values if no JD is found
+      return [
+        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "Experience **mentoring colleagues**, conducting **peer reviews**, and **knowledge sharing** within the team." },
+        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "Ability to **collaborate** across departments, **influence stakeholders**, and **drive consensus** on technical decisions." },
+        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "Champion **quality standards**, propose **process improvements**, and drive **best practices** adoption across teams." }
+      ];
+    }
+
+    const jdData = JSON.parse(storedJD);
+    const jdContent = jdData.content.toLowerCase();
+    
+    // Analyze JD content to determine leadership skill requirements
+    const leadershipSkills = [
+      {
+        name: "Peer Mentoring & Reviews",
+        keywords: ["mentor", "coaching", "training", "review", "guidance", "teach", "onboard", "knowledge transfer"],
+        defaultWeight: 40,
+        defaultLevel: 3
+      },
+      {
+        name: "Cross‑functional Influence",
+        keywords: ["cross-functional", "stakeholder", "influence", "collaborate", "coordinate", "alignment", "consensus"],
+        defaultWeight: 30,
+        defaultLevel: 3
+      },
+      {
+        name: "Quality Advocacy / Process Improvement",
+        keywords: ["quality", "process", "improvement", "standards", "best practices", "optimize", "efficiency", "methodology"],
+        defaultWeight: 30,
+        defaultLevel: 3
+      }
+    ];
+
+    // Calculate weights based on keyword frequency in JD
+    const skillScores = leadershipSkills.map(skill => {
+      const keywordCount = skill.keywords.reduce((count, keyword) => {
+        const regex = new RegExp(keyword, 'gi');
+        const matches = jdContent.match(regex);
+        return count + (matches ? matches.length : 0);
+      }, 0);
+      
+      return {
+        ...skill,
+        score: keywordCount,
+        adjustedWeight: Math.max(15, skill.defaultWeight + (keywordCount * 3)), // Minimum 15%, increase by 3% per keyword match
+        adjustedLevel: Math.min(5, skill.defaultLevel + Math.floor(keywordCount / 2)) // Max level 5, increase level every 2 keyword matches
+      };
+    });
+
+    // Normalize weights to total 100%
+    const totalWeight = skillScores.reduce((sum, skill) => sum + skill.adjustedWeight, 0);
+    const normalizedSkills = skillScores.map(skill => ({
+      ...skill,
+      finalWeight: Math.round((skill.adjustedWeight / totalWeight) * 100)
+    }));
+
+    // Generate dynamic notes based on JD content
+    return normalizedSkills.map(skill => {
+      let notes = "";
+      switch (skill.name) {
+        case "Peer Mentoring & Reviews":
+          notes = jdContent.includes("mentor") || jdContent.includes("training") || jdContent.includes("coaching")
+            ? "Experience **mentoring colleagues**, conducting **peer reviews**, and **knowledge sharing** as emphasized in JD requirements. Lead **training sessions** and **onboard new team members**."
+            : "Strong **mentoring capabilities** and **review skills**. Ability to **guide team members**, share **technical expertise**, and conduct **constructive code reviews**.";
+          break;
+        case "Cross‑functional Influence":
+          notes = jdContent.includes("stakeholder") || jdContent.includes("cross-functional") || jdContent.includes("coordinate")
+            ? "Ability to **collaborate** across departments, **influence stakeholders**, and **drive consensus** on technical decisions as required by the role's cross-functional nature."
+            : "Strong **collaboration skills** across teams. Ability to **build relationships**, **communicate effectively** with different departments, and **align technical decisions** with business goals.";
+          break;
+        case "Quality Advocacy / Process Improvement":
+          notes = jdContent.includes("quality") || jdContent.includes("process") || jdContent.includes("improvement")
+            ? "Champion **quality standards**, propose **process improvements**, and drive **best practices** adoption as outlined in JD. Focus on **continuous improvement** and **operational excellence**."
+            : "Commitment to **quality excellence** and **process optimization**. Drive **best practices**, identify **improvement opportunities**, and advocate for **high standards** across all deliverables.";
+          break;
+      }
+      return {
+        name: skill.name,
+        weight: skill.finalWeight,
+        requiredLevel: skill.adjustedLevel,
+        notes
+      };
+    });
+  };
   // Helper function to analyze JD and generate foundational behaviors
   const generateFoundationalBehaviors = () => {
     const storedJD = localStorage.getItem('selectedJD');
@@ -282,11 +370,7 @@ const PersonaConfig = () => {
       id: "leadership",
       name: "Leadership Skills",
       weight: 6,
-      skills: [
-        { name: "Team Collaboration", weight: 40, requiredLevel: 3, notes: "Experience working in **cross-functional teams** with **designers**, **product managers**, and **QA**. Participates effectively in **agile ceremonies** and **pair programming sessions**." },
-        { name: "Mentoring & Knowledge Sharing", weight: 30, requiredLevel: 3, notes: "Willingness to **onboard new team members**, conduct **technical training sessions**, and share knowledge through **code reviews** and **internal tech talks**." },
-        { name: "Project Coordination", weight: 30, requiredLevel: 3, notes: "Experience **leading technical initiatives**, **coordinating with stakeholders**, managing **technical risks**, and ensuring project deliverables meet **quality standards**." }
-      ]
+      skills: generateLeadershipSkills()
     },
     {
       id: "education",
