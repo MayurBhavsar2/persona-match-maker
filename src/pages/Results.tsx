@@ -377,7 +377,10 @@ const Results = () => {
   };
 
   const CandidateDetailSheet = ({ candidate }: { candidate: Candidate }) => (
-    <SheetContent className="w-full max-w-none h-full max-h-none p-0 m-0" side="right">
+    <SheetContent 
+      className="w-screen max-w-none h-screen max-h-none p-0 m-0 inset-0" 
+      side="right"
+    >
       <div className="h-full overflow-y-auto p-6 space-y-6">
         {/* Header integrated into content */}
         <div className="space-y-2">
