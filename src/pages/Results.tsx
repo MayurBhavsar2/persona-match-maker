@@ -75,57 +75,23 @@ const Results = () => {
     if (stored) {
       const data = JSON.parse(stored);
       
-      // Generate detailed evaluation data using persona-based analysis
+      // Generate detailed evaluation data if not present
       const candidatesWithDetailedData = data.candidates.map((candidate: any) => {
         if (!candidate.detailedEvaluation) {
-          // Use the evaluation data from resume parsing if available
-          if (candidate.evaluation?.categoryScores) {
-            const categories = candidate.evaluation.categoryScores.map((category: any, index: number) => ({
-              name: category.name,
-              weight: "25%", // Default weight, could be made dynamic
-              scored: category.score,
-              attributeScore: `${category.score}/100`,
-              percentScored: `${category.score}%`,
-              subAttributes: [
-                {
-                  name: category.name,
-                  weightage: 100,
-                  expectedLevel: 4,
-                  actualLevel: Math.round(category.score / 20), // Convert to 1-5 scale
-                  notes: category.details || "Assessment based on resume analysis"
-                }
-              ]
-            }));
-            
-            // Generate summary from actual evaluation data
-            const summary = candidate.evaluation.categoryScores.map((category: any) => ({
-              attribute: category.name,
-              weight: "25%", // Could be dynamic based on persona config
-              percentScored: `${category.score}%`,
-              attributeScore: `${(category.score * 0.25).toFixed(2)}%`
-            }));
-            
-            candidate.detailedEvaluation = {
-              categories: categories,
-              summary: summary
-            };
-          } else {
-            // Fallback to generated data for backward compatibility
-            const categories = generateDetailedEvaluation(candidate);
-            candidate.detailedEvaluation = {
-              categories: categories,
-              summary: [
-                { attribute: "Technical Skills", weight: "54%", percentScored: `${candidate.technicalSkills}%`, attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%` },
-                { attribute: "Cognitive Demands", weight: "24%", percentScored: "93.8%", attributeScore: "22.50%" },
-                { attribute: "Values", weight: "6%", percentScored: "92.5%", attributeScore: "5.55%" },
-                { attribute: "Foundational Behaviors", weight: "10%", percentScored: `${candidate.communication}%`, attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%` },
-                { attribute: "Leadership Skills", weight: "4%", percentScored: "100.0%", attributeScore: "4.00%" },
-                { attribute: "Education & Experience", weight: "2%", percentScored: `${candidate.experience}%`, attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%` }
-              ]
-            };
-          }
+          const categories = generateDetailedEvaluation(candidate);
+          candidate.detailedEvaluation = {
+            categories: categories,
+            summary: [
+              { attribute: "Technical Skills", weight: "54%", percentScored: `${candidate.technicalSkills}%`, attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%` },
+              { attribute: "Cognitive Demands", weight: "24%", percentScored: "93.8%", attributeScore: "22.50%" },
+              { attribute: "Values", weight: "6%", percentScored: "92.5%", attributeScore: "5.55%" },
+              { attribute: "Foundational Behaviors", weight: "10%", percentScored: `${candidate.communication}%`, attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%` },
+              { attribute: "Leadership Skills", weight: "4%", percentScored: "100.0%", attributeScore: "4.00%" },
+              { attribute: "Education & Experience", weight: "2%", percentScored: `${candidate.experience}%`, attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%` }
+            ]
+          };
           // Also keep the categories for backward compatibility
-          candidate.categories = candidate.detailedEvaluation.categories;
+          candidate.categories = categories;
         }
         return candidate;
       });

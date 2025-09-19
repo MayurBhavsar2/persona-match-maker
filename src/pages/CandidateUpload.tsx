@@ -6,21 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, X, CheckCircle, ArrowRight, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  parseResumeFile, 
-  getStoredPersonaConfig, 
-  evaluateCandidate, 
-  extractCandidateName,
-  type ResumeData,
-  type CandidateEvaluation
-} from "@/utils/resumeParser";
 
 interface UploadedFile {
   id: string;
   name: string;
   size: number;
   status: 'uploaded' | 'processing' | 'completed' | 'error';
-  file?: File;
 }
 
 const CandidateUpload = () => {
@@ -37,8 +28,7 @@ const CandidateUpload = () => {
       id: Math.random().toString(36).substr(2, 9),
       name: file.name,
       size: file.size,
-      status: 'uploaded',
-      file: file // Store the actual file for parsing
+      status: 'uploaded'
     }));
 
     setFiles(prev => [...prev, ...newFiles]);
@@ -93,7 +83,7 @@ const CandidateUpload = () => {
 
     setIsProcessing(true);
     
-    // Process files and update status
+    // Simulate processing
     for (let i = 0; i < files.length; i++) {
       setFiles(prev => prev.map((file, index) => 
         index === i ? { ...file, status: 'processing' } : file
@@ -106,50 +96,22 @@ const CandidateUpload = () => {
       ));
     }
 
-    // Parse and evaluate actual resume files
-    const evaluatedCandidates = await Promise.all(
-      files.map(async (file, index) => {
-        try {
-          const resumeData = await parseResumeFile(file.file!);
-          const personaConfig = getStoredPersonaConfig();
-          const evaluation = evaluateCandidate(resumeData, personaConfig);
-          
-          return {
-            id: file.id,
-            name: extractCandidateName(resumeData) || `Candidate ${index + 1}`,
-            fileName: file.name,
-            overallScore: evaluation.overallScore,
-            fitCategory: evaluation.fitCategory,
-            technicalSkills: evaluation.technicalSkills,
-            experience: evaluation.experience,
-            communication: evaluation.communication,
-            certifications: evaluation.certifications,
-            applicationDate: new Date().toISOString().split('T')[0],
-            resumeData: resumeData,
-            evaluation: evaluation
-          };
-        } catch (error) {
-          console.error(`Error processing ${file.name}:`, error);
-          return {
-            id: file.id,
-            name: `Candidate ${index + 1}`,
-            fileName: file.name,
-            overallScore: 50,
-            fitCategory: 'low' as const,
-            technicalSkills: 50,
-            experience: 50,
-            communication: 50,
-            certifications: 50,
-            applicationDate: new Date().toISOString().split('T')[0],
-            resumeData: null,
-            evaluation: null
-          };
-        }
-      })
-    );
+    // Generate mock candidate data
+    const mockCandidates = files.map((file, index) => ({
+      id: file.id,
+      name: `Candidate ${index + 1}`,
+      fileName: file.name,
+      overallScore: Math.floor(Math.random() * 40) + 60, // 60-100%
+      fitCategory: index % 3 === 0 ? 'perfect' : index % 3 === 1 ? 'moderate' : 'low',
+      technicalSkills: Math.floor(Math.random() * 30) + 70,
+      experience: Math.floor(Math.random() * 25) + 75,
+      communication: Math.floor(Math.random() * 35) + 65,
+      certifications: Math.floor(Math.random() * 40) + 60,
+      applicationDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    }));
 
     localStorage.setItem('evaluatedCandidates', JSON.stringify({
-      candidates: evaluatedCandidates,
+      candidates: mockCandidates,
       timestamp: Date.now()
     }));
 
