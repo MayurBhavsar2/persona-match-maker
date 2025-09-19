@@ -46,11 +46,11 @@ const PersonaConfig = () => {
       name: "Cognitive Demands",
       weight: 25,
       skills: [
-        { name: "Problem Solving", weight: 30, requiredLevel: 4, notes: "Must demonstrate ability to **break down complex technical challenges**, **debug issues systematically**, and implement **efficient solutions** under **tight deadlines**." },
-        { name: "Critical Thinking", weight: 25, requiredLevel: 4, notes: "Strong **analytical skills** to evaluate **trade-offs** between different technical approaches, **assess risk vs benefit**, and make **data-driven architectural decisions**." },
-        { name: "Learning & Adaptation", weight: 20, requiredLevel: 3, notes: "Proven track record of **quickly learning new technologies**, **adapting to changing requirements**, and staying current with **industry trends** and **best practices**." },
-        { name: "Decision Making", weight: 15, requiredLevel: 3, notes: "Experience making **informed technical decisions** with incomplete information, **prioritizing features** based on **business impact**, and **escalating when appropriate**." },
-        { name: "Attention to Detail", weight: 10, requiredLevel: 4, notes: "Demonstrated ability to write **clean, maintainable code**, conduct **thorough code reviews**, and catch **edge cases** that could impact **system reliability**." }
+        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**SDLC/STLC**, **coverage types**, **definitions**. Understanding of **software development lifecycle**, **testing methodologies**, and **quality assurance principles**." },
+        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Execute plans**; **stable automation runs**. Implement **test strategies**, execute **test cases**, and maintain **consistent automation frameworks**." },
+        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**RCA**; **logs**; **data‑driven debugging**. Perform **root cause analysis**, interpret **system logs**, and use **metrics** for **troubleshooting**." },
+        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Weigh risks**; **choose tools/approach**. Assess **testing strategies**, select **appropriate tools**, and make **informed decisions** about **test coverage**." },
+        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Build test data/utilities**; **improve suites**. Develop **custom testing tools**, create **test datasets**, and enhance **existing test frameworks**." }
       ]
     },
     {
