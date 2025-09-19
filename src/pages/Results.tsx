@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Trophy, 
@@ -20,7 +20,8 @@ import {
   Star,
   CheckCircle2,
   AlertTriangle,
-  XCircle
+  XCircle,
+  X
 } from "lucide-react";
 
 interface SubAttribute {
@@ -33,9 +34,10 @@ interface SubAttribute {
 
 interface Category {
   name: string;
-  weight: number;
+  weight: string;
   scored: number;
-  attributeScore: number;
+  attributeScore: string;
+  percentScored: string;
   subAttributes: SubAttribute[];
 }
 
@@ -51,6 +53,15 @@ interface Candidate {
   certifications: number;
   applicationDate: string;
   categories: Category[];
+  detailedEvaluation: {
+    categories: Category[];
+    summary: Array<{
+      attribute: string;
+      weight: string;
+      percentScored: string;
+      attributeScore: string;
+    }>;
+  };
 }
 
 const Results = () => {
@@ -80,9 +91,10 @@ const Results = () => {
     return [
       {
         name: "Technical Skills",
-        weight: 54,
+        weight: "54%",
         scored: candidate.technicalSkills,
-        attributeScore: (candidate.technicalSkills * 0.54),
+        attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%`,
+        percentScored: `${candidate.technicalSkills}%`,
         subAttributes: [
           {
             name: "Automation Frameworks (Selenium/Java, TestNG/Cucumber, POM/BDD)",
@@ -144,9 +156,10 @@ const Results = () => {
       },
       {
         name: "Cognitive Demands",
-        weight: 24,
+        weight: "24%",
         scored: 93.8,
-        attributeScore: 22.50,
+        attributeScore: "22.50%",
+        percentScored: "93.8%",
         subAttributes: [
           {
             name: "Remember / Understand",
@@ -187,9 +200,10 @@ const Results = () => {
       },
       {
         name: "Values",
-        weight: 6,
+        weight: "6%",
         scored: 92.5,
-        attributeScore: 5.55,
+        attributeScore: "5.55%",
+        percentScored: "92.5%",
         subAttributes: [
           {
             name: "Achievement / Power",
@@ -223,9 +237,10 @@ const Results = () => {
       },
       {
         name: "Foundational Behaviors",
-        weight: 10,
+        weight: "10%",
         scored: candidate.communication,
-        attributeScore: (candidate.communication * 0.10),
+        attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%`,
+        percentScored: `${candidate.communication}%`,
         subAttributes: [
           {
             name: "Communication",
@@ -259,9 +274,10 @@ const Results = () => {
       },
       {
         name: "Leadership Skills",
-        weight: 4,
+        weight: "4%",
         scored: 100.0,
-        attributeScore: 4.00,
+        attributeScore: "4.00%",
+        percentScored: "100.0%",
         subAttributes: [
           {
             name: "Peer Mentoring & Reviews",
@@ -288,9 +304,10 @@ const Results = () => {
       },
       {
         name: "Education & Experience",
-        weight: 2,
+        weight: "2%",
         scored: candidate.experience,
-        attributeScore: (candidate.experience * 0.02),
+        attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%`,
+        percentScored: `${candidate.experience}%`,
         subAttributes: [
           {
             name: "Education (Bachelor's / Equivalent)",
@@ -376,170 +393,164 @@ const Results = () => {
     return <XCircle className="w-4 h-4 text-danger" />;
   };
 
-  const CandidateDetailSheet = ({ candidate }: { candidate: Candidate }) => (
-    <SheetContent 
-      className="w-screen max-w-none h-screen max-h-none p-0 m-0 inset-0" 
-      side="right"
-    >
-      <div className="h-full overflow-y-auto p-6 space-y-6">
-        {/* Header integrated into content */}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            {getFitIcon(candidate.fitCategory)}
-            <h1 className="text-2xl font-semibold text-foreground">{candidate.name}</h1>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Detailed evaluation results and comprehensive skill breakdown
-          </p>
+  const CandidateDetailDialog = ({ candidate }: { candidate: Candidate }) => (
+    <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 overflow-hidden">
+      <div className="fixed inset-0 bg-background z-50 flex flex-col">
+        {/* Close button */}
+        <div className="absolute top-4 right-4 z-10">
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-        {/* Overall Score */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center justify-between">
-              <span>Overall Match Score</span>
-              <Badge className={`${getScoreColor(candidate.overallScore)} text-lg px-3 py-1`}>
-                {candidate.overallScore.toFixed(2)}%
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="text-3xl font-bold text-primary">{candidate.overallScore.toFixed(2)}%</div>
-              <div className="flex-1">
-                <Progress value={candidate.overallScore} className="h-3" />
-              </div>
-              <Badge className={getFitColor(candidate.fitCategory)}>
-                {candidate.fitCategory.charAt(0).toUpperCase() + candidate.fitCategory.slice(1)} Fit
-              </Badge>
+        
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Header integrated into content */}
+          <div className="space-y-2 pt-8">
+            <div className="flex items-center space-x-2">
+              {getFitIcon(candidate.fitCategory)}
+              <h1 className="text-2xl font-semibold text-foreground">{candidate.name}</h1>
             </div>
-          </CardContent>
-        </Card>
+            <p className="text-sm text-muted-foreground">
+              Detailed evaluation results and comprehensive skill breakdown
+            </p>
+          </div>
 
-        {/* Category Breakdown */}
-        {candidate.categories && candidate.categories.map((category, categoryIndex) => (
-          <Card key={categoryIndex} className="border-l-4 border-l-primary">
+          {/* Overall Score */}
+          <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>{category.name} — Weight {category.weight}%</span>
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-muted-foreground">% scored: {category.scored.toFixed(1)}%</span>
-                  <Badge variant={getScoreBadgeVariant(category.scored)}>
-                    Attribute score: {category.attributeScore.toFixed(2)}%
-                  </Badge>
-                </div>
+              <CardTitle className="flex items-center space-x-2">
+                <TrendingUp className="w-5 h-5" />
+                Overall Score
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Sub-Attributes Table */}
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[30%]">Sub-Attribute</TableHead>
-                      <TableHead className="w-[12%]">Weightage %</TableHead>
-                      <TableHead className="w-[12%]">Expected Level</TableHead>
-                      <TableHead className="w-[12%]">Actual Level</TableHead>
-                      <TableHead className="w-[8%]">Status</TableHead>
-                      <TableHead className="w-[26%]">Notes</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {category.subAttributes.map((subAttr, subIndex) => (
-                      <TableRow key={subIndex}>
-                        <TableCell className="font-medium">{subAttr.name}</TableCell>
-                        <TableCell className="text-center">{subAttr.weightage}</TableCell>
-                        <TableCell className="text-center">{subAttr.expectedLevel}</TableCell>
-                        <TableCell className="text-center font-bold">{subAttr.actualLevel}</TableCell>
-                        <TableCell className="text-center">
-                          {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          <div className="space-y-1">
-                            <div><span className="font-medium">Expected:</span> {subAttr.notes.split(' | ')[0]?.replace('Expected: ', '')}</div>
-                            <div><span className="font-medium">Actual:</span> {subAttr.notes.split(' | ')[1]?.replace('Actual: ', '')}</div>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              <div className="flex items-center space-x-4">
+                <div className="text-3xl font-bold">{candidate.overallScore}%</div>
+                <Progress value={candidate.overallScore} className="flex-1" />
+                <Badge variant={getScoreBadgeVariant(candidate.overallScore)}>
+                  {candidate.fitCategory}
+                </Badge>
               </div>
             </CardContent>
           </Card>
-        ))}
 
-        {/* Summary Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Summary (by Attribute)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Attribute</TableHead>
-                  <TableHead>Weight</TableHead>
-                  <TableHead>% Scored</TableHead>
-                  <TableHead>Attribute Score</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {candidate.categories && candidate.categories.map((category, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{category.name}</TableCell>
-                    <TableCell>{category.weight}%</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <span className={getScoreColor(category.scored)}>{category.scored.toFixed(1)}%</span>
-                        <Progress value={category.scored} className="w-16 h-2" />
+          {/* Summary Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Summary by Attribute</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2 font-semibold">Attribute</th>
+                      <th className="text-left p-2 font-semibold">Weight</th>
+                      <th className="text-left p-2 font-semibold">% Scored</th>
+                      <th className="text-left p-2 font-semibold">Attribute Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {candidate.detailedEvaluation.summary.map((item, index) => (
+                      <tr key={index} className="border-b">
+                        <td className="p-2">{item.attribute}</td>
+                        <td className="p-2">{item.weight}</td>
+                        <td className="p-2">
+                          <span className={getScoreColor(parseFloat(item.percentScored.replace('%', '')))}>
+                            {item.percentScored}
+                          </span>
+                        </td>
+                        <td className="p-2">
+                          <span className={getScoreColor(parseFloat(item.attributeScore.replace('%', '')))}>
+                            {item.attributeScore}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr className="border-b-2 border-t font-semibold bg-muted/20">
+                      <td className="p-2">Final Score</td>
+                      <td className="p-2">100%</td>
+                      <td className="p-2">-</td>
+                      <td className="p-2 text-lg">{candidate.overallScore}%</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Detailed Categories */}
+          {candidate.detailedEvaluation.categories.map((category, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span>{category.name}</span>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">Weight: {category.weight}</Badge>
+                    <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
+                      {category.percentScored} scored
+                    </Badge>
+                    <Badge variant="secondary">
+                      Score: {category.attributeScore}
+                    </Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {category.subAttributes.map((subAttr, subIndex) => (
+                      <div key={subIndex} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm">{subAttr.name}</h4>
+                          <Badge variant="outline" className="text-xs">
+                            {subAttr.weightage}% weight
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Expected:</span>
+                            <div className="flex items-center space-x-1">
+                              {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
+                              <span className="font-medium">Level {subAttr.expectedLevel}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Actual:</span>
+                            <div className="flex items-center space-x-1">
+                              {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
+                              <span className="font-medium">Level {subAttr.actualLevel}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-muted/50 rounded p-2 text-xs">
+                          <div className="font-medium text-muted-foreground mb-1">Analysis:</div>
+                          <div>{subAttr.notes}</div>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-bold text-primary">{category.attributeScore.toFixed(2)}%</span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow className="border-t-2 border-primary font-bold">
-                  <TableCell>Final Score</TableCell>
-                  <TableCell>100%</TableCell>
-                  <TableCell></TableCell>
-                  <TableCell className="text-xl text-primary">{candidate.overallScore.toFixed(2)}%</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
 
-        {/* CV Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">CV Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">File Name:</span>
-              <span className="text-sm font-medium">{candidate.fileName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Application Date:</span>
-              <span className="text-sm font-medium">{candidate.applicationDate}</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="flex space-x-2">
-          <Button variant="outline" className="flex-1">
-            <Download className="w-4 h-4 mr-2" />
-            Download CV
-          </Button>
-          <Button variant="outline" className="flex-1">
-            <Star className="w-4 h-4 mr-2" />
-            Shortlist
-          </Button>
+          {/* Action Buttons */}
+          <div className="flex space-x-4 pt-4 pb-8">
+            <Button className="flex-1">
+              <Download className="w-4 h-4 mr-2" />
+              Download CV
+            </Button>
+            <Button variant="outline" className="flex-1">
+              <Star className="w-4 h-4 mr-2" />
+              Shortlist
+            </Button>
+          </div>
         </div>
       </div>
-    </SheetContent>
+    </DialogContent>
   );
 
   return (
@@ -681,8 +692,8 @@ const Results = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Sheet>
-                            <SheetTrigger asChild>
+                          <Dialog>
+                            <DialogTrigger asChild>
                               <Button 
                                 variant="outline" 
                                 size="sm"
@@ -691,11 +702,11 @@ const Results = () => {
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Details
                               </Button>
-                            </SheetTrigger>
+                            </DialogTrigger>
                             {selectedCandidate && (
-                              <CandidateDetailSheet candidate={selectedCandidate} />
+                              <CandidateDetailDialog candidate={selectedCandidate} />
                             )}
-                          </Sheet>
+                          </Dialog>
                         </TableCell>
                       </TableRow>
                     ))}
