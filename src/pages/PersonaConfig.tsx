@@ -141,6 +141,107 @@ const PersonaConfig = () => {
     });
   };
   
+  // Helper function to analyze JD and generate foundational behaviors
+  const generateFoundationalBehaviors = () => {
+    const storedJD = localStorage.getItem('selectedJD');
+    if (!storedJD) {
+      // Return default values if no JD is found
+      return [
+        { name: "Communication", weight: 35, requiredLevel: 4, notes: "Excellent **written and verbal communication**. Must **present concepts** to **stakeholders**, participate in **discussions**, and provide **clear updates**." },
+        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "Maintains **productivity** and **quality** during **high-pressure situations**, **tight deadlines** without compromising team morale." },
+        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "Experience making **informed decisions** with incomplete information, **prioritizing tasks** based on **impact**, and **escalating when appropriate**." },
+        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "Consistently creates and maintains **documentation**, **detailed reports**, and ensures **accuracy** in all deliverables." }
+      ];
+    }
+
+    const jdData = JSON.parse(storedJD);
+    const jdContent = jdData.content.toLowerCase();
+    
+    // Analyze JD content to determine foundational behavior requirements
+    const behaviorSkills = [
+      {
+        name: "Communication",
+        keywords: ["communication", "present", "collaborate", "team", "stakeholder", "meeting", "discuss"],
+        defaultWeight: 35,
+        defaultLevel: 4
+      },
+      {
+        name: "Resilience / Stress Tolerance",
+        keywords: ["pressure", "deadline", "stress", "pace", "urgent", "critical", "fast-paced"],
+        defaultWeight: 20,
+        defaultLevel: 3
+      },
+      {
+        name: "Decision‑Making under Uncertainty",
+        keywords: ["decision", "judgment", "prioritize", "ambiguous", "uncertain", "complex", "choose"],
+        defaultWeight: 25,
+        defaultLevel: 3
+      },
+      {
+        name: "Attention to Detail & Documentation",
+        keywords: ["detail", "documentation", "accurate", "precise", "quality", "thorough", "document"],
+        defaultWeight: 20,
+        defaultLevel: 3
+      }
+    ];
+
+    // Calculate weights based on keyword frequency in JD
+    const skillScores = behaviorSkills.map(skill => {
+      const keywordCount = skill.keywords.reduce((count, keyword) => {
+        const regex = new RegExp(keyword, 'gi');
+        const matches = jdContent.match(regex);
+        return count + (matches ? matches.length : 0);
+      }, 0);
+      
+      return {
+        ...skill,
+        score: keywordCount,
+        adjustedWeight: Math.max(10, skill.defaultWeight + (keywordCount * 2)), // Minimum 10%, increase by 2% per keyword match
+        adjustedLevel: Math.min(5, skill.defaultLevel + Math.floor(keywordCount / 2)) // Max level 5, increase level every 2 keyword matches
+      };
+    });
+
+    // Normalize weights to total 100%
+    const totalWeight = skillScores.reduce((sum, skill) => sum + skill.adjustedWeight, 0);
+    const normalizedSkills = skillScores.map(skill => ({
+      ...skill,
+      finalWeight: Math.round((skill.adjustedWeight / totalWeight) * 100)
+    }));
+
+    // Generate dynamic notes based on JD content
+    return normalizedSkills.map(skill => {
+      let notes = "";
+      switch (skill.name) {
+        case "Communication":
+          notes = jdContent.includes("stakeholder") || jdContent.includes("present")
+            ? "Excellent **written and verbal communication** as emphasized in JD. Must **present concepts** to **stakeholders**, participate in **cross-functional discussions**, and provide **clear status updates**."
+            : "Strong **communication skills** required. Ability to **articulate ideas clearly**, **collaborate effectively** with team members, and **document processes** comprehensively.";
+          break;
+        case "Resilience / Stress Tolerance":
+          notes = jdContent.includes("fast-paced") || jdContent.includes("deadline") || jdContent.includes("pressure")
+            ? "Maintains **productivity** and **quality** during **high-pressure situations** and **tight project deadlines** as mentioned in JD requirements."
+            : "Ability to work effectively under **pressure**, manage **competing priorities**, and maintain **performance standards** during **challenging situations**.";
+          break;
+        case "Decision‑Making under Uncertainty":
+          notes = jdContent.includes("complex") || jdContent.includes("ambiguous")
+            ? "Experience making **informed decisions** with **incomplete information**, **prioritizing tasks** based on **business impact** as required by the role complexity."
+            : "Strong **decision-making skills** in **uncertain environments**. Ability to **assess situations quickly**, **weigh options**, and **make sound judgments** with **limited information**.";
+          break;
+        case "Attention to Detail & Documentation":
+          notes = jdContent.includes("documentation") || jdContent.includes("quality") || jdContent.includes("accurate")
+            ? "Consistently creates and maintains **detailed documentation**, ensures **accuracy** in all deliverables, and follows **quality standards** as specified in JD."
+            : "Strong **attention to detail** and **documentation practices**. Ensures **accuracy** in work output, maintains **comprehensive records**, and follows **established procedures**.";
+          break;
+      }
+      return {
+        name: skill.name,
+        weight: skill.finalWeight,
+        requiredLevel: skill.adjustedLevel,
+        notes
+      };
+    });
+  };
+  
   const [categories, setCategories] = useState<SkillCategory[]>([
     {
       id: "technical",
@@ -175,12 +276,7 @@ const PersonaConfig = () => {
       id: "foundational",
       name: "Foundational Behaviors",
       weight: 15,
-      skills: [
-        { name: "Communication Skills", weight: 35, requiredLevel: 4, notes: "Excellent **written and verbal communication**. Must **present technical concepts** to **non-technical stakeholders**, participate in **code reviews**, and provide **clear status updates**." },
-        { name: "Time Management", weight: 25, requiredLevel: 3, notes: "Proven ability to **manage multiple projects** simultaneously, meet **sprint deadlines**, accurately **estimate task complexity**, and **prioritize work** effectively." },
-        { name: "Stress Management", weight: 20, requiredLevel: 3, notes: "Maintains **productivity** and **code quality** during **high-pressure situations**, **production incidents**, and **tight project deadlines** without compromising team morale." },
-        { name: "Documentation & Reporting", weight: 20, requiredLevel: 3, notes: "Consistently creates and maintains **technical documentation**, **API docs**, **architectural decisions**, and provides detailed **project status reports**." }
-      ]
+      skills: generateFoundationalBehaviors()
     },
     {
       id: "leadership",
