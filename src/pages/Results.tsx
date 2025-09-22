@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
@@ -412,9 +412,11 @@ const Results = () => {
       <div className="fixed inset-0 bg-background z-50 flex flex-col">
         {/* Close button */}
         <div className="absolute top-4 right-4 z-10">
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button>
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogClose>
         </div>
         
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
