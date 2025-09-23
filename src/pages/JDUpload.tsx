@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ const JDUpload = () => {
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const predefinedRoles = [
     "Software Engineer - RPA",
@@ -52,6 +54,11 @@ const JDUpload = () => {
         });
       }
     }
+  };
+
+  const handleUploadClick = () => {
+    setInputMethod("upload");
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = () => {
@@ -179,7 +186,7 @@ const JDUpload = () => {
                 <Button
                   type="button"
                   variant={inputMethod === "upload" ? "default" : "outline"}
-                  onClick={() => setInputMethod("upload")}
+                  onClick={handleUploadClick}
                   className="flex items-center space-x-2"
                 >
                   <File className="w-4 h-4" />
@@ -203,6 +210,7 @@ const JDUpload = () => {
                     <input
                       type="file"
                       id="file"
+                      ref={fileInputRef}
                       className="hidden"
                       accept=".pdf,.doc,.docx,.txt"
                       onChange={handleFileUpload}
