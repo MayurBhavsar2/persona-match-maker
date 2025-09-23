@@ -203,39 +203,41 @@ const JDUpload = () => {
                 </Button>
               </div>
 
-              {inputMethod === "upload" ? (
+              {inputMethod === "upload" && (
                 <div className="space-y-2">
-                  <Label htmlFor="file">Job Description Document</Label>
-                  <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition-smooth">
-                    <input
-                      type="file"
-                      id="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      accept=".pdf,.doc,.docx,.txt"
-                      onChange={handleFileUpload}
-                    />
-                    <label htmlFor="file" className="cursor-pointer">
-                      <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      {file ? (
-                        <div className="space-y-2">
+                  {file ? (
+                    <div className="p-4 border border-border rounded-lg bg-muted/30">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-5 h-5 text-primary" />
+                        <div className="flex-1">
                           <p className="text-sm font-medium text-foreground">{file.name}</p>
                           <p className="text-xs text-muted-foreground">File uploaded successfully</p>
                         </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-foreground">
-                            Click to upload or drag and drop
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            PDF, DOC, DOCX, or TXT (Max 10MB)
-                          </p>
-                        </div>
-                      )}
-                    </label>
-                  </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          Change File
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Click "Upload Document" above to select your job description file.
+                    </p>
+                  )}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.txt"
+                    onChange={handleFileUpload}
+                  />
                 </div>
-              ) : (
+              )}
+
+              {inputMethod === "text" && (
                 <div className="space-y-2">
                   <Label htmlFor="jdText">Job Description Text</Label>
                   <Textarea
