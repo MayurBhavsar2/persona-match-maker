@@ -81,7 +81,7 @@ const JDUpload = () => {
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-foreground">Upload Job Description</h1>
           <p className="text-lg text-muted-foreground">
-            Start by selecting a role and uploading your job description for AI analysis
+            Start by selecting a role and entering your job description for AI analysis
           </p>
         </div>
 
