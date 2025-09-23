@@ -68,10 +68,21 @@ Preferred Qualifications:
 
   const handleSelectVersion = (version: "original" | "ai") => {
     setSelectedVersion(version);
+    
+    const finalJD = version === "original" ? originalJD : aiGeneratedJD;
+    localStorage.setItem('selectedJD', JSON.stringify({
+      version: version,
+      content: finalJD,
+      timestamp: Date.now()
+    }));
+
     toast({
       title: "Version selected",
-      description: `You have selected the ${version === "original" ? "Original" : "AI Enhanced"} job description.`,
+      description: `Proceeding to persona configuration with ${version === "original" ? "Original" : "AI Enhanced"} job description...`,
     });
+
+    // Navigate directly to persona config
+    navigate('/persona-config');
   };
 
   const handleProceed = () => {
@@ -262,17 +273,6 @@ Preferred Qualifications:
           </CardContent>
         </Card>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center pt-6">
-          <Button
-            onClick={handleProceed}
-            className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2 px-8"
-            size="lg"
-          >
-            <span>Proceed to Persona Configuration</span>
-            <ArrowRight className="w-5 h-5" />
-          </Button>
-        </div>
       </div>
     </Layout>
   );
