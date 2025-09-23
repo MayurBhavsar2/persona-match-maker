@@ -38,7 +38,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
-      <header className="bg-background border-b border-border shadow-card sticky top-0 z-50">
+      <header className="bg-background border-b border-border shadow-card">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -66,7 +66,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
 
       {/* Progress Bar */}
       {currentStep && (
-        <div className="bg-background border-b border-border sticky top-[89px] z-40">
+        <div className="bg-background border-b border-border sticky top-0 z-40">
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Back Button */}
