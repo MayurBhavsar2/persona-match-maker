@@ -631,7 +631,7 @@ const Results = () => {
               </Accordion>
               
               {/* Final Score Summary */}
-              <div className="mt-4 p-4 bg-muted/20 rounded-lg border-2">
+              <div className="mt-4 p-4 rounded-lg border-2">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">Final Overall Score</span>
                   <div className="flex items-center space-x-2">
