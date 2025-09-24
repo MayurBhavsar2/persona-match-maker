@@ -762,7 +762,7 @@ const PersonaConfig = () => {
                       </div>
                       <div className="flex justify-between items-center pt-2">
                         <span className="text-sm text-muted-foreground">
-                          Skills total: <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-warning'}`}>{skillTotal}%</span>
+                          Skills total: <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
                         </span>
                         <Progress 
                           value={skillTotal} 
