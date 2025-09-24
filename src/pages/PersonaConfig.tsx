@@ -35,11 +35,11 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**SDLC/STLC**, **coverage types**, **definitions**. Understanding of **software development lifecycle**, **testing methodologies**, and **quality assurance principles**." },
-        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Execute plans**; **stable automation runs**. Implement **test strategies**, execute **test cases**, and maintain **consistent automation frameworks**." },
-        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**RCA**; **logs**; **data‑driven debugging**. Perform **root cause analysis**, interpret **system logs**, and use **metrics** for **troubleshooting**." },
-        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Weigh risks**; **choose tools/approach**. Assess **testing strategies**, select **appropriate tools**, and make **informed decisions** about **test coverage**." },
-        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Build test data/utilities**; **improve suites**. Develop **custom testing tools**, create **test datasets**, and enhance **existing test frameworks**." }
+        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**Technical concepts**, **domain knowledge**, **frameworks** understanding" },
+        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Execute workflows**, **implement solutions**, **deliver consistent results**" },
+        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**Debug issues**, **interpret data**, **troubleshoot systematically**" },
+        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Assess solutions**, **select optimal approaches**, **weigh trade-offs**" },
+        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Build tools**, **develop solutions**, **innovate processes**" }
       ];
     }
 
@@ -109,28 +109,28 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Remember / Understand":
           notes = jdContent.includes("sdlc") || jdContent.includes("software development") 
-            ? "**SDLC/STLC**, **coverage types**, **definitions** as mentioned in JD. Understanding of **software development lifecycle**, **testing methodologies**, and **quality assurance principles**."
-            : "**Domain knowledge**, **technical concepts**, **industry standards**. Understanding of **core principles**, **methodologies**, and **best practices** relevant to the role.";
+            ? "**SDLC/STLC** knowledge, **testing concepts**, **industry standards**"
+            : "**Core concepts**, **technical principles**, **domain knowledge**";
           break;
         case "Apply":
           notes = jdContent.includes("automation") || jdContent.includes("testing")
-            ? "**Execute plans**; **stable automation runs** as per JD requirements. Implement **test strategies**, execute **workflows**, and maintain **consistent automation frameworks**."
-            : "**Implement solutions**; **execute strategies**. Apply **technical skills**, implement **best practices**, and maintain **consistent delivery** of project requirements.";
+            ? "**Execute test strategies**, **automation frameworks**, **workflow implementation**"
+            : "**Implement solutions**, **execute plans**, **deliver results**";
           break;
         case "Analyze":
           notes = jdContent.includes("debug") || jdContent.includes("troubleshoot")
-            ? "**RCA**; **logs**; **data‑driven debugging** as emphasized in JD. Perform **root cause analysis**, interpret **system logs**, and use **metrics** for **troubleshooting**."
-            : "**Problem analysis**; **data interpretation**; **systematic investigation**. Perform **root cause analysis**, examine **system behavior**, and use **analytical thinking** for **issue resolution**.";
+            ? "**Root cause analysis**, **log interpretation**, **systematic debugging**"
+            : "**Problem analysis**, **data interpretation**, **issue investigation**";
           break;
         case "Evaluate":
           notes = jdContent.includes("risk") || jdContent.includes("assessment")
-            ? "**Weigh risks**; **choose tools/approach** based on JD criteria. Assess **strategies**, select **appropriate solutions**, and make **informed decisions** about **implementation approaches**."
-            : "**Solution evaluation**; **technology selection**; **strategic decisions**. Assess **alternatives**, select **optimal approaches**, and make **informed choices** about **technical direction**.";
+            ? "**Risk assessment**, **tool selection**, **strategy evaluation**"
+            : "**Solution evaluation**, **decision making**, **approach comparison**";
           break;
         case "Create":
           notes = jdContent.includes("develop") || jdContent.includes("build")
-            ? "**Build solutions/utilities**; **improve systems** as outlined in JD. Develop **custom tools**, create **innovative approaches**, and enhance **existing frameworks**."
-            : "**Innovation**; **solution development**; **system improvement**. Develop **creative solutions**, build **custom tools**, and enhance **existing processes** and **frameworks**.";
+            ? "**Build custom tools**, **develop utilities**, **framework enhancement**"
+            : "**Innovation**, **solution development**, **process improvement**";
           break;
       }
       return {
@@ -148,9 +148,9 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "Experience **mentoring colleagues**, conducting **peer reviews**, and **knowledge sharing** within the team." },
-        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "Ability to **collaborate** across departments, **influence stakeholders**, and **drive consensus** on technical decisions." },
-        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "Champion **quality standards**, propose **process improvements**, and drive **best practices** adoption across teams." }
+        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "**Mentor colleagues**, **conduct code reviews**, **knowledge sharing**" },
+        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "**Stakeholder collaboration**, **drive consensus**, **cross-team influence**" },
+        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "**Champion quality**, **process optimization**, **best practices adoption**" }
       ];
     }
 
@@ -208,18 +208,18 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Peer Mentoring & Reviews":
           notes = jdContent.includes("mentor") || jdContent.includes("training") || jdContent.includes("coaching")
-            ? "Experience **mentoring colleagues**, conducting **peer reviews**, and **knowledge sharing** as emphasized in JD requirements. Lead **training sessions** and **onboard new team members**."
-            : "Strong **mentoring capabilities** and **review skills**. Ability to **guide team members**, share **technical expertise**, and conduct **constructive code reviews**.";
+            ? "**Mentor colleagues**, **code reviews**, **training delivery**, **team guidance**"
+            : "**Technical mentoring**, **peer reviews**, **knowledge sharing**, **team development**";
           break;
         case "Cross‑functional Influence":
           notes = jdContent.includes("stakeholder") || jdContent.includes("cross-functional") || jdContent.includes("coordinate")
-            ? "Ability to **collaborate** across departments, **influence stakeholders**, and **drive consensus** on technical decisions as required by the role's cross-functional nature."
-            : "Strong **collaboration skills** across teams. Ability to **build relationships**, **communicate effectively** with different departments, and **align technical decisions** with business goals.";
+            ? "**Stakeholder management**, **cross-team collaboration**, **consensus building**"
+            : "**Relationship building**, **cross-departmental work**, **influence without authority**";
           break;
         case "Quality Advocacy / Process Improvement":
           notes = jdContent.includes("quality") || jdContent.includes("process") || jdContent.includes("improvement")
-            ? "Champion **quality standards**, propose **process improvements**, and drive **best practices** adoption as outlined in JD. Focus on **continuous improvement** and **operational excellence**."
-            : "Commitment to **quality excellence** and **process optimization**. Drive **best practices**, identify **improvement opportunities**, and advocate for **high standards** across all deliverables.";
+            ? "**Quality standards**, **process optimization**, **continuous improvement**"
+            : "**Quality excellence**, **process enhancement**, **best practices advocacy**";
           break;
       }
       return {
@@ -236,10 +236,10 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Communication", weight: 35, requiredLevel: 4, notes: "Excellent **written and verbal communication**. Must **present concepts** to **stakeholders**, participate in **discussions**, and provide **clear updates**." },
-        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "Maintains **productivity** and **quality** during **high-pressure situations**, **tight deadlines** without compromising team morale." },
-        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "Experience making **informed decisions** with incomplete information, **prioritizing tasks** based on **impact**, and **escalating when appropriate**." },
-        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "Consistently creates and maintains **documentation**, **detailed reports**, and ensures **accuracy** in all deliverables." }
+        { name: "Communication", weight: 35, requiredLevel: 4, notes: "**Clear written/verbal communication**, **stakeholder presentations**, **team collaboration**" },
+        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "**High-pressure performance**, **deadline management**, **maintaining quality**" },
+        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "**Informed decisions**, **ambiguity handling**, **risk-based prioritization**" },
+        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "**Thorough documentation**, **accuracy focus**, **detail-oriented delivery**" }
       ];
     }
 
@@ -303,23 +303,23 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Communication":
           notes = jdContent.includes("stakeholder") || jdContent.includes("present")
-            ? "Excellent **written and verbal communication** as emphasized in JD. Must **present concepts** to **stakeholders**, participate in **cross-functional discussions**, and provide **clear status updates**."
-            : "Strong **communication skills** required. Ability to **articulate ideas clearly**, **collaborate effectively** with team members, and **document processes** comprehensively.";
+            ? "**Stakeholder presentations**, **clear communication**, **cross-functional discussions**"
+            : "**Written/verbal skills**, **team collaboration**, **clear documentation**";
           break;
         case "Resilience / Stress Tolerance":
           notes = jdContent.includes("fast-paced") || jdContent.includes("deadline") || jdContent.includes("pressure")
-            ? "Maintains **productivity** and **quality** during **high-pressure situations** and **tight project deadlines** as mentioned in JD requirements."
-            : "Ability to work effectively under **pressure**, manage **competing priorities**, and maintain **performance standards** during **challenging situations**.";
+            ? "**High-pressure performance**, **deadline management**, **quality maintenance**"
+            : "**Stress management**, **competing priorities**, **performance consistency**";
           break;
         case "Decision‑Making under Uncertainty":
           notes = jdContent.includes("complex") || jdContent.includes("ambiguous")
-            ? "Experience making **informed decisions** with **incomplete information**, **prioritizing tasks** based on **business impact** as required by the role complexity."
-            : "Strong **decision-making skills** in **uncertain environments**. Ability to **assess situations quickly**, **weigh options**, and **make sound judgments** with **limited information**.";
+            ? "**Complex problem solving**, **ambiguity navigation**, **impact-based decisions**"
+            : "**Quick assessment**, **limited information decisions**, **sound judgment**";
           break;
         case "Attention to Detail & Documentation":
           notes = jdContent.includes("documentation") || jdContent.includes("quality") || jdContent.includes("accurate")
-            ? "Consistently creates and maintains **detailed documentation**, ensures **accuracy** in all deliverables, and follows **quality standards** as specified in JD."
-            : "Strong **attention to detail** and **documentation practices**. Ensures **accuracy** in work output, maintains **comprehensive records**, and follows **established procedures**.";
+            ? "**Quality documentation**, **accuracy standards**, **detail focus**"
+            : "**Comprehensive records**, **procedure adherence**, **precision focus**";
           break;
       }
       return {
