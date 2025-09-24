@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -676,31 +677,41 @@ const PersonaConfig = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <CardContent className="pt-0 space-y-4">
-                      <div className="grid gap-4">
-                        {category.skills.map((skill, index) => (
-                          <div key={index} className="p-4 bg-muted rounded-lg space-y-3">
-                            <div className="flex items-start justify-between">
-                              <Label className="flex-1 text-sm font-medium">{skill.name}</Label>
-                              <div className="flex items-center space-x-4">
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-xs text-muted-foreground">Weight:</span>
-                                  <Input
-                                    type="number"
-                                    value={skill.weight}
-                                    onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
-                                    className="w-16 h-8 text-center"
-                                    min="0"
-                                    max="100"
-                                  />
-                                  <span className="text-sm text-muted-foreground">%</span>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-xs text-muted-foreground">Level:</span>
+                      <div className="rounded-md border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[30%]">Skill Name</TableHead>
+                              <TableHead className="w-[15%] text-center">Weight (%)</TableHead>
+                              <TableHead className="w-[15%] text-center">Required Level</TableHead>
+                              <TableHead className="w-[40%]">Notes & Description</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {category.skills.map((skill, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">
+                                  <Label className="text-sm font-semibold">{skill.name}</Label>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <div className="flex items-center justify-center space-x-1">
+                                    <Input
+                                      type="number"
+                                      value={skill.weight}
+                                      onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
+                                      className="w-16 h-8 text-center"
+                                      min="0"
+                                      max="100"
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">
                                   <Select 
                                     value={skill.requiredLevel.toString()} 
                                     onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
                                   >
-                                    <SelectTrigger className="w-20 h-8">
+                                    <SelectTrigger className="w-32 h-8">
                                       <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -711,31 +722,36 @@ const PersonaConfig = () => {
                                       <SelectItem value="5">5 - Expert</SelectItem>
                                     </SelectContent>
                                   </Select>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="text-xs text-muted-foreground bg-background/50 rounded p-3 border">
-                                {skill.notes.split('**').map((part, index) => 
-                                  index % 2 === 1 ? (
-                                    <span key={index} className="font-semibold text-foreground bg-primary/10 px-1 rounded">{part}</span>
-                                  ) : (
-                                    <span key={index}>{part}</span>
-                                  )
-                                )}
-                              </div>
-                              <Textarea
-                                placeholder="Add custom notes or modifications..."
-                                value=""
-                                onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                                className="text-xs resize-none"
-                                rows={2}
-                              />
-                            </div>
-                          </div>
-                        ))}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="space-y-2">
+                                    <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 border">
+                                      {skill.notes.split('**').map((part, index) => 
+                                        index % 2 === 1 ? (
+                                          <span key={index} className="font-semibold text-foreground bg-primary/10 px-1 rounded">{part}</span>
+                                        ) : (
+                                          <span key={index}>{part}</span>
+                                        )
+                                      )}
+                                    </div>
+                                    <Textarea
+                                      placeholder="Add custom notes..."
+                                      value=""
+                                      onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
+                                      className="text-xs resize-none h-16"
+                                      rows={2}
+                                    />
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       </div>
-                      <div className="flex justify-end pt-2">
+                      <div className="flex justify-between items-center pt-2">
+                        <span className="text-sm text-muted-foreground">
+                          Skills total: <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-warning'}`}>{skillTotal}%</span>
+                        </span>
                         <Progress 
                           value={skillTotal} 
                           className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
