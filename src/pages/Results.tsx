@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar
+} from "@/components/ui/sidebar";
 import { 
   Trophy, 
   TrendingUp, 
@@ -72,6 +79,7 @@ const Results = () => {
   const [filterCategory, setFilterCategory] = useState<'all' | 'perfect' | 'moderate' | 'low'>('all');
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [selectedPersona, setSelectedPersona] = useState<string>('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('evaluatedCandidates');
@@ -491,180 +499,153 @@ const Results = () => {
     return <XCircle className="w-4 h-4 text-danger" />;
   };
 
-  const CandidateDetailDialog = ({ candidate }: { candidate: Candidate }) => (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 overflow-hidden">
-      <div className="fixed inset-0 bg-background z-50 flex flex-col">
-        {/* Close button */}
-        <div className="absolute top-4 right-4 z-10">
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogClose>
+  const CandidateSidebar = ({ candidate, isOpen, onClose }: { candidate: Candidate; isOpen: boolean; onClose: () => void }) => {
+    if (!isOpen) return null;
+    
+    return (
+      <div className="fixed inset-y-0 right-0 z-50 w-96 bg-background border-l shadow-lg overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-background border-b p-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            {getFitIcon(candidate.fitCategory)}
+            <h2 className="text-xl font-semibold text-foreground">{candidate.name}</h2>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Header integrated into content */}
-          <div className="space-y-2 pt-8">
-            <div className="flex items-center space-x-2">
-              {getFitIcon(candidate.fitCategory)}
-              <h1 className="text-2xl font-semibold text-foreground">{candidate.name}</h1>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Detailed evaluation results and comprehensive skill breakdown
-            </p>
-          </div>
-
+        <div className="p-6 space-y-6">
           {/* Overall Score */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5" />
-                Overall Score
+                <Trophy className="w-5 h-5 text-primary" />
+                <span>Overall Score</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center space-x-4">
-                <div className="text-3xl font-bold">{candidate.overallScore}%</div>
-                <Progress value={candidate.overallScore} className="flex-1" />
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-2xl font-bold text-foreground">{candidate.overallScore}%</span>
                 <Badge variant={getScoreBadgeVariant(candidate.overallScore)}>
-                  {candidate.fitCategory}
+                  {candidate.fitCategory.charAt(0).toUpperCase() + candidate.fitCategory.slice(1)} Fit
                 </Badge>
               </div>
+              <Progress value={candidate.overallScore} className="h-3" />
             </CardContent>
           </Card>
 
-          {/* Summary Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Summary by Attribute</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2 font-semibold">Attribute</th>
-                      <th className="text-left p-2 font-semibold">Weight</th>
-                      <th className="text-left p-2 font-semibold">% Scored</th>
-                      <th className="text-left p-2 font-semibold">Attribute Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {candidate.detailedEvaluation.summary.map((item, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">{item.attribute}</td>
-                        <td className="p-2">{item.weight}</td>
-                        <td className="p-2">
-                          <span className={getScoreColor(parseFloat(item.percentScored.replace('%', '')))}>
-                            {item.percentScored}
-                          </span>
-                        </td>
-                        <td className="p-2">
-                          <span className={getScoreColor(parseFloat(item.attributeScore.replace('%', '')))}>
-                            {item.attributeScore}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="border-b-2 border-t font-semibold bg-muted/20">
-                      <td className="p-2">Final Score</td>
-                      <td className="p-2">100%</td>
-                      <td className="p-2">-</td>
-                      <td className="p-2 text-lg">{candidate.overallScore}%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-muted-foreground">Technical Skills</div>
+                <div className={`text-lg font-semibold ${getScoreColor(candidate.technicalSkills)}`}>
+                  {candidate.technicalSkills}%
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-muted-foreground">Experience</div>
+                <div className={`text-lg font-semibold ${getScoreColor(candidate.experience)}`}>
+                  {candidate.experience}%
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-muted-foreground">Communication</div>
+                <div className={`text-lg font-semibold ${getScoreColor(candidate.communication)}`}>
+                  {candidate.communication}%
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-sm text-muted-foreground">Certifications</div>
+                <div className={`text-lg font-semibold ${getScoreColor(candidate.certifications)}`}>
+                  {candidate.certifications}%
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-          {/* Detailed Categories with Accordion */}
+          {/* Detailed Analysis */}
           <Card>
             <CardHeader>
-              <CardTitle>Detailed Attribute Analysis</CardTitle>
-              <CardDescription>
-                Comprehensive breakdown of each attribute and sub-attribute evaluation
-              </CardDescription>
+              <CardTitle>Detailed Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <Accordion type="multiple" className="w-full space-y-2">
-                {candidate.detailedEvaluation.categories.map((category, index) => (
-                  <AccordionItem key={index} value={`category-${index}`} className="border rounded-lg px-4">
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center justify-between w-full mr-4">
-                        <span className="font-semibold text-left">{category.name}</span>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">Weight: {category.weight}</Badge>
-                          <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
-                            {category.percentScored} scored
-                          </Badge>
-                          <Badge variant="secondary">
-                            Score: {category.attributeScore}
-                          </Badge>
-                        </div>
+              <Tabs defaultValue="summary" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="summary">Summary</TabsTrigger>
+                  <TabsTrigger value="detailed">Detailed</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="summary" className="space-y-4">
+                  {candidate.detailedEvaluation?.summary.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                      <div>
+                        <span className="font-medium text-foreground">{item.attribute}</span>
+                        <span className="text-sm text-muted-foreground ml-2">({item.weight})</span>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4 pt-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {category.subAttributes.map((subAttr, subIndex) => (
-                            <div key={subIndex} className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-sm">{subAttr.name}</h4>
-                                <Badge variant="outline" className="text-xs">
-                                  {subAttr.weightage}% weight
-                                </Badge>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Expected:</span>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
-                                    <span className="font-medium">Level {subAttr.expectedLevel}</span>
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-muted-foreground">Actual:</span>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
-                                    <span className="font-medium">Level {subAttr.actualLevel}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="bg-muted/50 rounded p-2 text-xs">
-                                <div className="font-medium text-muted-foreground mb-1">Analysis:</div>
-                                <div>{subAttr.notes}</div>
-                              </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-primary">{item.attributeScore}</div>
+                        <div className="text-xs text-muted-foreground">{item.percentScored}</div>
+                      </div>
+                    </div>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="detailed" className="space-y-4">
+                  <Accordion type="single" collapsible className="w-full">
+                    {candidate.detailedEvaluation?.categories.map((category, index) => (
+                      <AccordionItem key={index} value={`category-${index}`}>
+                        <AccordionTrigger className="text-left">
+                          <div className="flex items-center justify-between w-full pr-4">
+                            <span className="font-medium">{category.name}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-muted-foreground">({category.weight})</span>
+                              <Badge variant="outline">{category.attributeScore}</Badge>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 pt-2">
+                            {category.subAttributes.map((attr, attrIndex) => (
+                              <div key={attrIndex} className="border rounded-lg p-3 bg-card">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm">{attr.name}</div>
+                                    <div className="text-xs text-muted-foreground">Weight: {attr.weightage}%</div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {getLevelIcon(attr.expectedLevel, attr.actualLevel)}
+                                    <span className="text-sm">
+                                      {attr.actualLevel}/{attr.expectedLevel}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                                  {attr.notes}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
-
-          {/* Action Buttons */}
-          <div className="flex space-x-4 pt-4 pb-8">
-            <Button className="flex-1">
-              <Download className="w-4 h-4 mr-2" />
-              Download CV
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <Star className="w-4 h-4 mr-2" />
-              Shortlist
-            </Button>
-        </div>
-
         </div>
       </div>
-    </DialogContent>
-  );
+    );
+  };
+
 
   return (
     <Layout currentStep={4}>
@@ -766,7 +747,15 @@ const Results = () => {
                       <TableRow key={candidate.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground">{candidate.name}</p>
+                            <button 
+                              className="font-medium text-foreground hover:text-primary underline cursor-pointer text-left"
+                              onClick={() => {
+                                setSelectedCandidate(candidate);
+                                setSidebarOpen(true);
+                              }}
+                            >
+                              {candidate.name}
+                            </button>
                             <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
                           </div>
                         </TableCell>
@@ -785,21 +774,17 @@ const Results = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedCandidate(candidate)}
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                            </DialogTrigger>
-                            {selectedCandidate && (
-                              <CandidateDetailDialog candidate={selectedCandidate} />
-                            )}
-                          </Dialog>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCandidate(candidate);
+                              setSidebarOpen(true);
+                            }}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -819,6 +804,15 @@ const Results = () => {
             </Tabs>
           </CardContent>
         </Card>
+        
+        {/* Candidate Sidebar */}
+        {selectedCandidate && (
+          <CandidateSidebar 
+            candidate={selectedCandidate} 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)} 
+          />
+        )}
       </div>
     </Layout>
   );
