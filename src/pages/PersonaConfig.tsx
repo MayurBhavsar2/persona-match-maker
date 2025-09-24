@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,6 +30,9 @@ interface SkillCategory {
 const PersonaConfig = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [personaName, setPersonaName] = useState("");
+  const [isPersonaSaved, setIsPersonaSaved] = useState(false);
   
   // Helper function to analyze JD and generate cognitive demands
   const generateCognitiveDemands = () => {
@@ -573,6 +577,16 @@ const PersonaConfig = () => {
     };
   };
 
+  // Generate default persona name
+  const generateDefaultPersonaName = () => {
+    const storedJD = localStorage.getItem('selectedJD');
+    const position = storedJD ? JSON.parse(storedJD).position || 'candidate' : 'candidate';
+    const username = 'user'; // Could be replaced with actual user ID/name
+    const now = new Date();
+    const dateTime = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    return `persona-${position.toLowerCase().replace(/\s+/g, '-')}-${username}-${dateTime}`;
+  };
+
   const handleSavePersona = () => {
     const validation = validateWeights();
     
@@ -594,16 +608,36 @@ const PersonaConfig = () => {
       return;
     }
 
+    // Set default persona name and show dialog
+    setPersonaName(generateDefaultPersonaName());
+    setShowSaveDialog(true);
+  };
+
+  const confirmSavePersona = () => {
+    if (!personaName.trim()) {
+      toast({
+        title: "Persona name required",
+        description: "Please enter a name for your persona.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     localStorage.setItem('personaConfig', JSON.stringify({
       categories,
+      name: personaName.trim(),
       timestamp: Date.now()
     }));
 
     toast({
       title: "Persona saved successfully",
-      description: "Your ideal candidate persona has been configured and saved.",
+      description: `Your ideal candidate persona "${personaName}" has been configured and saved.`,
     });
 
+    setIsPersonaSaved(true);
+    setShowSaveDialog(false);
+    
+    // Auto-navigate to candidate upload
     navigate('/candidate-upload');
   };
 
@@ -1015,7 +1049,7 @@ const PersonaConfig = () => {
             
             <Button
               onClick={() => navigate('/candidate-upload')}
-              disabled={!validation.totalValid || !validation.categoriesValid}
+              disabled={!isPersonaSaved}
               className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
             >
               <span>Continue to Candidate Upload</span>
@@ -1023,6 +1057,38 @@ const PersonaConfig = () => {
             </Button>
           </div>
         </div>
+
+        {/* Save Persona Dialog */}
+        <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Save Persona</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="persona-name">Persona Name</Label>
+                <Input
+                  id="persona-name"
+                  value={personaName}
+                  onChange={(e) => setPersonaName(e.target.value)}
+                  placeholder="Enter persona name"
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Default format: persona-&lt;position&gt;-&lt;username&gt;-&lt;date-time&gt;
+                </p>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setShowSaveDialog(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={confirmSavePersona}>
+                  OK
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
