@@ -535,28 +535,24 @@ const Results = () => {
                 Contact Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {/* First row: Contact number and email */}
-              <div className="grid grid-cols-2 gap-3">
+            <CardContent className="space-y-2">
+              {/* Contact details in compact grid */}
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex items-center space-x-2">
                   <Phone className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">+1 (555) 123-4567</span>
+                  <span>+1 (555) 123-4567</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">candidate@example.com</span>
-                </div>
-              </div>
-              
-              {/* Second row: Role and persona */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">Role</p>
-                  <p className="text-sm font-medium">{selectedRole}</p>
+                  <span>candidate@example.com</span>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Persona</p>
-                  <p className="text-sm font-medium">{selectedPersona}</p>
+                  <span className="text-xs text-muted-foreground">Role: </span>
+                  <span className="font-medium">{selectedRole}</span>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Persona: </span>
+                  <span className="font-medium">{selectedPersona}</span>
                 </div>
               </div>
             </CardContent>
@@ -565,9 +561,9 @@ const Results = () => {
           {/* Summary by Attribute with Accordion */}
           <Card>
             <CardHeader>
-              <CardTitle>Summary by Attribute</CardTitle>
+              <CardTitle>Attribute Evaluation Table</CardTitle>
               <CardDescription>
-                Click on any attribute to see detailed breakdown in table format
+                Detailed assessment breakdown showing expected vs actual performance for each attribute
               </CardDescription>
             </CardHeader>
             <CardContent>
