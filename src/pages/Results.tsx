@@ -562,47 +562,91 @@ const Results = () => {
             </CardContent>
           </Card>
 
-          {/* Summary Table */}
+          {/* Summary by Attribute with Accordion */}
           <Card>
             <CardHeader>
               <CardTitle>Summary by Attribute</CardTitle>
+              <CardDescription>
+                Click on any attribute to see detailed breakdown in table format
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2 font-semibold">Attribute</th>
-                      <th className="text-left p-2 font-semibold">Weight</th>
-                      <th className="text-left p-2 font-semibold">% Scored</th>
-                      <th className="text-left p-2 font-semibold">Attribute Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {candidate.detailedEvaluation.summary.map((item, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">{item.attribute}</td>
-                        <td className="p-2">{item.weight}</td>
-                        <td className="p-2">
-                          <span className={getScoreColor(parseFloat(item.percentScored.replace('%', '')))}>
-                            {item.percentScored}
-                          </span>
-                        </td>
-                        <td className="p-2">
-                          <span className={getScoreColor(parseFloat(item.attributeScore.replace('%', '')))}>
-                            {item.attributeScore}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="border-b-2 border-t font-semibold bg-muted/20">
-                      <td className="p-2">Final Score</td>
-                      <td className="p-2">100%</td>
-                      <td className="p-2">-</td>
-                      <td className="p-2 text-lg">{candidate.overallScore}%</td>
-                    </tr>
-                  </tbody>
-                </table>
+              <Accordion type="multiple" className="w-full space-y-2">
+                {candidate.detailedEvaluation.categories.map((category, index) => (
+                  <AccordionItem key={index} value={`summary-${index}`} className="border rounded-lg px-4">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center justify-between w-full mr-4">
+                        <span className="font-semibold text-left">{category.name}</span>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline">Weight: {category.weight}</Badge>
+                          <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
+                            <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
+                              {category.percentScored}
+                            </span>
+                          </Badge>
+                          <Badge variant="secondary">
+                            <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
+                              Score: {category.attributeScore}
+                            </span>
+                          </Badge>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <div className="pt-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Sub-Attribute</TableHead>
+                              <TableHead>Weight (%)</TableHead>
+                              <TableHead>Expected Level</TableHead>
+                              <TableHead>Actual Level</TableHead>
+                              <TableHead>Notes</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {category.subAttributes.map((subAttr, subIndex) => (
+                              <TableRow key={subIndex}>
+                                <TableCell className="font-medium">{subAttr.name}</TableCell>
+                                <TableCell>{subAttr.weightage}%</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center space-x-1">
+                                    {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
+                                    <span>Level {subAttr.expectedLevel}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center space-x-1">
+                                    {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
+                                    <span>Level {subAttr.actualLevel}</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-sm text-muted-foreground max-w-xs">
+                                  {subAttr.notes}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+              
+              {/* Final Score Summary */}
+              <div className="mt-4 p-4 bg-muted/20 rounded-lg border-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Final Overall Score</span>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="outline">Weight: 100%</Badge>
+                    <Badge variant={getScoreBadgeVariant(candidate.overallScore)} className="text-lg px-3 py-1">
+                      <span className={getScoreColor(candidate.overallScore)}>
+                        {candidate.overallScore}%
+                      </span>
+                    </Badge>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
