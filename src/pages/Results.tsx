@@ -468,9 +468,9 @@ const Results = () => {
   const lowFitCount = candidates.filter(c => c.fitCategory === 'low').length;
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-success';
-    if (score >= 70) return 'text-warning';
-    return 'text-danger';
+    if (score >= 80) return 'text-green-600';
+    if (score >= 60) return 'text-orange-600';
+    return 'text-red-600';
   };
 
   const getScoreBadgeVariant = (score: number) => {
@@ -766,7 +766,7 @@ const Results = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            <span className="font-medium">{candidate.overallScore}%</span>
+                            <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>{candidate.overallScore}%</span>
                             <Progress value={candidate.overallScore} className="w-16 h-2" />
                           </div>
                         </TableCell>
