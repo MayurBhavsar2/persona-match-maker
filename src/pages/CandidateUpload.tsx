@@ -97,9 +97,14 @@ const CandidateUpload = () => {
     }
 
     // Generate mock candidate data
+    const candidateNames = [
+      'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
+      'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
+    ];
+    
     const mockCandidates = files.map((file, index) => ({
       id: file.id,
-      name: `Candidate ${index + 1}`,
+      name: candidateNames[index % candidateNames.length],
       fileName: file.name,
       overallScore: Math.floor(Math.random() * 40) + 60, // 60-100%
       fitCategory: index % 3 === 0 ? 'perfect' : index % 3 === 1 ? 'moderate' : 'low',
