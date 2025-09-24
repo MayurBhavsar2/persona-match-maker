@@ -579,16 +579,16 @@ const Results = () => {
                         <span className="font-semibold text-left">{category.name}</span>
                         <div className="flex items-center space-x-2">
                           <Badge variant="outline">Weight: {category.weight}</Badge>
-                          <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
-                            <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
-                              {category.percentScored}
-                            </span>
-                          </Badge>
-                          <Badge variant="secondary">
-                            <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
-                              Score: {category.attributeScore}
-                            </span>
-                          </Badge>
+                           <Badge variant="outline" className="bg-transparent">
+                             <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
+                               {category.percentScored}
+                             </span>
+                           </Badge>
+                           <Badge variant="outline" className="bg-transparent">
+                             <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
+                               Score: {category.attributeScore}
+                             </span>
+                           </Badge>
                         </div>
                       </div>
                     </AccordionTrigger>
