@@ -579,24 +579,31 @@ const PersonaConfig = () => {
 
   // Generate default persona name
   const generateDefaultPersonaName = () => {
-    const storedJD = localStorage.getItem('selectedJD');
+    // Get role from the first step
+    const storedRole = localStorage.getItem('selectedRole');
     let position = 'candidate';
     
-    if (storedJD) {
-      const jdData = JSON.parse(storedJD);
-      // Extract position from JD data (could be in title, position, or role field)
-      position = jdData.position || jdData.title || jdData.role || 'candidate';
+    if (storedRole) {
+      const roleData = JSON.parse(storedRole);
+      position = roleData.name || roleData.title || roleData;
+    } else {
+      // Fallback to JD data if role not found
+      const storedJD = localStorage.getItem('selectedJD');
+      if (storedJD) {
+        const jdData = JSON.parse(storedJD);
+        position = jdData.position || jdData.title || jdData.role || 'candidate';
+      }
     }
     
     // Get username - in a real app this would come from authentication
-    // For now, check if there's any user data in localStorage or use default
     const userData = localStorage.getItem('currentUser');
-    const username = userData ? JSON.parse(userData).username || 'user' : 'user';
+    const username = userData ? JSON.parse(userData).username || 'Admin user' : 'Admin user';
     
     const now = new Date();
-    const dateTime = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const date = now.toISOString().slice(0, 10); // 2025-09-24
+    const time = now.toTimeString().slice(0, 5); // 12:48
     
-    return `persona-${position.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${username}-${dateTime}`;
+    return `Persona-${position}-${username}-${date} - ${time}`;
   };
 
   const handleSavePersona = () => {
