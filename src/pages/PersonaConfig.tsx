@@ -446,11 +446,11 @@ const PersonaConfig = () => {
       name: "Technical Skills",
       weight: 40,
       skills: [
-        { name: "Core Technology Stack", weight: 30, requiredLevel: 4, notes: "Must have **5+ years experience** with **React**, **Node.js**, **TypeScript**. Strong proficiency in modern **JavaScript ES6+**, **REST APIs**, and **microservices architecture**." },
-        { name: "Programming Languages", weight: 25, requiredLevel: 4, notes: "**Expert level JavaScript/TypeScript** required. **Python** or **Java** preferred for backend services. Familiarity with **SQL** for database queries." },
-        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, notes: "Experience with **React ecosystem** (**Redux**, **React Query**), **Express.js**, **Git version control**, **Docker containers**, and **CI/CD pipelines** (**Jenkins**/**GitHub Actions**)." },
-        { name: "Database & Data Management", weight: 15, requiredLevel: 3, notes: "Proficient in **PostgreSQL/MySQL**, **NoSQL databases** (**MongoDB**), **data modeling**, **query optimization**, and **ETL processes**." },
-        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, notes: "**AWS/Azure** experience with **EC2**, **S3**, **Lambda functions**. Understanding of **serverless architecture**, **load balancing**, and **monitoring tools**." }
+        { name: "Core Technology Stack", weight: 30, requiredLevel: 4, notes: "**React, Node.js, TypeScript, JavaScript ES6+, REST APIs, microservices architecture**" },
+        { name: "Programming Languages", weight: 25, requiredLevel: 4, notes: "**JavaScript, TypeScript, Python, Java, SQL**" },
+        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, notes: "**React, Redux, React Query, Express.js, Git, Docker, CI/CD, Jenkins, GitHub Actions**" },
+        { name: "Database & Data Management", weight: 15, requiredLevel: 3, notes: "**PostgreSQL, MySQL, MongoDB, NoSQL, ETL**" },
+        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, notes: "**AWS, Azure, EC2, S3, Lambda, serverless architecture**" }
       ]
     },
     {
