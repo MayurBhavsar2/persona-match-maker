@@ -114,11 +114,58 @@ const Results = () => {
     const personaData = localStorage.getItem('personaData');
     if (personaData) {
       const parsedPersona = JSON.parse(personaData);
-      setSelectedPersona(parsedPersona.name || 'Default Persona');
+      setSelectedPersona(parsedPersona.name || getDefaultPersonaForRole('RPA Developer'));
     } else {
-      setSelectedPersona('Default Persona');
+      setSelectedPersona(getDefaultPersonaForRole('RPA Developer'));
     }
   }, []);
+
+  // Update persona when role changes
+  useEffect(() => {
+    setSelectedPersona(getDefaultPersonaForRole(selectedRole));
+  }, [selectedRole]);
+
+  const getPersonasForRole = (role: string) => {
+    const rolePersonas: { [key: string]: string[] } = {
+      'RPA Developer': [
+        'Persona-RPA Developer-Admin user-2025-09-24 - 13:37',
+        'Senior RPA Developer Persona',
+        'Mid Level RPA Developer Persona',
+        'Junior RPA Developer Persona'
+      ],
+      'Software Engineer': [
+        'Senior Software Engineer Persona',
+        'Full Stack Developer Persona',
+        'Backend Developer Persona',
+        'Frontend Developer Persona'
+      ],
+      'QA Engineer': [
+        'Senior QA Engineer Persona',
+        'Automation QA Persona',
+        'Manual Testing Persona',
+        'Performance Testing Persona'
+      ],
+      'Data Analyst': [
+        'Senior Data Analyst Persona',
+        'Business Intelligence Persona',
+        'Statistical Analysis Persona',
+        'Data Visualization Persona'
+      ],
+      'Product Manager': [
+        'Senior Product Manager Persona',
+        'Technical Product Manager Persona',
+        'Growth Product Manager Persona',
+        'Strategy Product Manager Persona'
+      ]
+    };
+    
+    return rolePersonas[role] || ['Default Persona'];
+  };
+
+  const getDefaultPersonaForRole = (role: string) => {
+    const personas = getPersonasForRole(role);
+    return personas[0];
+  };
 
   const generateDetailedEvaluation = (candidate: any): Category[] => {
     // Generate realistic evaluation data based on the candidate's scores
@@ -646,10 +693,11 @@ const Results = () => {
                   <SelectValue placeholder="Select a persona" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
-                  <SelectItem value="Default Persona">Default Persona</SelectItem>
-                  <SelectItem value="Senior Level">Senior Level</SelectItem>
-                  <SelectItem value="Mid Level">Mid Level</SelectItem>
-                  <SelectItem value="Junior Level">Junior Level</SelectItem>
+                  {getPersonasForRole(selectedRole).map((persona) => (
+                    <SelectItem key={persona} value={persona}>
+                      {persona}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </CardContent>
