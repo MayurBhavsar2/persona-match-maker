@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sidebar, SidebarContent, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { 
   Trophy, 
   TrendingUp, 
@@ -72,6 +73,7 @@ const Results = () => {
   const [filterCategory, setFilterCategory] = useState<'all' | 'perfect' | 'moderate' | 'low'>('all');
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [selectedPersona, setSelectedPersona] = useState<string>('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('evaluatedCandidates');
@@ -474,343 +476,382 @@ const Results = () => {
     return <XCircle className="w-4 h-4 text-danger" />;
   };
 
-  const CandidateDetailDialog = ({ candidate }: { candidate: Candidate }) => (
-    <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 overflow-hidden">
-      <div className="fixed inset-0 bg-background z-50 flex flex-col">
-        {/* Close button */}
-        <div className="absolute top-4 right-4 z-10">
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogClose>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Header integrated into content */}
-          <div className="space-y-2 pt-8">
-            <div className="flex items-center space-x-2">
-              {getFitIcon(candidate.fitCategory)}
-              <h1 className="text-2xl font-semibold text-foreground">{candidate.name}</h1>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Detailed evaluation results and comprehensive skill breakdown
-            </p>
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const CandidateDetailSidebar = ({ candidate }: { candidate: Candidate }) => (
+    <Sidebar className="w-96 border-l border-border bg-background">
+      <div className="flex items-center justify-between p-4 border-b">
+        <h2 className="text-lg font-semibold">{candidate.name}</h2>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setIsSidebarOpen(false)}
+        >
+          <X className="w-4 h-4" />
+        </Button>
+      </div>
+      
+      <SidebarContent className="p-4">
+        <div className="space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Star className="w-4 h-4 text-warning" />
+                  <span className="text-sm font-medium">Overall Score</span>
+                </div>
+                <p className={`text-2xl font-bold ${getScoreColor(candidate.overallScore)}`}>
+                  {candidate.overallScore}%
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Applied</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {formatDateTime(candidate.applicationDate)}
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Overall Score */}
+          {/* Skills Overview */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5" />
-                Overall Score
-              </CardTitle>
+              <CardTitle className="text-sm">Skills Overview</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-4">
-                <div className="text-3xl font-bold">{candidate.overallScore}%</div>
-                <Progress value={candidate.overallScore} className="flex-1" />
-                <Badge variant={getScoreBadgeVariant(candidate.overallScore)}>
-                  {candidate.fitCategory}
-                </Badge>
+            <CardContent className="space-y-3">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Technical Skills</span>
+                  <span>{candidate.technicalSkills}%</span>
+                </div>
+                <Progress value={candidate.technicalSkills} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Experience</span>
+                  <span>{candidate.experience}%</span>
+                </div>
+                <Progress value={candidate.experience} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Communication</span>
+                  <span>{candidate.communication}%</span>
+                </div>
+                <Progress value={candidate.communication} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Certifications</span>
+                  <span>{candidate.certifications}%</span>
+                </div>
+                <Progress value={candidate.certifications} className="h-2" />
               </div>
             </CardContent>
           </Card>
 
-          {/* Summary Table */}
+          {/* Detailed Evaluation */}
           <Card>
             <CardHeader>
-              <CardTitle>Summary by Attribute</CardTitle>
+              <CardTitle className="text-sm">Detailed Evaluation</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2 font-semibold">Attribute</th>
-                      <th className="text-left p-2 font-semibold">Weight</th>
-                      <th className="text-left p-2 font-semibold">% Scored</th>
-                      <th className="text-left p-2 font-semibold">Attribute Score</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {candidate.detailedEvaluation.summary.map((item, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">{item.attribute}</td>
-                        <td className="p-2">{item.weight}</td>
-                        <td className="p-2">
-                          <span className={getScoreColor(parseFloat(item.percentScored.replace('%', '')))}>
-                            {item.percentScored}
-                          </span>
-                        </td>
-                        <td className="p-2">
-                          <span className={getScoreColor(parseFloat(item.attributeScore.replace('%', '')))}>
-                            {item.attributeScore}
-                          </span>
-                        </td>
-                      </tr>
+              <Tabs defaultValue="summary" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="summary">Summary</TabsTrigger>
+                  <TabsTrigger value="categories">Categories</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="summary" className="space-y-4">
+                  <div className="space-y-3">
+                    {candidate.detailedEvaluation?.summary.map((item, index) => (
+                      <div key={index} className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground">{item.attribute}</span>
+                        <div className="text-right">
+                          <div className="font-medium">{item.percentScored}</div>
+                          <div className="text-xs text-muted-foreground">Weight: {item.weight}</div>
+                        </div>
+                      </div>
                     ))}
-                    <tr className="border-b-2 border-t font-semibold bg-muted/20">
-                      <td className="p-2">Final Score</td>
-                      <td className="p-2">100%</td>
-                      <td className="p-2">-</td>
-                      <td className="p-2 text-lg">{candidate.overallScore}%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Detailed Categories with Accordion */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Attribute Analysis</CardTitle>
-              <CardDescription>
-                Comprehensive breakdown of each attribute and sub-attribute evaluation
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="multiple" className="w-full space-y-2">
-                {candidate.detailedEvaluation.categories.map((category, index) => (
-                  <AccordionItem key={index} value={`category-${index}`} className="border rounded-lg px-4">
-                    <AccordionTrigger className="hover:no-underline">
-                      <div className="flex items-center justify-between w-full mr-4">
-                        <span className="font-semibold text-left">{category.name}</span>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant="outline">Weight: {category.weight}</Badge>
-                          <Badge variant={getScoreBadgeVariant(parseFloat(category.percentScored.replace('%', '')))}>
-                            {category.percentScored} scored
-                          </Badge>
-                          <Badge variant="secondary">
-                            Score: {category.attributeScore}
-                          </Badge>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="space-y-4 pt-4">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                          {category.subAttributes.map((subAttr, subIndex) => (
-                            <div key={subIndex} className="border rounded-lg p-4 space-y-2">
-                              <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-sm">{subAttr.name}</h4>
-                                <Badge variant="outline" className="text-xs">
-                                  {subAttr.weightage}% weight
-                                </Badge>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-muted-foreground">Expected:</span>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
-                                    <span className="font-medium">Level {subAttr.expectedLevel}</span>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="categories" className="space-y-4">
+                  <Accordion type="single" collapsible className="space-y-2">
+                    {candidate.detailedEvaluation?.categories.map((category, categoryIndex) => (
+                      <AccordionItem key={categoryIndex} value={`category-${categoryIndex}`}>
+                        <AccordionTrigger className="text-sm">
+                          <div className="flex items-center justify-between w-full mr-2">
+                            <span>{category.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {category.percentScored}
+                            </Badge>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 pt-2">
+                            {category.subAttributes.map((sub, subIndex) => (
+                              <div key={subIndex} className="p-3 bg-muted/50 rounded-lg">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-xs font-medium">{sub.name}</span>
+                                  <div className="flex items-center space-x-2">
+                                    {getLevelIcon(sub.expectedLevel, sub.actualLevel)}
+                                    <span className="text-xs">
+                                      {sub.actualLevel}/{sub.expectedLevel}
+                                    </span>
                                   </div>
                                 </div>
-                                <div>
-                                  <span className="text-muted-foreground">Actual:</span>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
-                                    <span className="font-medium">Level {subAttr.actualLevel}</span>
-                                  </div>
+                                <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                  <span>Weight: {sub.weightage}%</span>
                                 </div>
+                                <Progress 
+                                  value={(sub.actualLevel / sub.expectedLevel) * 100} 
+                                  className="h-1 mb-2" 
+                                />
+                                <p className="text-xs text-muted-foreground">{sub.notes}</p>
                               </div>
-                              
-                              <div className="bg-muted/50 rounded p-2 text-xs">
-                                <div className="font-medium text-muted-foreground mb-1">Analysis:</div>
-                                <div>{subAttr.notes}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
-
-          {/* Action Buttons */}
-          <div className="flex space-x-4 pt-4 pb-8">
-            <Button className="flex-1">
-              <Download className="w-4 h-4 mr-2" />
-              Download CV
-            </Button>
-            <Button variant="outline" className="flex-1">
-              <Star className="w-4 h-4 mr-2" />
-              Shortlist
-            </Button>
         </div>
-
-        </div>
-      </div>
-    </DialogContent>
+      </SidebarContent>
+    </Sidebar>
   );
 
   return (
-    <Layout currentStep={4}>
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Candidate Evaluation Results</h1>
-          <p className="text-lg text-muted-foreground">
-            Review and analyze candidate matches based on your configured persona
-          </p>
-        </div>
-
-        {/* Role and Persona Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="text-lg">Role</CardTitle>
-              <CardDescription>Select the role for evaluation</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-full bg-background border-border">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border z-50">
-                  <SelectItem value="RPA Developer">RPA Developer</SelectItem>
-                  <SelectItem value="Software Engineer">Software Engineer</SelectItem>
-                  <SelectItem value="QA Engineer">QA Engineer</SelectItem>
-                  <SelectItem value="Data Analyst">Data Analyst</SelectItem>
-                  <SelectItem value="Product Manager">Product Manager</SelectItem>
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="text-lg">Persona</CardTitle>
-              <CardDescription>Select the evaluation persona</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Select value={selectedPersona} onValueChange={setSelectedPersona}>
-                <SelectTrigger className="w-full bg-background border-border">
-                  <SelectValue placeholder="Select a persona" />
-                </SelectTrigger>
-                <SelectContent className="bg-background border-border z-50">
-                  {getPersonasForRole(selectedRole).map((persona) => (
-                    <SelectItem key={persona} value={persona}>
-                      {persona}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-        </div>
-
-
-        {/* Filter Tabs */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <span>Candidate Results</span>
-              </CardTitle>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <Layout>
+          <div className="max-w-7xl mx-auto p-6">
+            {/* Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight">Candidate Evaluation Results</h1>
+              <p className="text-muted-foreground mt-2">
+                Review and compare candidate assessments against job requirements
+              </p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={filterCategory} onValueChange={(value) => setFilterCategory(value as any)}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">All ({candidates.length})</TabsTrigger>
-                <TabsTrigger value="perfect">Perfect Fit ({perfectFitCount})</TabsTrigger>
-                <TabsTrigger value="moderate">Moderate Fit ({moderateFitCount})</TabsTrigger>
-                <TabsTrigger value="low">Low Fit ({lowFitCount})</TabsTrigger>
-              </TabsList>
+
+            {/* Role and Persona Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">Selected Role</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      <SelectItem value="RPA Developer">RPA Developer</SelectItem>
+                      <SelectItem value="Software Engineer">Software Engineer</SelectItem>
+                      <SelectItem value="QA Engineer">QA Engineer</SelectItem>
+                      <SelectItem value="Data Analyst">Data Analyst</SelectItem>
+                      <SelectItem value="Product Manager">Product Manager</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium">Selected Persona</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Select value={selectedPersona} onValueChange={setSelectedPersona}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a persona" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border z-50">
+                      {getPersonasForRole(selectedRole).map((persona) => (
+                        <SelectItem key={persona} value={persona}>
+                          {persona}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Candidates</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{candidates.length}</div>
+                </CardContent>
+              </Card>
               
-              <TabsContent value={filterCategory} className="mt-6">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Perfect Fit</CardTitle>
+                  <Trophy className="h-4 w-4 text-success" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-success">{perfectFitCount}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Moderate Fit</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-warning" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-warning">{moderateFitCount}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Low Fit</CardTitle>
+                  <TrendingDown className="h-4 w-4 text-danger" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-danger">{lowFitCount}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Filters and Actions */}
+            <Card className="mb-6">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5" />
+                    <span>Candidate Results</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Filter className="w-4 h-4 text-muted-foreground" />
+                      <Select value={filterCategory} onValueChange={(value: any) => setFilterCategory(value)}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Candidates</SelectItem>
+                          <SelectItem value="perfect">Perfect Fit</SelectItem>
+                          <SelectItem value="moderate">Moderate Fit</SelectItem>
+                          <SelectItem value="low">Low Fit</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Results
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Fit Category</TableHead>
+                      <TableHead>Candidate Name</TableHead>
                       <TableHead>Overall Score</TableHead>
+                      <TableHead>Technical Skills</TableHead>
+                      <TableHead>Experience</TableHead>
+                      <TableHead>Communication</TableHead>
                       <TableHead>Application Date</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredCandidates.map((candidate) => (
                       <TableRow key={candidate.id}>
                         <TableCell>
-                          <div>
-                            <p className="font-medium text-foreground">{candidate.name}</p>
-                            <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
+                          <button
+                            onClick={() => {
+                              setSelectedCandidate(candidate);
+                              setIsSidebarOpen(true);
+                            }}
+                            className="font-medium text-primary hover:underline cursor-pointer text-left"
+                          >
+                            {candidate.name}
+                          </button>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getScoreBadgeVariant(candidate.overallScore)} className={getScoreColor(candidate.overallScore)}>
+                            {candidate.overallScore}%
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={candidate.technicalSkills} className="w-16 h-2" />
+                            <span className="text-sm text-muted-foreground">{candidate.technicalSkills}%</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            {getFitIcon(candidate.fitCategory)}
-                            <Badge variant={getFitBadgeVariant(candidate.fitCategory)}>
-                              {candidate.fitCategory.charAt(0).toUpperCase() + candidate.fitCategory.slice(1)} Fit
-                            </Badge>
+                            <Progress value={candidate.experience} className="w-16 h-2" />
+                            <span className="text-sm text-muted-foreground">{candidate.experience}%</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            <span className="font-medium">{candidate.overallScore}%</span>
-                            <Progress value={candidate.overallScore} className="w-16 h-2" />
+                            <Progress value={candidate.communication} className="w-16 h-2" />
+                            <span className="text-sm text-muted-foreground">{candidate.communication}%</span>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">{candidate.applicationDate}</span>
-                          </div>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDateTime(candidate.applicationDate)}
                         </TableCell>
-                        <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedCandidate(candidate)}
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                            </DialogTrigger>
-                            {selectedCandidate && (
-                              <CandidateDetailDialog candidate={selectedCandidate} />
-                            )}
-                          </Dialog>
+                        <TableCell className="text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedCandidate(candidate);
+                              setIsSidebarOpen(true);
+                            }}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-                
-                {filteredCandidates.length === 0 && (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground">No candidates found</h3>
-                    <p className="text-sm text-muted-foreground">
-                      No candidates match the selected filter criteria.
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </Layout>
+
+        {/* Sidebar for candidate details */}
+        {isSidebarOpen && selectedCandidate && (
+          <CandidateDetailSidebar candidate={selectedCandidate} />
+        )}
       </div>
-    </Layout>
+    </SidebarProvider>
   );
 };
 
