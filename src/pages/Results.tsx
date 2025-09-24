@@ -474,9 +474,15 @@ const Results = () => {
   };
 
   const getScoreBadgeVariant = (score: number) => {
-    if (score >= 90) return 'default';
-    if (score >= 70) return 'secondary';
+    if (score >= 80) return 'default';
+    if (score >= 60) return 'secondary';
     return 'destructive';
+  };
+
+  const getProgressBarColor = (score: number) => {
+    if (score >= 80) return 'bg-green-600';
+    if (score >= 60) return 'bg-orange-600';
+    return 'bg-red-600';
   };
 
   const getLevelIcon = (expected: number, actual: number) => {
@@ -767,7 +773,7 @@ const Results = () => {
                         <TableCell>
                           <div className="flex items-center space-x-2">
                             <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>{candidate.overallScore}%</span>
-                            <Progress value={candidate.overallScore} className="w-16 h-2" />
+                            <Progress value={candidate.overallScore} className={`w-16 h-2 [&>div]:${getProgressBarColor(candidate.overallScore)}`} />
                           </div>
                         </TableCell>
                         <TableCell>
