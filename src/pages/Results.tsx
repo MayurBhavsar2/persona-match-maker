@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -647,6 +648,196 @@ const Results = () => {
   };
 
 
+  const CandidateDetailDialog = ({ candidate }: { candidate: Candidate }) => (
+    <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 overflow-hidden">
+      <div className="fixed inset-0 bg-background z-50 flex flex-col">
+        {/* Close button */}
+        <div className="absolute top-4 right-4 z-10">
+          <DialogClose asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogClose>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Header integrated into content */}
+          <div className="space-y-2 pt-8">
+            <div className="flex items-center space-x-2">
+              {getFitIcon(candidate.fitCategory)}
+              <h1 className="text-2xl font-semibold text-foreground">{candidate.name}</h1>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Detailed evaluation results and comprehensive skill breakdown
+            </p>
+          </div>
+
+          {/* Overall Score */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Trophy className="w-5 h-5 text-primary" />
+                <span>Overall Score</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-3xl font-bold text-foreground">{candidate.overallScore}%</span>
+                <Badge variant={getScoreBadgeVariant(candidate.overallScore)}>
+                  {candidate.fitCategory.charAt(0).toUpperCase() + candidate.fitCategory.slice(1)} Fit
+                </Badge>
+              </div>
+              <Progress value={candidate.overallScore} className="h-4" />
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                    <Star className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Technical Skills</div>
+                    <div className={`text-lg font-semibold ${getScoreColor(candidate.technicalSkills)}`}>
+                      {candidate.technicalSkills}%
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Experience</div>
+                    <div className={`text-lg font-semibold ${getScoreColor(candidate.experience)}`}>
+                      {candidate.experience}%
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                    <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Communication</div>
+                    <div className={`text-lg font-semibold ${getScoreColor(candidate.communication)}`}>
+                      {candidate.communication}%
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                    <Trophy className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Certifications</div>
+                    <div className={`text-lg font-semibold ${getScoreColor(candidate.certifications)}`}>
+                      {candidate.certifications}%
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Detailed Analysis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Detailed Analysis</CardTitle>
+              <CardDescription>
+                Comprehensive breakdown of evaluation criteria and scoring
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="summary" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="summary">Summary</TabsTrigger>
+                  <TabsTrigger value="detailed">Detailed Breakdown</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="summary" className="space-y-4">
+                  <div className="grid gap-4">
+                    {candidate.detailedEvaluation?.summary.map((item, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                        <div>
+                          <span className="font-medium text-foreground">{item.attribute}</span>
+                          <span className="text-sm text-muted-foreground ml-2">({item.weight})</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-primary">{item.attributeScore}</div>
+                          <div className="text-xs text-muted-foreground">{item.percentScored}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="detailed" className="space-y-4">
+                  <Accordion type="single" collapsible className="w-full">
+                    {candidate.detailedEvaluation?.categories.map((category, index) => (
+                      <AccordionItem key={index} value={`category-${index}`}>
+                        <AccordionTrigger className="text-left">
+                          <div className="flex items-center justify-between w-full pr-4">
+                            <span className="font-medium">{category.name}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-muted-foreground">({category.weight})</span>
+                              <Badge variant="outline">{category.attributeScore}</Badge>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="space-y-3 pt-2">
+                            {category.subAttributes.map((attr, attrIndex) => (
+                              <div key={attrIndex} className="border rounded-lg p-3 bg-card">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-sm">{attr.name}</div>
+                                    <div className="text-xs text-muted-foreground">Weight: {attr.weightage}%</div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    {getLevelIcon(attr.expectedLevel, attr.actualLevel)}
+                                    <span className="text-sm">
+                                      {attr.actualLevel}/{attr.expectedLevel}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                                  {attr.notes}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </DialogContent>
+  );
+
   return (
     <Layout currentStep={4}>
       <div className="max-w-7xl mx-auto space-y-8">
@@ -774,17 +965,21 @@ const Results = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => {
-                              setSelectedCandidate(candidate);
-                              setSidebarOpen(true);
-                            }}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setSelectedCandidate(candidate)}
+                              >
+                                <Eye className="w-4 h-4 mr-2" />
+                                View Details
+                              </Button>
+                            </DialogTrigger>
+                            {selectedCandidate && (
+                              <CandidateDetailDialog candidate={selectedCandidate} />
+                            )}
+                          </Dialog>
                         </TableCell>
                       </TableRow>
                     ))}
