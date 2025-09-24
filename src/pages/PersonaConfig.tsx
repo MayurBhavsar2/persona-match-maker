@@ -440,6 +440,7 @@ const PersonaConfig = () => {
     return { suggestions, insights, optimizations };
   };
   
+  const [customAddition, setCustomAddition] = useState<string>("");
   const [categories, setCategories] = useState<SkillCategory[]>([
     {
       id: "technical",
@@ -968,6 +969,25 @@ const PersonaConfig = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Custom Addition Section */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Custom Addition</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Label htmlFor="custom-addition" className="text-sm font-medium">
+              Additional notes or custom requirements
+            </Label>
+            <Textarea
+              id="custom-addition"
+              placeholder="Add any custom requirements, notes, or additional criteria not covered above..."
+              className="mt-2 min-h-[100px]"
+              value={customAddition}
+              onChange={(e) => setCustomAddition(e.target.value)}
+            />
+          </CardContent>
+        </Card>
 
         {/* Action Buttons */}
         <div className="flex justify-between pt-6">
