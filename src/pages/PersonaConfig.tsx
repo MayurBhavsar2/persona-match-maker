@@ -17,6 +17,7 @@ interface SkillCategory {
   id: string;
   name: string;
   weight: number;
+  customAddition?: string;
   skills: { 
     name: string; 
     weight: number; 
@@ -440,7 +441,6 @@ const PersonaConfig = () => {
     return { suggestions, insights, optimizations };
   };
   
-  const [customAddition, setCustomAddition] = useState<string>("");
   const [categories, setCategories] = useState<SkillCategory[]>([
     {
       id: "technical",
@@ -538,6 +538,15 @@ const PersonaConfig = () => {
         }
         return cat;
       })
+    );
+  };
+
+  
+  const updateCustomAddition = (categoryId: string, value: string) => {
+    setCategories(prev => 
+      prev.map(cat => 
+        cat.id === categoryId ? { ...cat, customAddition: value } : cat
+      )
     );
   };
 
@@ -760,6 +769,20 @@ const PersonaConfig = () => {
                           className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
                         />
                       </div>
+                      
+                      {/* Custom Addition for this category */}
+                      <div className="mt-4 pt-3 border-t">
+                        <Label htmlFor={`custom-${category.id}`} className="text-xs font-medium text-muted-foreground">
+                          Custom Addition
+                        </Label>
+                        <Textarea
+                          id={`custom-${category.id}`}
+                          placeholder="Add custom notes for this category..."
+                          className="mt-1 min-h-[60px] text-xs"
+                          value={category.customAddition || ""}
+                          onChange={(e) => updateCustomAddition(category.id, e.target.value)}
+                        />
+                      </div>
                     </CardContent>
                   </AccordionContent>
                 </Card>
@@ -969,25 +992,6 @@ const PersonaConfig = () => {
             </CardContent>
           </Card>
         )}
-
-        {/* Custom Addition Section */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Custom Addition</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Label htmlFor="custom-addition" className="text-sm font-medium">
-              Additional notes or custom requirements
-            </Label>
-            <Textarea
-              id="custom-addition"
-              placeholder="Add any custom requirements, notes, or additional criteria not covered above..."
-              className="mt-2 min-h-[100px]"
-              value={customAddition}
-              onChange={(e) => setCustomAddition(e.target.value)}
-            />
-          </CardContent>
-        </Card>
 
         {/* Action Buttons */}
         <div className="flex justify-between pt-6">
