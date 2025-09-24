@@ -78,8 +78,19 @@ const Results = () => {
     if (stored) {
       const data = JSON.parse(stored);
       
-      // Generate detailed evaluation data if not present
-      const candidatesWithDetailedData = data.candidates.map((candidate: any) => {
+      // Realistic candidate names to replace "Candidate X" format
+      const candidateNames = [
+        'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
+        'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
+      ];
+      
+      // Generate detailed evaluation data if not present and fix candidate names
+      const candidatesWithDetailedData = data.candidates.map((candidate: any, index: number) => {
+        // Fix candidate name if it's in "Candidate X" format
+        if (candidate.name.startsWith('Candidate ')) {
+          candidate.name = candidateNames[index % candidateNames.length];
+        }
+        
         if (!candidate.detailedEvaluation) {
           const categories = generateDetailedEvaluation(candidate);
           candidate.detailedEvaluation = {
