@@ -635,12 +635,12 @@ const Results = () => {
               </Accordion>
               
               {/* Final Score Summary */}
-              <div className="mt-4 p-4 rounded-lg border-2">
+              <div className="mt-4 p-4 rounded-lg border-2 bg-transparent">
                 <div className="flex items-center justify-between">
                   <span className="font-semibold">Final Overall Score</span>
                   <div className="flex items-center space-x-2">
                     <Badge variant="outline">Weight: 100%</Badge>
-                    <Badge variant={getScoreBadgeVariant(candidate.overallScore)} className="text-lg px-3 py-1">
+                    <Badge variant="outline" className="text-lg px-3 py-1">
                       <span className={getScoreColor(candidate.overallScore)}>
                         {candidate.overallScore}%
                       </span>
