@@ -601,31 +601,27 @@ const Results = () => {
                               <TableHead>Weight (%)</TableHead>
                               <TableHead>Expected Level</TableHead>
                               <TableHead>Actual Level</TableHead>
-                              <TableHead>Notes</TableHead>
+                              <TableHead>Scored</TableHead>
+                              <TableHead>Attribute Score</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {category.subAttributes.map((subAttr, subIndex) => (
-                              <TableRow key={subIndex}>
-                                <TableCell className="font-medium">{subAttr.name}</TableCell>
-                                <TableCell>{subAttr.weightage}%</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.expectedLevel)}
-                                    <span>Level {subAttr.expectedLevel}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center space-x-1">
-                                    {getLevelIcon(subAttr.expectedLevel, subAttr.actualLevel)}
-                                    <span>Level {subAttr.actualLevel}</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-sm text-muted-foreground max-w-xs">
-                                  {subAttr.notes}
-                                </TableCell>
-                              </TableRow>
-                            ))}
+                            {category.subAttributes.map((subAttr, subIndex) => {
+                              const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                              const subAttributeScore = (subScore * subAttr.weightage / 100).toFixed(1);
+                              return (
+                                <TableRow key={subIndex}>
+                                  <TableCell className="font-medium">{subAttr.name}</TableCell>
+                                  <TableCell>{subAttr.weightage}%</TableCell>
+                                  <TableCell>Level {subAttr.expectedLevel}</TableCell>
+                                  <TableCell>Level {subAttr.actualLevel}</TableCell>
+                                  <TableCell className={getScoreColor(subScore)}>
+                                    {subScore.toFixed(1)}%
+                                  </TableCell>
+                                  <TableCell>{subAttributeScore}%</TableCell>
+                                </TableRow>
+                              );
+                            })}
                           </TableBody>
                         </Table>
                       </div>
