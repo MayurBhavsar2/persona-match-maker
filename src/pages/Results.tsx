@@ -10,6 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription
+} from "@/components/ui/sheet";
+import { 
   Trophy, 
   TrendingUp, 
   TrendingDown, 
@@ -23,7 +30,10 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  X
+  X,
+  Mail,
+  Phone,
+  MapPin
 } from "lucide-react";
 
 interface SubAttribute {
@@ -72,6 +82,8 @@ const Results = () => {
   const [filterCategory, setFilterCategory] = useState<'all' | 'perfect' | 'moderate' | 'low'>('all');
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [selectedPersona, setSelectedPersona] = useState<string>('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCandidate, setSidebarCandidate] = useState<Candidate | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('evaluatedCandidates');
@@ -766,7 +778,15 @@ const Results = () => {
                       <TableRow key={candidate.id}>
                         <TableCell>
                           <div>
-                            <p className="font-medium text-foreground">{candidate.name}</p>
+                            <button 
+                              className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
+                              onClick={() => {
+                                setSidebarCandidate(candidate);
+                                setSidebarOpen(true);
+                              }}
+                            >
+                              {candidate.name}
+                            </button>
                             <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
                           </div>
                         </TableCell>
@@ -820,6 +840,129 @@ const Results = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Candidate Details Sheet */}
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="right" className="w-96 overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Candidate Details</SheetTitle>
+            <SheetDescription>
+              {sidebarCandidate?.name} - Complete Profile Information
+            </SheetDescription>
+          </SheetHeader>
+          
+          <div className="space-y-6 mt-6">
+            {sidebarCandidate && (
+              <>
+                {/* Basic Contact Details */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">{sidebarCandidate.name}</CardTitle>
+                    <CardDescription>Contact Information</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">candidate@example.com</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">+1 (555) 123-4567</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm">San Francisco, CA</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Role Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Role</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm font-medium">{selectedRole}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Applied for this position</p>
+                  </CardContent>
+                </Card>
+
+                {/* Persona Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Persona</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm font-medium">{selectedPersona}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Evaluation based on this persona</p>
+                  </CardContent>
+                </Card>
+
+                {/* Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm font-medium mb-2">Overall Score</p>
+                      <div className="flex items-center space-x-2">
+                        <span className={`font-bold text-lg ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                          {sidebarCandidate.overallScore}%
+                        </span>
+                        <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
+                          {sidebarCandidate.fitCategory} fit
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Technical Skills</p>
+                        <div className="flex items-center space-x-2">
+                          <Progress value={sidebarCandidate.technicalSkills} className="flex-1 h-2" />
+                          <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-xs text-muted-foreground">Experience</p>
+                        <div className="flex items-center space-x-2">
+                          <Progress value={sidebarCandidate.experience} className="flex-1 h-2" />
+                          <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-xs text-muted-foreground">Communication</p>
+                        <div className="flex items-center space-x-2">
+                          <Progress value={sidebarCandidate.communication} className="flex-1 h-2" />
+                          <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <p className="text-xs text-muted-foreground">Certifications</p>
+                        <div className="flex items-center space-x-2">
+                          <Progress value={sidebarCandidate.certifications} className="flex-1 h-2" />
+                          <span className="text-sm font-medium">{sidebarCandidate.certifications}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-xs text-muted-foreground">Application Date</p>
+                      <p className="text-sm font-medium">
+                        {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </Layout>
   );
 };
