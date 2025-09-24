@@ -35,11 +35,11 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**SDLC, STLC, Testing methodologies, Quality standards**" },
-        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Test execution, Automation frameworks, CI/CD pipelines**" },
-        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**Root cause analysis, Log analysis, Performance debugging**" },
-        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Risk assessment, Tool selection, Strategy comparison**" },
-        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Custom tools, Test utilities, Framework development**" }
+        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "SDLC, STLC, Testing methodologies, Quality standards" },
+        { name: "Apply", weight: 25, requiredLevel: 4, notes: "Test execution, Automation frameworks, CI/CD pipelines" },
+        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "Root cause analysis, Log analysis, Performance debugging" },
+        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "Risk assessment, Tool selection, Strategy comparison" },
+        { name: "Create", weight: 15, requiredLevel: 3, notes: "Custom tools, Test utilities, Framework development" }
       ];
     }
 
@@ -109,28 +109,28 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Remember / Understand":
           notes = jdContent.includes("sdlc") || jdContent.includes("software development") 
-            ? "**SDLC, STLC, Testing concepts, Quality standards**"
-            : "**Core concepts, Technical principles, Domain knowledge**";
+            ? "SDLC, STLC, Testing concepts, Quality standards"
+            : "Core concepts, Technical principles, Domain knowledge";
           break;
         case "Apply":
           notes = jdContent.includes("automation") || jdContent.includes("testing")
-            ? "**Test automation, Framework execution, CI/CD implementation**"
-            : "**Solution implementation, Process execution, Tool usage**";
+            ? "Test automation, Framework execution, CI/CD implementation"
+            : "Solution implementation, Process execution, Tool usage";
           break;
         case "Analyze":
           notes = jdContent.includes("debug") || jdContent.includes("troubleshoot")
-            ? "**Root cause analysis, Log interpretation, System debugging**"
-            : "**Problem analysis, Data interpretation, Issue investigation**";
+            ? "Root cause analysis, Log interpretation, System debugging"
+            : "Problem analysis, Data interpretation, Issue investigation";
           break;
         case "Evaluate":
           notes = jdContent.includes("risk") || jdContent.includes("assessment")
-            ? "**Risk assessment, Tool evaluation, Strategy selection**"
-            : "**Solution evaluation, Decision making, Approach comparison**";
+            ? "Risk assessment, Tool evaluation, Strategy selection"
+            : "Solution evaluation, Decision making, Approach comparison";
           break;
         case "Create":
           notes = jdContent.includes("develop") || jdContent.includes("build")
-            ? "**Custom tools, Utility development, Framework enhancement**"
-            : "**Innovation, Solution development, Process improvement**";
+            ? "Custom tools, Utility development, Framework enhancement"
+            : "Innovation, Solution development, Process improvement";
           break;
       }
       return {
@@ -148,9 +148,9 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "**Code reviews, Team mentoring, Knowledge sharing, Training delivery**" },
-        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "**Stakeholder management, Cross-team collaboration, Consensus building**" },
-        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "**Quality standards, Process optimization, Best practices**" }
+        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "Code reviews, Team mentoring, Knowledge sharing, Training delivery" },
+        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "Stakeholder management, Cross-team collaboration, Consensus building" },
+        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "Quality standards, Process optimization, Best practices" }
       ];
     }
 
@@ -208,18 +208,18 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Peer Mentoring & Reviews":
           notes = jdContent.includes("mentor") || jdContent.includes("training") || jdContent.includes("coaching")
-            ? "**Technical mentoring, Code reviews, Training delivery, Team guidance**"
-            : "**Peer mentoring, Code reviews, Knowledge sharing, Skill development**";
+            ? "Technical mentoring, Code reviews, Training delivery, Team guidance"
+            : "Peer mentoring, Code reviews, Knowledge sharing, Skill development";
           break;
         case "Cross‑functional Influence":
           notes = jdContent.includes("stakeholder") || jdContent.includes("cross-functional") || jdContent.includes("coordinate")
-            ? "**Stakeholder management, Cross-team collaboration, Consensus building**"
-            : "**Relationship building, Cross-departmental work, Influence skills**";
+            ? "Stakeholder management, Cross-team collaboration, Consensus building"
+            : "Relationship building, Cross-departmental work, Influence skills";
           break;
         case "Quality Advocacy / Process Improvement":
           notes = jdContent.includes("quality") || jdContent.includes("process") || jdContent.includes("improvement")
-            ? "**Quality standards, Process optimization, Continuous improvement**"
-            : "**Quality excellence, Process enhancement, Best practices**";
+            ? "Quality standards, Process optimization, Continuous improvement"
+            : "Quality excellence, Process enhancement, Best practices";
           break;
       }
       return {
@@ -236,10 +236,10 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Communication", weight: 35, requiredLevel: 4, notes: "**Written communication, Verbal presentation, Stakeholder management, Team collaboration**" },
-        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "**High-pressure performance, Deadline management, Quality maintenance, Stress management**" },
-        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "**Informed decisions, Ambiguity handling, Risk-based prioritization, Quick assessment**" },
-        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "**Thorough documentation, Accuracy focus, Detail-oriented delivery, Quality standards**" }
+        { name: "Communication", weight: 35, requiredLevel: 4, notes: "Written communication, Verbal presentation, Stakeholder management, Team collaboration" },
+        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "High-pressure performance, Deadline management, Quality maintenance, Stress management" },
+        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "Informed decisions, Ambiguity handling, Risk-based prioritization, Quick assessment" },
+        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "Thorough documentation, Accuracy focus, Detail-oriented delivery, Quality standards" }
       ];
     }
 
@@ -303,23 +303,23 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Communication":
           notes = jdContent.includes("stakeholder") || jdContent.includes("present")
-            ? "**Stakeholder presentations, Written communication, Cross-functional discussions, Status updates**"
-            : "**Written communication, Verbal skills, Team collaboration, Documentation**";
+            ? "Stakeholder presentations, Written communication, Cross-functional discussions, Status updates"
+            : "Written communication, Verbal skills, Team collaboration, Documentation";
           break;
         case "Resilience / Stress Tolerance":
           notes = jdContent.includes("fast-paced") || jdContent.includes("deadline") || jdContent.includes("pressure")
-            ? "**High-pressure performance, Deadline management, Quality maintenance, Fast-paced work**"
-            : "**Stress management, Competing priorities, Performance consistency, Pressure handling**";
+            ? "High-pressure performance, Deadline management, Quality maintenance, Fast-paced work"
+            : "Stress management, Competing priorities, Performance consistency, Pressure handling";
           break;
         case "Decision‑Making under Uncertainty":
           notes = jdContent.includes("complex") || jdContent.includes("ambiguous")
-            ? "**Complex problem solving, Ambiguity navigation, Impact-based decisions, Strategic thinking**"
-            : "**Quick assessment, Limited information decisions, Sound judgment, Risk evaluation**";
+            ? "Complex problem solving, Ambiguity navigation, Impact-based decisions, Strategic thinking"
+            : "Quick assessment, Limited information decisions, Sound judgment, Risk evaluation";
           break;
         case "Attention to Detail & Documentation":
           notes = jdContent.includes("documentation") || jdContent.includes("quality") || jdContent.includes("accurate")
-            ? "**Quality documentation, Accuracy standards, Detail focus, Documentation standards**"
-            : "**Comprehensive records, Procedure adherence, Precision focus, Quality control**";
+            ? "Quality documentation, Accuracy standards, Detail focus, Documentation standards"
+            : "Comprehensive records, Procedure adherence, Precision focus, Quality control";
           break;
       }
       return {
@@ -446,11 +446,11 @@ const PersonaConfig = () => {
       name: "Technical Skills",
       weight: 40,
       skills: [
-        { name: "Core Technology Stack", weight: 30, requiredLevel: 4, notes: "**React, Node.js, TypeScript, JavaScript ES6+, REST APIs, microservices architecture**" },
-        { name: "Programming Languages", weight: 25, requiredLevel: 4, notes: "**JavaScript, TypeScript, Python, Java, SQL**" },
-        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, notes: "**React, Redux, React Query, Express.js, Git, Docker, CI/CD, Jenkins, GitHub Actions**" },
-        { name: "Database & Data Management", weight: 15, requiredLevel: 3, notes: "**PostgreSQL, MySQL, MongoDB, NoSQL, ETL**" },
-        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, notes: "**AWS, Azure, EC2, S3, Lambda, serverless architecture**" }
+        { name: "Core Technology Stack", weight: 30, requiredLevel: 4, notes: "React, Node.js, TypeScript, JavaScript ES6+, REST APIs, microservices architecture" },
+        { name: "Programming Languages", weight: 25, requiredLevel: 4, notes: "JavaScript, TypeScript, Python, Java, SQL" },
+        { name: "Frameworks & Tools", weight: 20, requiredLevel: 3, notes: "React, Redux, React Query, Express.js, Git, Docker, CI/CD, Jenkins, GitHub Actions" },
+        { name: "Database & Data Management", weight: 15, requiredLevel: 3, notes: "PostgreSQL, MySQL, MongoDB, NoSQL, ETL" },
+        { name: "Cloud & Infrastructure", weight: 10, requiredLevel: 3, notes: "AWS, Azure, EC2, S3, Lambda, serverless architecture" }
       ]
     },
     {
@@ -741,7 +741,7 @@ const PersonaConfig = () => {
                                   <Textarea
                                     value={skill.notes}
                                     onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                                    className="min-h-[60px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0"
+                                    className="min-h-[60px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0 font-semibold"
                                     placeholder="React, Node.js, TypeScript..."
                                   />
                                 </TableCell>
