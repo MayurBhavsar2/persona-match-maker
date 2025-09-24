@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Trophy, 
   TrendingUp, 
@@ -69,6 +70,8 @@ const Results = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [filterCategory, setFilterCategory] = useState<'all' | 'perfect' | 'moderate' | 'low'>('all');
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedPersona, setSelectedPersona] = useState<string>('');
 
   useEffect(() => {
     const stored = localStorage.getItem('evaluatedCandidates');
@@ -97,6 +100,23 @@ const Results = () => {
       });
       
       setCandidates(candidatesWithDetailedData);
+    }
+
+    // Load role and persona from localStorage
+    const jdData = localStorage.getItem('jdData');
+    if (jdData) {
+      const parsedJD = JSON.parse(jdData);
+      setSelectedRole(parsedJD.role || 'RPA Developer');
+    } else {
+      setSelectedRole('RPA Developer');
+    }
+
+    const personaData = localStorage.getItem('personaData');
+    if (personaData) {
+      const parsedPersona = JSON.parse(personaData);
+      setSelectedPersona(parsedPersona.name || 'Default Persona');
+    } else {
+      setSelectedPersona('Default Persona');
     }
   }, []);
 
@@ -575,7 +595,51 @@ const Results = () => {
               <Star className="w-4 h-4 mr-2" />
               Shortlist
             </Button>
-          </div>
+        </div>
+
+        {/* Role and Persona Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Role</CardTitle>
+              <CardDescription>Select the role for evaluation</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedRole} onValueChange={setSelectedRole}>
+                <SelectTrigger className="w-full bg-background border-border">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border z-50">
+                  <SelectItem value="RPA Developer">RPA Developer</SelectItem>
+                  <SelectItem value="Software Engineer">Software Engineer</SelectItem>
+                  <SelectItem value="QA Engineer">QA Engineer</SelectItem>
+                  <SelectItem value="Data Analyst">Data Analyst</SelectItem>
+                  <SelectItem value="Product Manager">Product Manager</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="text-lg">Persona</CardTitle>
+              <CardDescription>Select the evaluation persona</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedPersona} onValueChange={setSelectedPersona}>
+                <SelectTrigger className="w-full bg-background border-border">
+                  <SelectValue placeholder="Select a persona" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border z-50">
+                  <SelectItem value="Default Persona">Default Persona</SelectItem>
+                  <SelectItem value="Senior Level">Senior Level</SelectItem>
+                  <SelectItem value="Mid Level">Mid Level</SelectItem>
+                  <SelectItem value="Junior Level">Junior Level</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        </div>
         </div>
       </div>
     </DialogContent>
