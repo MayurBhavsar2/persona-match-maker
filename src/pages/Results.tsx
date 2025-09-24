@@ -535,9 +535,9 @@ const Results = () => {
                 Contact Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3">
               {/* First row: Contact number and email */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center space-x-2">
                   <Phone className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm">+1 (555) 123-4567</span>
@@ -549,7 +549,7 @@ const Results = () => {
               </div>
               
               {/* Second row: Role and persona */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Role</p>
                   <p className="text-sm font-medium">{selectedRole}</p>
