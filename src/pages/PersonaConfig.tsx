@@ -580,11 +580,23 @@ const PersonaConfig = () => {
   // Generate default persona name
   const generateDefaultPersonaName = () => {
     const storedJD = localStorage.getItem('selectedJD');
-    const position = storedJD ? JSON.parse(storedJD).position || 'candidate' : 'candidate';
-    const username = 'user'; // Could be replaced with actual user ID/name
+    let position = 'candidate';
+    
+    if (storedJD) {
+      const jdData = JSON.parse(storedJD);
+      // Extract position from JD data (could be in title, position, or role field)
+      position = jdData.position || jdData.title || jdData.role || 'candidate';
+    }
+    
+    // Get username - in a real app this would come from authentication
+    // For now, check if there's any user data in localStorage or use default
+    const userData = localStorage.getItem('currentUser');
+    const username = userData ? JSON.parse(userData).username || 'user' : 'user';
+    
     const now = new Date();
     const dateTime = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    return `persona-${position.toLowerCase().replace(/\s+/g, '-')}-${username}-${dateTime}`;
+    
+    return `persona-${position.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${username}-${dateTime}`;
   };
 
   const handleSavePersona = () => {
