@@ -480,8 +480,8 @@ const Results = () => {
   const lowFitCount = candidates.filter(c => c.fitCategory === 'low').length;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-orange-600';
+    if (score >= 90) return 'text-green-600';
+    if (score >= 80) return 'text-orange-500';
     return 'text-red-600';
   };
 
@@ -527,21 +527,37 @@ const Results = () => {
             </p>
           </div>
 
-          {/* Overall Score */}
+          {/* Contact Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <TrendingUp className="w-5 h-5" />
-                Overall Score
+                <Users className="w-5 h-5" />
+                Contact Information
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-4">
-                <div className="text-3xl font-bold">{candidate.overallScore}%</div>
-                <Progress value={candidate.overallScore} className="flex-1" />
-                <Badge variant={getScoreBadgeVariant(candidate.overallScore)}>
-                  {candidate.fitCategory}
-                </Badge>
+            <CardContent className="space-y-4">
+              {/* First row: Contact number and email */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">+1 (555) 123-4567</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm">candidate@example.com</span>
+                </div>
+              </div>
+              
+              {/* Second row: Role and persona */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Role</p>
+                  <p className="text-sm font-medium">{selectedRole}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Persona</p>
+                  <p className="text-sm font-medium">{selectedPersona}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
