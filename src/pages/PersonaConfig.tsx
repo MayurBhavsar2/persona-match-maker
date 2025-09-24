@@ -579,20 +579,13 @@ const PersonaConfig = () => {
 
   // Generate default persona name
   const generateDefaultPersonaName = () => {
-    // Get role from the first step
-    const storedRole = localStorage.getItem('selectedRole');
+    // Get role from JD data stored in first step
+    const storedJD = localStorage.getItem('jdData');
     let position = 'candidate';
     
-    if (storedRole) {
-      const roleData = JSON.parse(storedRole);
-      position = roleData.name || roleData.title || roleData;
-    } else {
-      // Fallback to JD data if role not found
-      const storedJD = localStorage.getItem('selectedJD');
-      if (storedJD) {
-        const jdData = JSON.parse(storedJD);
-        position = jdData.position || jdData.title || jdData.role || 'candidate';
-      }
+    if (storedJD) {
+      const jdData = JSON.parse(storedJD);
+      position = jdData.role || 'candidate';
     }
     
     // Get username - in a real app this would come from authentication
