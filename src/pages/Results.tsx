@@ -591,64 +591,6 @@ const Results = () => {
           </p>
         </div>
 
-        {/* Analytics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="shadow-card">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center">
-                  <Trophy className="w-6 h-6 text-success" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{perfectFitCount}</p>
-                  <p className="text-sm text-muted-foreground">Perfect Fit</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-warning/10 rounded-full flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6 text-warning" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{moderateFitCount}</p>
-                  <p className="text-sm text-muted-foreground">Moderate Fit</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-danger/10 rounded-full flex items-center justify-center">
-                  <TrendingDown className="w-6 h-6 text-danger" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{lowFitCount}</p>
-                  <p className="text-sm text-muted-foreground">Low Fit</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-card">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Users className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{candidates.length}</p>
-                  <p className="text-sm text-muted-foreground">Total Candidates</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Filter Tabs */}
         <Card className="shadow-card">
