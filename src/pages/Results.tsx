@@ -603,6 +603,7 @@ const Results = () => {
                               <TableHead>Actual Level</TableHead>
                               <TableHead>Scored</TableHead>
                               <TableHead>Attribute Score</TableHead>
+                              <TableHead>Notes</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -619,6 +620,9 @@ const Results = () => {
                                     {subScore.toFixed(1)}%
                                   </TableCell>
                                   <TableCell>{subAttributeScore}%</TableCell>
+                                  <TableCell className="text-sm text-muted-foreground max-w-xs">
+                                    {subAttr.notes}
+                                  </TableCell>
                                 </TableRow>
                               );
                             })}
