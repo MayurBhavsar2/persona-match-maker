@@ -35,11 +35,11 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "**Technical concepts**, **domain knowledge**, **frameworks** understanding" },
-        { name: "Apply", weight: 25, requiredLevel: 4, notes: "**Execute workflows**, **implement solutions**, **deliver consistent results**" },
-        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "**Debug issues**, **interpret data**, **troubleshoot systematically**" },
-        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "**Assess solutions**, **select optimal approaches**, **weigh trade-offs**" },
-        { name: "Create", weight: 15, requiredLevel: 3, notes: "**Build tools**, **develop solutions**, **innovate processes**" }
+        { name: "Remember / Understand", weight: 10, requiredLevel: 3, notes: "SDLC, STLC, Testing methodologies, Quality standards" },
+        { name: "Apply", weight: 25, requiredLevel: 4, notes: "Test execution, Automation frameworks, CI/CD pipelines" },
+        { name: "Analyze", weight: 25, requiredLevel: 4, notes: "Root cause analysis, Log analysis, Performance debugging" },
+        { name: "Evaluate", weight: 25, requiredLevel: 4, notes: "Risk assessment, Tool selection, Strategy comparison" },
+        { name: "Create", weight: 15, requiredLevel: 3, notes: "Custom tools, Test utilities, Framework development" }
       ];
     }
 
@@ -109,28 +109,28 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Remember / Understand":
           notes = jdContent.includes("sdlc") || jdContent.includes("software development") 
-            ? "**SDLC/STLC** knowledge, **testing concepts**, **industry standards**"
-            : "**Core concepts**, **technical principles**, **domain knowledge**";
+            ? "SDLC, STLC, Testing concepts, Quality standards"
+            : "Core concepts, Technical principles, Domain knowledge";
           break;
         case "Apply":
           notes = jdContent.includes("automation") || jdContent.includes("testing")
-            ? "**Execute test strategies**, **automation frameworks**, **workflow implementation**"
-            : "**Implement solutions**, **execute plans**, **deliver results**";
+            ? "Test automation, Framework execution, CI/CD implementation"
+            : "Solution implementation, Process execution, Tool usage";
           break;
         case "Analyze":
           notes = jdContent.includes("debug") || jdContent.includes("troubleshoot")
-            ? "**Root cause analysis**, **log interpretation**, **systematic debugging**"
-            : "**Problem analysis**, **data interpretation**, **issue investigation**";
+            ? "Root cause analysis, Log interpretation, System debugging"
+            : "Problem analysis, Data interpretation, Issue investigation";
           break;
         case "Evaluate":
           notes = jdContent.includes("risk") || jdContent.includes("assessment")
-            ? "**Risk assessment**, **tool selection**, **strategy evaluation**"
-            : "**Solution evaluation**, **decision making**, **approach comparison**";
+            ? "Risk assessment, Tool evaluation, Strategy selection"
+            : "Solution evaluation, Decision making, Approach comparison";
           break;
         case "Create":
           notes = jdContent.includes("develop") || jdContent.includes("build")
-            ? "**Build custom tools**, **develop utilities**, **framework enhancement**"
-            : "**Innovation**, **solution development**, **process improvement**";
+            ? "Custom tools, Utility development, Framework enhancement"
+            : "Innovation, Solution development, Process improvement";
           break;
       }
       return {
@@ -148,9 +148,9 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "**Mentor colleagues**, **conduct code reviews**, **knowledge sharing**" },
-        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "**Stakeholder collaboration**, **drive consensus**, **cross-team influence**" },
-        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "**Champion quality**, **process optimization**, **best practices adoption**" }
+        { name: "Peer Mentoring & Reviews", weight: 40, requiredLevel: 3, notes: "Code reviews, Team mentoring, Knowledge sharing, Training delivery" },
+        { name: "Cross‑functional Influence", weight: 30, requiredLevel: 3, notes: "Stakeholder management, Cross-team collaboration, Consensus building" },
+        { name: "Quality Advocacy / Process Improvement", weight: 30, requiredLevel: 3, notes: "Quality standards, Process optimization, Best practices" }
       ];
     }
 
@@ -208,18 +208,18 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Peer Mentoring & Reviews":
           notes = jdContent.includes("mentor") || jdContent.includes("training") || jdContent.includes("coaching")
-            ? "**Mentor colleagues**, **code reviews**, **training delivery**, **team guidance**"
-            : "**Technical mentoring**, **peer reviews**, **knowledge sharing**, **team development**";
+            ? "Technical mentoring, Code reviews, Training delivery, Team guidance"
+            : "Peer mentoring, Code reviews, Knowledge sharing, Skill development";
           break;
         case "Cross‑functional Influence":
           notes = jdContent.includes("stakeholder") || jdContent.includes("cross-functional") || jdContent.includes("coordinate")
-            ? "**Stakeholder management**, **cross-team collaboration**, **consensus building**"
-            : "**Relationship building**, **cross-departmental work**, **influence without authority**";
+            ? "Stakeholder management, Cross-team collaboration, Consensus building"
+            : "Relationship building, Cross-departmental work, Influence skills";
           break;
         case "Quality Advocacy / Process Improvement":
           notes = jdContent.includes("quality") || jdContent.includes("process") || jdContent.includes("improvement")
-            ? "**Quality standards**, **process optimization**, **continuous improvement**"
-            : "**Quality excellence**, **process enhancement**, **best practices advocacy**";
+            ? "Quality standards, Process optimization, Continuous improvement"
+            : "Quality excellence, Process enhancement, Best practices";
           break;
       }
       return {
@@ -236,10 +236,10 @@ const PersonaConfig = () => {
     if (!storedJD) {
       // Return default values if no JD is found
       return [
-        { name: "Communication", weight: 35, requiredLevel: 4, notes: "**Clear written/verbal communication**, **stakeholder presentations**, **team collaboration**" },
-        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "**High-pressure performance**, **deadline management**, **maintaining quality**" },
-        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "**Informed decisions**, **ambiguity handling**, **risk-based prioritization**" },
-        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "**Thorough documentation**, **accuracy focus**, **detail-oriented delivery**" }
+        { name: "Communication", weight: 35, requiredLevel: 4, notes: "Written communication, Verbal presentation, Stakeholder management, Team collaboration" },
+        { name: "Resilience / Stress Tolerance", weight: 20, requiredLevel: 3, notes: "High-pressure performance, Deadline management, Quality maintenance, Stress management" },
+        { name: "Decision‑Making under Uncertainty", weight: 25, requiredLevel: 3, notes: "Informed decisions, Ambiguity handling, Risk-based prioritization, Quick assessment" },
+        { name: "Attention to Detail & Documentation", weight: 20, requiredLevel: 3, notes: "Thorough documentation, Accuracy focus, Detail-oriented delivery, Quality standards" }
       ];
     }
 
@@ -303,23 +303,23 @@ const PersonaConfig = () => {
       switch (skill.name) {
         case "Communication":
           notes = jdContent.includes("stakeholder") || jdContent.includes("present")
-            ? "**Stakeholder presentations**, **clear communication**, **cross-functional discussions**"
-            : "**Written/verbal skills**, **team collaboration**, **clear documentation**";
+            ? "Stakeholder presentations, Written communication, Cross-functional discussions, Status updates"
+            : "Written communication, Verbal skills, Team collaboration, Documentation";
           break;
         case "Resilience / Stress Tolerance":
           notes = jdContent.includes("fast-paced") || jdContent.includes("deadline") || jdContent.includes("pressure")
-            ? "**High-pressure performance**, **deadline management**, **quality maintenance**"
-            : "**Stress management**, **competing priorities**, **performance consistency**";
+            ? "High-pressure performance, Deadline management, Quality maintenance, Fast-paced work"
+            : "Stress management, Competing priorities, Performance consistency, Pressure handling";
           break;
         case "Decision‑Making under Uncertainty":
           notes = jdContent.includes("complex") || jdContent.includes("ambiguous")
-            ? "**Complex problem solving**, **ambiguity navigation**, **impact-based decisions**"
-            : "**Quick assessment**, **limited information decisions**, **sound judgment**";
+            ? "Complex problem solving, Ambiguity navigation, Impact-based decisions, Strategic thinking"
+            : "Quick assessment, Limited information decisions, Sound judgment, Risk evaluation";
           break;
         case "Attention to Detail & Documentation":
           notes = jdContent.includes("documentation") || jdContent.includes("quality") || jdContent.includes("accurate")
-            ? "**Quality documentation**, **accuracy standards**, **detail focus**"
-            : "**Comprehensive records**, **procedure adherence**, **precision focus**";
+            ? "Quality documentation, Accuracy standards, Detail focus, Documentation standards"
+            : "Comprehensive records, Procedure adherence, Precision focus, Quality control";
           break;
       }
       return {
@@ -681,17 +681,31 @@ const PersonaConfig = () => {
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[30%]">Skill Name</TableHead>
+                              <TableHead className="w-[25%]">Skill Name</TableHead>
                               <TableHead className="w-[15%] text-center">Weight (%)</TableHead>
                               <TableHead className="w-[15%] text-center">Required Level</TableHead>
-                              <TableHead className="w-[40%]">Notes & Description</TableHead>
+                              <TableHead className="w-[45%]">Skills & Technologies</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {category.skills.map((skill, index) => (
                               <TableRow key={index}>
-                                <TableCell className="font-medium">
-                                  <Label className="text-sm font-semibold">{skill.name}</Label>
+                                <TableCell>
+                                  <Input
+                                    value={skill.name}
+                                    onChange={(e) => {
+                                      const updatedCategories = categories.map(cat => {
+                                        if (cat.id === category.id) {
+                                          const updatedSkills = [...cat.skills];
+                                          updatedSkills[index] = { ...updatedSkills[index], name: e.target.value };
+                                          return { ...cat, skills: updatedSkills };
+                                        }
+                                        return cat;
+                                      });
+                                      setCategories(updatedCategories);
+                                    }}
+                                    className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 font-medium"
+                                  />
                                 </TableCell>
                                 <TableCell className="text-center">
                                   <div className="flex items-center justify-center space-x-1">
@@ -724,24 +738,12 @@ const PersonaConfig = () => {
                                   </Select>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="space-y-2">
-                                    <div className="text-xs text-muted-foreground bg-muted/50 rounded p-2 border">
-                                      {skill.notes.split('**').map((part, index) => 
-                                        index % 2 === 1 ? (
-                                          <span key={index} className="font-semibold text-foreground bg-primary/10 px-1 rounded">{part}</span>
-                                        ) : (
-                                          <span key={index}>{part}</span>
-                                        )
-                                      )}
-                                    </div>
-                                    <Textarea
-                                      placeholder="Add custom notes..."
-                                      value=""
-                                      onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                                      className="text-xs resize-none h-16"
-                                      rows={2}
-                                    />
-                                  </div>
+                                  <Textarea
+                                    value={skill.notes}
+                                    onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
+                                    className="min-h-[60px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0"
+                                    placeholder="React, Node.js, TypeScript..."
+                                  />
                                 </TableCell>
                               </TableRow>
                             ))}
