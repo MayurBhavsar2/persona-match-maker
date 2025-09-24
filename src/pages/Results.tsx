@@ -750,7 +750,6 @@ const Results = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Candidate</TableHead>
-                      <TableHead>Fit Category</TableHead>
                       <TableHead>Overall Score</TableHead>
                       <TableHead>Application Date</TableHead>
                       <TableHead>Actions</TableHead>
@@ -767,14 +766,6 @@ const Results = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            {getFitIcon(candidate.fitCategory)}
-                            <Badge variant={getFitBadgeVariant(candidate.fitCategory)}>
-                              {candidate.fitCategory.charAt(0).toUpperCase() + candidate.fitCategory.slice(1)} Fit
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
                             <span className="font-medium">{candidate.overallScore}%</span>
                             <Progress value={candidate.overallScore} className="w-16 h-2" />
                           </div>
@@ -782,7 +773,9 @@ const Results = () => {
                         <TableCell>
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">{candidate.applicationDate}</span>
+                            <span className="text-sm">
+                              {new Date(candidate.applicationDate).toLocaleDateString()} {new Date(candidate.applicationDate).toLocaleTimeString()}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell>

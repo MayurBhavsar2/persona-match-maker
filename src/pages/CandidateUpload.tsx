@@ -112,7 +112,7 @@ const CandidateUpload = () => {
       experience: Math.floor(Math.random() * 25) + 75,
       communication: Math.floor(Math.random() * 35) + 65,
       certifications: Math.floor(Math.random() * 40) + 60,
-      applicationDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      applicationDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
     }));
 
     localStorage.setItem('evaluatedCandidates', JSON.stringify({
