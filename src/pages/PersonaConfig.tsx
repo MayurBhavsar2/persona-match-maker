@@ -41,23 +41,37 @@ const PersonaConfig = () => {
   const summaryRef = useRef<HTMLDivElement>(null);
   const aiInsightsRef = useRef<HTMLDivElement>(null);
   
-  // Get role name from localStorage
-  const selectedRole = localStorage.getItem('selectedRole') || 'Not specified';
+  // Get role name from JD data (stored during JD upload)
+  const getSelectedRole = () => {
+    const jdData = localStorage.getItem('jdData');
+    if (jdData) {
+      const parsedJD = JSON.parse(jdData);
+      return parsedJD.role || 'Not specified';
+    }
+    return localStorage.getItem('selectedRole') || 'Not specified';
+  };
+  const selectedRole = getSelectedRole();
   
   // Scroll to section functions
   const scrollToSection = (section: string) => {
     setActiveTab(section);
-    const sectionRef = 
-      section === 'distribution' ? distributionRef :
-      section === 'summary' ? summaryRef :
-      aiInsightsRef;
     
-    if (sectionRef.current) {
-      sectionRef.current.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
+    // Add a small delay to ensure tab state is updated
+    setTimeout(() => {
+      const sectionRef = 
+        section === 'distribution' ? distributionRef :
+        section === 'summary' ? summaryRef :
+        aiInsightsRef;
+      
+      if (sectionRef.current) {
+        const offset = 120; // Account for sticky header and tabs
+        const elementTop = sectionRef.current.offsetTop - offset;
+        window.scrollTo({ 
+          top: elementTop,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   };
   
   // Helper function to analyze JD and generate cognitive demands
@@ -696,12 +710,12 @@ const PersonaConfig = () => {
         </div>
 
         {/* Sticky Navigation Tabs */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b pb-2">
+        <div className="sticky top-4 z-20 bg-background/95 backdrop-blur-sm border border-border rounded-lg p-1 mb-6">
           <Tabs value={activeTab} onValueChange={scrollToSection} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-9">
-              <TabsTrigger value="distribution" className="text-xs">Table of Distribution</TabsTrigger>
-              <TabsTrigger value="summary" className="text-xs">Summary</TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs">AI Insights</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 h-9 bg-muted">
+              <TabsTrigger value="distribution" className="text-xs font-medium">Table of Distribution</TabsTrigger>
+              <TabsTrigger value="summary" className="text-xs font-medium">Summary</TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs font-medium">AI Insights</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
