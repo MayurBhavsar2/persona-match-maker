@@ -1134,15 +1134,6 @@ const PersonaConfig = () => {
               <Save className="w-4 h-4" />
               <span>Save Persona</span>
             </Button>
-            
-            <Button
-              onClick={() => navigate('/candidate-upload')}
-              disabled={!isPersonaSaved}
-              className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
-            >
-              <span>Continue to Candidate Upload</span>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
           </div>
         </div>
 
