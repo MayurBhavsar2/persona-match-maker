@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,6 +34,31 @@ const PersonaConfig = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [personaName, setPersonaName] = useState("");
   const [isPersonaSaved, setIsPersonaSaved] = useState(false);
+  const [activeTab, setActiveTab] = useState("distribution");
+  
+  // Refs for scrolling to sections
+  const distributionRef = useRef<HTMLDivElement>(null);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const aiInsightsRef = useRef<HTMLDivElement>(null);
+  
+  // Get role name from localStorage
+  const selectedRole = localStorage.getItem('selectedRole') || 'Not specified';
+  
+  // Scroll to section functions
+  const scrollToSection = (section: string) => {
+    setActiveTab(section);
+    const sectionRef = 
+      section === 'distribution' ? distributionRef :
+      section === 'summary' ? summaryRef :
+      aiInsightsRef;
+    
+    if (sectionRef.current) {
+      sectionRef.current.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
   
   // Helper function to analyze JD and generate cognitive demands
   const generateCognitiveDemands = () => {
@@ -657,43 +683,60 @@ const PersonaConfig = () => {
 
   return (
     <Layout currentStep={2}>
-      <div className="max-w-6xl mx-auto space-y-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
           <p className="text-lg text-muted-foreground">
             Define the weightage for different skills and attributes to create your ideal candidate profile
           </p>
+          <div className="flex items-center justify-center space-x-2 text-sm">
+            <span className="text-muted-foreground">Role:</span>
+            <span className="font-medium text-primary">{selectedRole}</span>
+          </div>
         </div>
 
-        {/* Overall Progress */}
-        <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Category Weight Distribution</span>
-              <div className="flex items-center space-x-2">
-                {validation.totalValid ? (
-                  <CheckCircle2 className="w-5 h-5 text-success" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-destructive" />
-                )}
-                <span className={`text-sm font-mono ${
-                  validation.totalValid ? 'text-success' : 'text-destructive'
-                }`}>
-                  {getTotalWeight()}%
-                </span>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={getTotalWeight()} className="h-3" />
-            <p className="text-xs text-muted-foreground mt-2">
-              Total must equal 100% to proceed
-            </p>
-          </CardContent>
-        </Card>
+        {/* Sticky Navigation Tabs */}
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b pb-2">
+          <Tabs value={activeTab} onValueChange={scrollToSection} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 h-9">
+              <TabsTrigger value="distribution" className="text-xs">Table of Distribution</TabsTrigger>
+              <TabsTrigger value="summary" className="text-xs">Summary</TabsTrigger>
+              <TabsTrigger value="insights" className="text-xs">AI Insights</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-        {/* Categories */}
-        <Accordion type="multiple" className="space-y-4">
+        {/* Table of Distribution Section */}
+        <div ref={distributionRef} className="space-y-6">
+          {/* Overall Progress */}
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Category Weight Distribution</span>
+                <div className="flex items-center space-x-2">
+                  {validation.totalValid ? (
+                    <CheckCircle2 className="w-5 h-5 text-success" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-destructive" />
+                  )}
+                  <span className={`text-sm font-mono ${
+                    validation.totalValid ? 'text-success' : 'text-destructive'
+                  }`}>
+                    {getTotalWeight()}%
+                  </span>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Progress value={getTotalWeight()} className="h-3" />
+              <p className="text-xs text-muted-foreground mt-2">
+                Total must equal 100% to proceed
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Categories */}
+          <Accordion type="multiple" className="space-y-4">
           {categories.map((category) => {
             const skillTotal = getCategorySkillTotal(category.id);
             const isSkillTotalValid = skillTotal === 100;
@@ -943,18 +986,20 @@ const PersonaConfig = () => {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* AI Analysis & Suggestions */}
-        {validation.totalValid && validation.categoriesValid && (
-          <Card className="shadow-card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Lightbulb className="w-5 h-5 text-blue-600" />
-                <span>AI Analysis & Improvement Suggestions</span>
-              </CardTitle>
-            </CardHeader>
+        {/* AI Insights Section */}
+        <div ref={aiInsightsRef} className="space-y-6">
+          {validation.totalValid && validation.categoriesValid && (
+            <Card className="shadow-card bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Lightbulb className="w-5 h-5 text-blue-600" />
+                  <span>AI Analysis & Improvement Suggestions</span>
+                </CardTitle>
+              </CardHeader>
             <CardContent className="space-y-6">
               {(() => {
                 const analysis = generateAIAnalysis();
@@ -1035,9 +1080,10 @@ const PersonaConfig = () => {
                   </>
                 );
               })()}
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
         {/* Action Buttons */}
         <div className="flex justify-between pt-6">
