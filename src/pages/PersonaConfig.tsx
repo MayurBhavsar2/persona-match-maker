@@ -64,7 +64,8 @@ const PersonaConfig = () => {
         aiInsightsRef;
       
       if (sectionRef.current) {
-        const offset = 120; // Account for sticky header and tabs
+        // Account for sticky header (64px) + sticky tabs (58px) + some padding
+        const offset = 140;
         const elementTop = sectionRef.current.offsetTop - offset;
         window.scrollTo({ 
           top: elementTop,
@@ -710,18 +711,18 @@ const PersonaConfig = () => {
         </div>
 
         {/* Sticky Navigation Tabs */}
-        <div className="sticky top-4 z-20 bg-background/95 backdrop-blur-sm border border-border rounded-lg p-1 mb-6">
-          <Tabs value={activeTab} onValueChange={scrollToSection} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 h-9 bg-muted">
-              <TabsTrigger value="distribution" className="text-xs font-medium">Table of Distribution</TabsTrigger>
-              <TabsTrigger value="summary" className="text-xs font-medium">Summary</TabsTrigger>
-              <TabsTrigger value="insights" className="text-xs font-medium">AI Insights</TabsTrigger>
+        <div className="bg-background border-b border-border sticky top-16 z-30 -mx-6 px-6 py-3">
+          <Tabs value={activeTab} onValueChange={scrollToSection} className="w-full max-w-6xl mx-auto">
+            <TabsList className="grid w-full grid-cols-3 h-10 bg-muted">
+              <TabsTrigger value="distribution" className="text-sm font-medium">Table of Distribution</TabsTrigger>
+              <TabsTrigger value="summary" className="text-sm font-medium">Summary</TabsTrigger>
+              <TabsTrigger value="insights" className="text-sm font-medium">AI Insights</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
 
         {/* Table of Distribution Section */}
-        <div ref={distributionRef} className="space-y-6">
+        <div ref={distributionRef} className="space-y-6 mt-6">
           {/* Overall Progress */}
           <Card className="shadow-card">
             <CardHeader>
