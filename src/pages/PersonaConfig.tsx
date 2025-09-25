@@ -64,15 +64,27 @@ const PersonaConfig = () => {
         aiInsightsRef;
       
       if (sectionRef.current) {
-        // Account for sticky header (64px) + sticky tabs (58px) + some padding
-        const offset = 140;
-        const elementTop = sectionRef.current.offsetTop - offset;
+        console.log(`Scrolling to ${section} section`); // Debug log
+        
+        // Get the element's position
+        const rect = sectionRef.current.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const elementTop = rect.top + scrollTop;
+        
+        // Account for sticky header and tabs - more precise calculation
+        const headerHeight = 64; // Layout header
+        const tabsHeight = 60;   // Sticky tabs
+        const padding = 20;      // Extra padding
+        const offset = headerHeight + tabsHeight + padding;
+        
         window.scrollTo({ 
-          top: elementTop,
+          top: elementTop - offset,
           behavior: 'smooth'
         });
+      } else {
+        console.log(`Section ref for ${section} not found`); // Debug log
       }
-    }, 100);
+    }, 150);
   };
   
   // Helper function to analyze JD and generate cognitive demands
@@ -894,9 +906,12 @@ const PersonaConfig = () => {
             );
           })}
         </Accordion>
+        </div>
 
-        {/* Persona Summary */}
-        <Card className="shadow-card bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+        {/* Summary Section */}
+        <div ref={summaryRef} className="space-y-6">
+          {/* Persona Summary */}
+          <Card className="shadow-card bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <CheckCircle2 className="w-5 h-5 text-primary" />
