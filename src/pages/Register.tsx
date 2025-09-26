@@ -80,19 +80,19 @@ const Register = () => {
         </Button>
         
         <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-0 animate-scale-in">
-          <CardHeader className="text-center pb-8">
-            <div className="mx-auto w-16 h-16 bg-gradient-secondary rounded-full flex items-center justify-center mb-6 animate-slide-up">
-              <UserPlus className="w-8 h-8 text-secondary-foreground" />
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-12 h-12 bg-gradient-secondary rounded-full flex items-center justify-center mb-4 animate-slide-up">
+              <UserPlus className="w-6 h-6 text-secondary-foreground" />
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-secondary bg-clip-text text-transparent animate-fade-in">
+            <CardTitle className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent animate-fade-in">
               Join Our Platform
             </CardTitle>
-            <CardDescription className="text-lg animate-fade-in">
+            <CardDescription className="text-base animate-fade-in">
               Create your HR platform account
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
                 <Input
@@ -102,7 +102,7 @@ const Register = () => {
                   placeholder="Enter your full name"
                   value={formData.fullName}
                   onChange={handleInputChange}
-                  className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                   required
                 />
               </div>
@@ -116,7 +116,7 @@ const Register = () => {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                   required
                 />
               </div>
@@ -124,7 +124,7 @@ const Register = () => {
               <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="role" className="text-sm font-medium">Role</Label>
                 <Select value={formData.role} onValueChange={handleRoleChange} required>
-                  <SelectTrigger className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
+                  <SelectTrigger className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border shadow-lg">
@@ -145,14 +145,14 @@ const Register = () => {
                     placeholder="Create a strong password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-12"
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent transition-colors"
+                    className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -163,15 +163,15 @@ const Register = () => {
                   </Button>
                 </div>
                 {formData.password && (
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                         <div 
                           className={`h-full transition-all duration-300 ${getPasswordStrengthColor()}`}
                           style={{ width: `${Math.min((passwordStrength / 12) * 100, 100)}%` }}
                         ></div>
                       </div>
-                      <Shield className="w-4 h-4 text-muted-foreground" />
+                      <Shield className="w-3 h-3 text-muted-foreground" />
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {passwordStrength < 6 && "Weak password"}
@@ -192,14 +192,14 @@ const Register = () => {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-12"
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent transition-colors"
+                    className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
@@ -209,21 +209,21 @@ const Register = () => {
                     )}
                   </Button>
                   {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                    <CheckCircle className="absolute right-12 top-1/2 transform -translate-y-1/2 w-4 h-4 text-success" />
+                    <CheckCircle className="absolute right-10 top-1/2 transform -translate-y-1/2 w-4 h-4 text-success" />
                   )}
                 </div>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-secondary hover:opacity-90 transition-all duration-300 font-semibold text-lg shadow-lg animate-slide-up"
+                className="w-full h-10 bg-gradient-secondary hover:opacity-90 transition-all duration-300 font-semibold shadow-lg animate-slide-up"
               >
-                <UserPlus className="w-5 h-5 mr-2" />
+                <UserPlus className="w-4 h-4 mr-2" />
                 Create Account
               </Button>
             </form>
 
-            <div className="mt-8 text-center animate-fade-in">
+            <div className="mt-4 text-center animate-fade-in">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border/50" />
@@ -232,7 +232,7 @@ const Register = () => {
                   <span className="bg-card px-2 text-muted-foreground">Or</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-6">
+              <p className="text-sm text-muted-foreground mt-4">
                 Already have an account?{" "}
                 <Link
                   to="/login"

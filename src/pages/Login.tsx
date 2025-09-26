@@ -60,23 +60,23 @@ const Login = () => {
         </Button>
         
         <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-0 animate-scale-in">
-          <CardHeader className="text-center pb-8">
-            <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-6 animate-slide-up">
-              <Users className="w-8 h-8 text-primary-foreground" />
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mb-4 animate-slide-up">
+              <Users className="w-6 h-6 text-primary-foreground" />
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent animate-fade-in">
+            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent animate-fade-in">
               Welcome Back
             </CardTitle>
-            <CardDescription className="text-lg animate-fade-in">
-              Sign in to your HR platform to continue
+            <CardDescription className="text-base animate-fade-in">
+              Sign in to your HR platform
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="role" className="text-sm font-medium">Role</Label>
                 <Select value={formData.role} onValueChange={handleRoleChange} required>
-                  <SelectTrigger className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
+                  <SelectTrigger className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
                     <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent className="bg-card border-border shadow-lg">
@@ -96,7 +96,7 @@ const Login = () => {
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                   required
                 />
               </div>
@@ -111,14 +111,14 @@ const Login = () => {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-12"
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
                     required
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent transition-colors"
+                    className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -143,14 +143,14 @@ const Login = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 bg-gradient-primary hover:opacity-90 transition-all duration-300 font-semibold text-lg shadow-lg animate-slide-up"
+                className="w-full h-10 bg-gradient-primary hover:opacity-90 transition-all duration-300 font-semibold shadow-lg animate-slide-up"
               >
-                <Briefcase className="w-5 h-5 mr-2" />
+                <Briefcase className="w-4 h-4 mr-2" />
                 Sign In to Platform
               </Button>
             </form>
 
-            <div className="mt-8 text-center animate-fade-in">
+            <div className="mt-4 text-center animate-fade-in">
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border/50" />
@@ -159,7 +159,7 @@ const Login = () => {
                   <span className="bg-card px-2 text-muted-foreground">Or</span>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mt-6">
+              <p className="text-sm text-muted-foreground mt-4">
                 Don't have an account?{" "}
                 <Link
                   to="/register"
