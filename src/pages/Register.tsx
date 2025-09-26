@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Eye, EyeOff, ArrowLeft, UserPlus, Shield, CheckCircle } from "lucide-react";
 
@@ -14,6 +15,7 @@ const Register = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    role: "",
     password: "",
     confirmPassword: "",
   });
@@ -42,6 +44,13 @@ const Register = () => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleRoleChange = (value: string) => {
+    setFormData({
+      ...formData,
+      role: value,
     });
   };
 
@@ -110,6 +119,20 @@ const Register = () => {
                   className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                   required
                 />
+              </div>
+
+              <div className="space-y-2 animate-slide-up">
+                <Label htmlFor="role" className="text-sm font-medium">Role</Label>
+                <Select value={formData.role} onValueChange={handleRoleChange} required>
+                  <SelectTrigger className="h-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
+                    <SelectValue placeholder="Select your role" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border shadow-lg">
+                    <SelectItem value="recruiter">Recruiter</SelectItem>
+                    <SelectItem value="hiring-manager">Hiring Manager</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2 animate-slide-up">
