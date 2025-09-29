@@ -17,14 +17,41 @@ const Login = () => {
     password: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Prototype functionality - just show success and navigate
-    toast({
-      title: "Login Successful",
-      description: "Welcome back to your HR platform!",
-    });
-    navigate("/");
+    
+    try {
+      // Replace with your backend API URL
+      const response = await fetch('YOUR_BACKEND_URL/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          role: formData.role,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Handle successful login (store token, user data, etc.)
+        toast({
+          title: "Login Successful",
+          description: "Welcome back to your HR platform!",
+        });
+        navigate("/");
+      } else {
+        throw new Error('Login failed');
+      }
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

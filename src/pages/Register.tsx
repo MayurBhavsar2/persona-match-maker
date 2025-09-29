@@ -20,7 +20,7 @@ const Register = () => {
     confirmPassword: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -32,12 +32,39 @@ const Register = () => {
       return;
     }
 
-    // Prototype functionality - just show success and navigate
-    toast({
-      title: "Registration Successful",
-      description: "Welcome to your HR platform!",
-    });
-    navigate("/login");
+    try {
+      // Replace with your backend API URL
+      const response = await fetch('YOUR_BACKEND_URL/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          role: formData.role,
+          password: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        // Handle successful registration
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to your HR platform!",
+        });
+        navigate("/login");
+      } else {
+        throw new Error('Registration failed');
+      }
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: "Unable to create account. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
