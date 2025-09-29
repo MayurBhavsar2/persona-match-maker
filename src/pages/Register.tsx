@@ -32,8 +32,17 @@ const Register = () => {
       return;
     }
 
+    console.log("Starting registration with data:", {
+      fullName: formData.fullName,
+      email: formData.email,
+      role: formData.role,
+      // Don't log password for security
+    });
+
     try {
       // Your backend API URL for registration
+      console.log("Making API call to:", 'http://localhost:8000/api/v1/auth/signup');
+      
       const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
         method: 'POST',
         headers: {
@@ -47,21 +56,31 @@ const Register = () => {
         }),
       });
 
+      console.log("API Response status:", response.status);
+      console.log("API Response ok:", response.ok);
+
       if (response.ok) {
         const data = await response.json();
-        // Handle successful registration
+        console.log("Registration successful:", data);
         toast({
           title: "Registration Successful",
           description: "Welcome to your HR platform!",
         });
         navigate("/login");
       } else {
-        throw new Error('Registration failed');
+        const errorData = await response.text();
+        console.error("Registration failed with status:", response.status, "Error:", errorData);
+        toast({
+          title: "Registration Failed",
+          description: `Server error: ${response.status}. Check if backend is running.`,
+          variant: "destructive",
+        });
       }
     } catch (error) {
+      console.error("Network error during registration:", error);
       toast({
         title: "Registration Failed",
-        description: "Unable to create account. Please try again.",
+        description: "Network error. Check if backend is running on localhost:8000",
         variant: "destructive",
       });
     }
