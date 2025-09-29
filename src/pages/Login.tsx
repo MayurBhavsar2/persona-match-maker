@@ -21,8 +21,8 @@ const Login = () => {
     e.preventDefault();
     
     try {
-      // Replace YOUR_FULL_API_URL with your actual backend URL  
-      const response = await fetch('https://your-backend-domain.com/api/v1/auth/login', {
+      // Your backend API URL for login (adjust endpoint if different)
+      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -33,8 +33,8 @@ const Register = () => {
     }
 
     try {
-      // Replace YOUR_FULL_API_URL with your actual backend URL
-      const response = await fetch('https://your-backend-domain.com/api/v1/auth/signup', {
+      // Your backend API URL for registration
+      const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
