@@ -12,7 +12,6 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    role: "",
     email: "",
     password: "",
   });
@@ -21,14 +20,13 @@ const Login = () => {
     e.preventDefault();
     
     try {
-      // Your backend API URL for login (adjust endpoint if different)
-      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+      // Replace with your backend API URL
+      const response = await fetch('/api/v1/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          role: formData.role,
           email: formData.email,
           password: formData.password,
         }),
@@ -61,12 +59,12 @@ const Login = () => {
     });
   };
 
-  const handleRoleChange = (value: string) => {
-    setFormData({
-      ...formData,
-      role: value,
-    });
-  };
+  // const handleRoleChange = (value: string) => {
+  //   setFormData({
+  //     ...formData,
+  //     role: value,
+  //   });
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
@@ -100,7 +98,7 @@ const Login = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2 animate-slide-up">
+              {/* <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="role" className="text-sm font-medium">Role</Label>
                 <Select value={formData.role} onValueChange={handleRoleChange} required>
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
@@ -112,7 +110,7 @@ const Login = () => {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>

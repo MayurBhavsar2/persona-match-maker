@@ -13,8 +13,10 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
+    first_name: "",
+    last_name:"",
     email: "",
+    phone:"",
     role: "",
     password: "",
     confirmPassword: "",
@@ -32,25 +34,18 @@ const Register = () => {
       return;
     }
 
-    console.log("Starting registration with data:", {
-      fullName: formData.fullName,
-      email: formData.email,
-      role: formData.role,
-      // Don't log password for security
-    });
-
     try {
-      // Your backend API URL for registration
-      console.log("Making API call to:", 'http://localhost:8000/api/v1/auth/signup');
-      
-      const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
+      // Replace with your backend API URL
+      const response = await fetch('/api/v1/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          first_name: formData.first_name,
+          last_name:formData.last_name,
           email: formData.email,
+          phone:formData.phone,
           role: formData.role,
           password: formData.password,
         }),
@@ -140,16 +135,33 @@ const Register = () => {
           <CardContent className="space-y-4">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                <Label htmlFor="first_name" className="text-sm font-medium">First Name</Label>
                 <Input
-                  id="fullName"
-                  name="fullName"
+                  id="First_name"
+                  name="first_name"
                   type="text"
-                  placeholder="Enter your full name"
-                  value={formData.fullName}
+                  placeholder="Enter your first name"
+                  value={formData.first_name}
                   onChange={handleInputChange}
                   className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                   required
+
+                  
+                />
+              </div>
+              <div className="space-y-2 animate-slide-up">
+                <Label htmlFor="last_name" className="text-sm font-medium">Last Name</Label>
+                <Input
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={formData.last_name}
+                  onChange={handleInputChange}
+                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                  required
+
+                  
                 />
               </div>
 
@@ -161,6 +173,20 @@ const Register = () => {
                   type="email"
                   placeholder="Enter your email"
                   value={formData.email}
+                  onChange={handleInputChange}
+                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2 animate-slide-up">
+                <Label htmlFor="phone" className="text-sm font-medium">Phone</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="text"
+                  placeholder="Enter your Phone Number"
+                  value={formData.phone}
                   onChange={handleInputChange}
                   className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                   required
