@@ -139,13 +139,27 @@ const Register = () => {
               {/* First Row - Full Name and Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                  <Label htmlFor="first_name" className="text-sm font-medium">First Name</Label>
                   <Input
-                    id="fullName"
-                    name="fullName"
+                    id="first_name"
+                    name="first_name"
                     type="text"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
+                    placeholder="Enter your first name"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="last_name" className="text-sm font-medium">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    type="text"
+                    placeholder="Enter your Last name"
+                    value={formData.last_name}
                     onChange={handleInputChange}
                     className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                     required
@@ -165,9 +179,8 @@ const Register = () => {
                     required
                   />
                 </div>
-              </div>
-              
-              <div className="space-y-2 animate-slide-up">
+
+                <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="phone" className="text-sm font-medium">Phone</Label>
                 <Input
                   id="phone"
@@ -181,6 +194,9 @@ const Register = () => {
                 />
               </div>
 
+            </div>
+              
+              
               {/* Second Row - Role */}
               <div className="grid grid-cols-1 gap-4 animate-slide-up">
                 <div className="space-y-2">
