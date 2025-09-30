@@ -115,7 +115,7 @@ const Register = () => {
         <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
       </div>
       
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-4xl relative z-10">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -138,125 +138,134 @@ const Register = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
-                <Input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* First Row - Full Name and Email */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                  <Input
+                    id="fullName"
+                    name="fullName"
+                    type="text"
+                    placeholder="Enter your full name"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
-                  required
-                />
-              </div>
-
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="role" className="text-sm font-medium">Role</Label>
-                <Select value={formData.role} onValueChange={handleRoleChange} required>
-                  <SelectTrigger className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border shadow-lg">
-                    <SelectItem value="recruiter">Recruiter</SelectItem>
-                    <SelectItem value="hiring-manager">Hiring Manager</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Second Row - Role */}
+              <div className="grid grid-cols-1 gap-4 animate-slide-up">
+                <div className="space-y-2">
+                  <Label htmlFor="role" className="text-sm font-medium">Role</Label>
+                  <Select value={formData.role} onValueChange={handleRoleChange} required>
+                    <SelectTrigger className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border shadow-lg">
+                      <SelectItem value="recruiter">Recruiter</SelectItem>
+                      <SelectItem value="hiring-manager">Hiring Manager</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="password" className="text-sm font-medium">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                </div>
-                {formData.password && (
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all duration-300 ${getPasswordStrengthColor()}`}
-                          style={{ width: `${Math.min((passwordStrength / 12) * 100, 100)}%` }}
-                        ></div>
-                      </div>
-                      <Shield className="w-3 h-3 text-muted-foreground" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {passwordStrength < 6 && "Weak password"}
-                      {passwordStrength >= 6 && passwordStrength < 10 && "Good password"}
-                      {passwordStrength >= 10 && "Strong password"}
-                    </p>
+              {/* Third Row - Password and Confirm Password */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up">
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a strong password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
                   </div>
-                )}
-              </div>
-
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </Button>
-                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                    <CheckCircle className="absolute right-10 top-1/2 transform -translate-y-1/2 w-4 h-4 text-success" />
+                  {formData.password && (
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                            style={{ width: `${Math.min((passwordStrength / 12) * 100, 100)}%` }}
+                          ></div>
+                        </div>
+                        <Shield className="w-3 h-3 text-muted-foreground" />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {passwordStrength < 6 && "Weak password"}
+                        {passwordStrength >= 6 && passwordStrength < 10 && "Good password"}
+                        {passwordStrength >= 10 && "Strong password"}
+                      </p>
+                    </div>
                   )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300 pr-10"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-2 py-2 hover:bg-transparent transition-colors"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                    {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                      <CheckCircle className="absolute right-10 top-1/2 transform -translate-y-1/2 w-4 h-4 text-success" />
+                    )}
+                  </div>
                 </div>
               </div>
 
