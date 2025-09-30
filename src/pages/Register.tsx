@@ -40,13 +40,15 @@ const Register = () => {
     });
 
     try {
-      // Your backend API URL for registration
-      console.log("Making API call to:", 'http://localhost:8000/api/v1/auth/signup');
+      // TODO: Replace with your actual registration API endpoint
+      console.log("Making API call to registration endpoint");
       
-      const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
+      const response = await fetch('YOUR_API_ENDPOINT_FOR_REGISTRATION', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add any required headers (authorization, etc.)
+          // 'Authorization': 'Bearer YOUR_API_KEY',
         },
         body: JSON.stringify({
           fullName: formData.fullName,

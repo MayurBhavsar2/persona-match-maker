@@ -21,11 +21,13 @@ const Login = () => {
     e.preventDefault();
     
     try {
-      // Your backend API URL for login (adjust endpoint if different)
-      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+      // TODO: Replace with your actual login API endpoint
+      const response = await fetch('YOUR_API_ENDPOINT_FOR_LOGIN', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add any required headers (authorization, etc.)
+          // 'Authorization': 'Bearer YOUR_API_KEY',
         },
         body: JSON.stringify({
           role: formData.role,
