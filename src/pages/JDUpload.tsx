@@ -61,7 +61,7 @@ const JDUpload = () => {
     fileInputRef.current?.click();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const role = showCustomRole ? customRole : selectedRole;
     
     if (!role) {
@@ -91,24 +91,103 @@ const JDUpload = () => {
       return;
     }
 
-    // Store data in localStorage for demo purposes
-    localStorage.setItem('jdData', JSON.stringify({
-      role,
-      fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
-      jdContent: inputMethod === "text" ? jdText : null,
-      instructions,
-      timestamp: Date.now()
-    }));
-
     toast({
       title: "Processing job description",
       description: "Analyzing your JD and generating recommendations...",
     });
 
-    // Navigate to comparison page
-    setTimeout(() => {
-      navigate('/jd-comparison');
-    }, 1500);
+    try {
+      if (inputMethod === "upload" && file) {
+        // TODO: Replace with your actual file upload API endpoint
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('role', role);
+        formData.append('instructions', instructions);
+
+        const response = await fetch('YOUR_API_ENDPOINT_FOR_FILE_UPLOAD', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            // Add any required headers (authorization, etc.)
+            // 'Authorization': 'Bearer YOUR_API_KEY',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('File upload failed');
+        }
+
+        const result = await response.json();
+        
+        // Store the API response data
+        localStorage.setItem('jdData', JSON.stringify({
+          role,
+          fileName: file.name,
+          jdContent: result.extractedText || null, // Assuming API returns extracted text
+          instructions,
+          apiData: result,
+          timestamp: Date.now()
+        }));
+
+      } else if (inputMethod === "text" && jdText.trim()) {
+        // TODO: Replace with your actual text processing API endpoint
+        const response = await fetch('YOUR_API_ENDPOINT_FOR_TEXT_PROCESSING', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any required headers (authorization, etc.)
+            // 'Authorization': 'Bearer YOUR_API_KEY',
+          },
+          body: JSON.stringify({
+            role,
+            jobDescription: jdText,
+            instructions
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Text processing failed');
+        }
+
+        const result = await response.json();
+        
+        // Store the API response data
+        localStorage.setItem('jdData', JSON.stringify({
+          role,
+          fileName: "Pasted Job Description",
+          jdContent: jdText,
+          instructions,
+          apiData: result,
+          timestamp: Date.now()
+        }));
+      }
+
+      // Navigate to comparison page
+      setTimeout(() => {
+        navigate('/jd-comparison');
+      }, 1500);
+
+    } catch (error) {
+      console.error('API Error:', error);
+      toast({
+        title: "Processing failed",
+        description: "There was an error processing your job description. Please try again.",
+        variant: "destructive",
+      });
+      
+      // Fallback: Store data locally for demo purposes
+      localStorage.setItem('jdData', JSON.stringify({
+        role,
+        fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
+        jdContent: inputMethod === "text" ? jdText : null,
+        instructions,
+        timestamp: Date.now()
+      }));
+      
+      setTimeout(() => {
+        navigate('/jd-comparison');
+      }, 1500);
+    }
   };
 
   return (

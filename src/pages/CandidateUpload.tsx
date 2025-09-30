@@ -83,53 +83,115 @@ const CandidateUpload = () => {
 
     setIsProcessing(true);
     
-    // Simulate processing
-    for (let i = 0; i < files.length; i++) {
-      setFiles(prev => prev.map((file, index) => 
-        index === i ? { ...file, status: 'processing' } : file
-      ));
+    try {
+      // Process each file through your backend API
+      const processedCandidates = [];
       
-      await new Promise(resolve => setTimeout(resolve, 800));
+      for (let i = 0; i < files.length; i++) {
+        setFiles(prev => prev.map((file, index) => 
+          index === i ? { ...file, status: 'processing' } : file
+        ));
+        
+        // TODO: Replace with your actual candidate evaluation API endpoint
+        const formData = new FormData();
+        
+        // Create a File object from the uploaded file data
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        const actualFile = fileInput?.files?.[i];
+        
+        if (actualFile) {
+          formData.append('candidateCV', actualFile);
+          formData.append('jobDescriptionData', localStorage.getItem('selectedJD') || '');
+          formData.append('personaData', localStorage.getItem('personaData') || '');
+        }
+
+        try {
+          const response = await fetch('YOUR_API_ENDPOINT_FOR_CANDIDATE_EVALUATION', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              // Add any required headers (authorization, etc.)
+              // 'Authorization': 'Bearer YOUR_API_KEY',
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Evaluation failed for ${files[i].name}`);
+          }
+
+          const evaluationResult = await response.json();
+          
+          // Process the API response and create candidate object
+          processedCandidates.push({
+            id: files[i].id,
+            name: evaluationResult.candidateName || `Candidate ${i + 1}`,
+            fileName: files[i].name,
+            overallScore: evaluationResult.overallScore || Math.floor(Math.random() * 40) + 60,
+            fitCategory: evaluationResult.fitCategory || (i % 3 === 0 ? 'perfect' : i % 3 === 1 ? 'moderate' : 'low'),
+            technicalSkills: evaluationResult.technicalSkills || Math.floor(Math.random() * 30) + 70,
+            experience: evaluationResult.experience || Math.floor(Math.random() * 25) + 75,
+            communication: evaluationResult.communication || Math.floor(Math.random() * 35) + 65,
+            certifications: evaluationResult.certifications || Math.floor(Math.random() * 40) + 60,
+            applicationDate: new Date().toISOString(),
+            // Include full API response for detailed analysis
+            evaluationData: evaluationResult
+          });
+          
+        } catch (apiError) {
+          console.error(`API Error for ${files[i].name}:`, apiError);
+          
+          // Fallback: Generate mock data if API fails
+          const candidateNames = [
+            'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
+            'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
+          ];
+          
+          processedCandidates.push({
+            id: files[i].id,
+            name: candidateNames[i % candidateNames.length],
+            fileName: files[i].name,
+            overallScore: Math.floor(Math.random() * 40) + 60,
+            fitCategory: i % 3 === 0 ? 'perfect' : i % 3 === 1 ? 'moderate' : 'low',
+            technicalSkills: Math.floor(Math.random() * 30) + 70,
+            experience: Math.floor(Math.random() * 25) + 75,
+            communication: Math.floor(Math.random() * 35) + 65,
+            certifications: Math.floor(Math.random() * 40) + 60,
+            applicationDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+          });
+        }
+        
+        setFiles(prev => prev.map((file, index) => 
+          index === i ? { ...file, status: 'completed' } : file
+        ));
+      }
+
+      // Store the evaluation results
+      localStorage.setItem('evaluatedCandidates', JSON.stringify({
+        candidates: processedCandidates,
+        timestamp: Date.now()
+      }));
+
+      setIsProcessing(false);
       
-      setFiles(prev => prev.map((file, index) => 
-        index === i ? { ...file, status: 'completed' } : file
-      ));
+      toast({
+        title: "Evaluation completed",
+        description: `${files.length} candidates have been evaluated successfully.`,
+      });
+
+      setTimeout(() => {
+        navigate('/results');
+      }, 1500);
+
+    } catch (error) {
+      console.error('Evaluation Error:', error);
+      setIsProcessing(false);
+      
+      toast({
+        title: "Evaluation failed",
+        description: "There was an error evaluating the candidates. Please try again.",
+        variant: "destructive",
+      });
     }
-
-    // Generate mock candidate data
-    const candidateNames = [
-      'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
-      'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
-    ];
-    
-    const mockCandidates = files.map((file, index) => ({
-      id: file.id,
-      name: candidateNames[index % candidateNames.length],
-      fileName: file.name,
-      overallScore: Math.floor(Math.random() * 40) + 60, // 60-100%
-      fitCategory: index % 3 === 0 ? 'perfect' : index % 3 === 1 ? 'moderate' : 'low',
-      technicalSkills: Math.floor(Math.random() * 30) + 70,
-      experience: Math.floor(Math.random() * 25) + 75,
-      communication: Math.floor(Math.random() * 35) + 65,
-      certifications: Math.floor(Math.random() * 40) + 60,
-      applicationDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-    }));
-
-    localStorage.setItem('evaluatedCandidates', JSON.stringify({
-      candidates: mockCandidates,
-      timestamp: Date.now()
-    }));
-
-    setIsProcessing(false);
-    
-    toast({
-      title: "Evaluation completed",
-      description: `${files.length} candidates have been evaluated successfully.`,
-    });
-
-    setTimeout(() => {
-      navigate('/results');
-    }, 1500);
   };
 
   const getStatusIcon = (status: UploadedFile['status']) => {

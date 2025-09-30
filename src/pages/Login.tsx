@@ -25,6 +25,8 @@ const Login = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add any required headers (authorization, etc.)
+          // 'Authorization': 'Bearer YOUR_API_KEY',
         },
         body: JSON.stringify({
           email: formData.email,

@@ -66,15 +66,50 @@ Preferred Qualifications:
 • Knowledge of business process management (BPM) principles
 • Agile/Scrum methodology experience`);
 
-  const handleSelectVersion = (version: "original" | "ai") => {
+  const handleSelectVersion = async (version: "original" | "ai") => {
     setSelectedVersion(version);
     
     const finalJD = version === "original" ? originalJD : aiGeneratedJD;
-    localStorage.setItem('selectedJD', JSON.stringify({
-      version: version,
-      content: finalJD,
-      timestamp: Date.now()
-    }));
+    
+    try {
+      // TODO: Replace with your actual API endpoint for JD version selection
+      const response = await fetch('YOUR_API_ENDPOINT_FOR_JD_SELECTION', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add any required headers (authorization, etc.)
+          // 'Authorization': 'Bearer YOUR_API_KEY',
+        },
+        body: JSON.stringify({
+          selectedVersion: version,
+          jobDescription: finalJD,
+          timestamp: Date.now()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('JD selection API call failed');
+      }
+
+      const result = await response.json();
+      
+      // Store both local data and API response
+      localStorage.setItem('selectedJD', JSON.stringify({
+        version: version,
+        content: finalJD,
+        apiData: result,
+        timestamp: Date.now()
+      }));
+
+    } catch (error) {
+      console.error('API Error:', error);
+      // Fallback: Store data locally
+      localStorage.setItem('selectedJD', JSON.stringify({
+        version: version,
+        content: finalJD,
+        timestamp: Date.now()
+      }));
+    }
 
     toast({
       title: "Version selected",
