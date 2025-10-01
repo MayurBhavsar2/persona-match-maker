@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import JDUpload from "./pages/JDUpload";
 import JDComparison from "./pages/JDComparison";
 import PersonaConfig from "./pages/PersonaConfig";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jd-upload" element={<JDUpload />} />
           <Route path="/jd-comparison" element={<JDComparison />} />
           <Route path="/persona-config" element={<PersonaConfig />} />
