@@ -92,7 +92,7 @@ const ResetPassword = () => {
         <div className="absolute -bottom-10 -left-10 w-80 h-80 bg-success/10 rounded-full blur-3xl animate-pulse"></div>
       </div>
       
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-4xl relative z-10">
         <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-0 animate-scale-in">
           <CardHeader className="text-center pb-8">
             <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-6 animate-slide-up">
@@ -107,60 +107,73 @@ const ResetPassword = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="password" className="text-sm font-medium">New Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter new password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="h-12 pl-10 pr-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
-                    required
-                    minLength={8}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
+              {/* Password Fields in Horizontal Layout */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-slide-up">
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter new password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 pl-10 pr-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                      required
+                      minLength={8}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Must be at least 8 characters long
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Must be at least 8 characters long
-                </p>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="h-12 pl-10 pr-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                      required
+                      minLength={8}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Re-enter your password to confirm
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-2 animate-slide-up">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm New Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm new password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="h-12 pl-10 pr-12 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
-                    required
-                    minLength={8}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
+              {/* Password Requirements */}
+              <div className="bg-muted/30 rounded-lg p-4 animate-fade-in">
+                <p className="text-sm font-medium text-foreground mb-2">Password Requirements:</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs text-muted-foreground">
+                  <p>• Minimum 8 characters</p>
+                  <p>• Mix of letters & numbers</p>
+                  <p>• Avoid common patterns</p>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Re-enter your password to confirm
-                </p>
               </div>
 
               <Button 
@@ -171,22 +184,6 @@ const ResetPassword = () => {
                 {isLoading ? "Resetting..." : "Reset Password"}
               </Button>
             </form>
-
-            <div className="mt-8 text-center animate-fade-in">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-border/50" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Password Requirements</span>
-                </div>
-              </div>
-              <div className="mt-4 text-xs text-muted-foreground space-y-1">
-                <p>• Minimum 8 characters</p>
-                <p>• Use a mix of letters, numbers, and symbols</p>
-                <p>• Avoid common words or patterns</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
