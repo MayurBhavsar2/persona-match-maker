@@ -213,21 +213,31 @@ const JDUpload = () => {
           <CardContent className="space-y-6">
             {/* Role Selection */}
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              {!showCustomRole ? (
-                <div className="flex space-x-2">
-                  <Select value={selectedRole} onValueChange={setSelectedRole}>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select a role..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {predefinedRoles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="flex items-end space-x-2">
+                <div className="flex-1 space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  {!showCustomRole ? (
+                    <Select value={selectedRole} onValueChange={setSelectedRole}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {predefinedRoles.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {role}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      placeholder="Enter custom role..."
+                      value={customRole}
+                      onChange={(e) => setCustomRole(e.target.value)}
+                    />
+                  )}
+                </div>
+                {!showCustomRole ? (
                   <Button
                     variant="outline"
                     onClick={() => setShowCustomRole(true)}
@@ -236,15 +246,7 @@ const JDUpload = () => {
                     <Plus className="w-4 h-4" />
                     <span>Custom</span>
                   </Button>
-                </div>
-              ) : (
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Enter custom role..."
-                    value={customRole}
-                    onChange={(e) => setCustomRole(e.target.value)}
-                    className="flex-1"
-                  />
+                ) : (
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -254,8 +256,8 @@ const JDUpload = () => {
                   >
                     Cancel
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Job Description Input Method Selection */}
