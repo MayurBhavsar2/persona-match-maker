@@ -212,7 +212,7 @@ const JDUpload = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Role Selection */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
               <Label htmlFor="role" className="min-w-[60px]">Role</Label>
               <div className="flex-1">
                 {!showCustomRole ? (
