@@ -212,52 +212,50 @@ const JDUpload = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Role Selection */}
-            <div className="space-y-2">
-              <div className="flex items-end space-x-2">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  {!showCustomRole ? (
-                    <Select value={selectedRole} onValueChange={setSelectedRole}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {predefinedRoles.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      placeholder="Enter custom role..."
-                      value={customRole}
-                      onChange={(e) => setCustomRole(e.target.value)}
-                    />
-                  )}
-                </div>
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="role" className="min-w-[60px]">Role</Label>
+              <div className="flex-1">
                 {!showCustomRole ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCustomRole(true)}
-                    className="flex items-center space-x-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Custom</span>
-                  </Button>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {predefinedRoles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCustomRole(false);
-                      setCustomRole("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
+                  <Input
+                    placeholder="Enter custom role..."
+                    value={customRole}
+                    onChange={(e) => setCustomRole(e.target.value)}
+                  />
                 )}
               </div>
+              {!showCustomRole ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCustomRole(true)}
+                  className="flex items-center space-x-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Custom</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCustomRole(false);
+                    setCustomRole("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
 
             {/* Job Description Input Method Selection */}
