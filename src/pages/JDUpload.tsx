@@ -213,7 +213,7 @@ const JDUpload = () => {
           <CardContent className="space-y-6">
             {/* Role Selection */}
             <div className="flex items-center space-x-1">
-              <Label htmlFor="role" className="min-w-[60px]">Role</Label>
+              <Label htmlFor="role" className="min-w-[60px] text-base">Role</Label>
               <div className="flex-1">
                 {!showCustomRole ? (
                   <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -260,7 +260,7 @@ const JDUpload = () => {
 
             {/* Job Description Input Method Selection */}
             <div className="space-y-4">
-              <Label>Job Description Input Method</Label>
+              <Label className="text-base">Job Description Input Method</Label>
               <div className="flex space-x-2">
                 <Button
                   type="button"
@@ -336,7 +336,7 @@ const JDUpload = () => {
 
             {/* Instructions */}
             <div className="space-y-2">
-              <Label htmlFor="instructions">Additional Instructions (Optional)</Label>
+              <Label htmlFor="instructions" className="text-base">Additional Instructions (Optional)</Label>
               <Textarea
                 id="instructions"
                 placeholder="Add any specific requirements, preferences, or areas of focus for this role..."
