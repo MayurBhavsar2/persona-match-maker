@@ -13,6 +13,7 @@ import JDComparison from "./pages/JDComparison";
 import PersonaConfig from "./pages/PersonaConfig";
 import CandidateUpload from "./pages/CandidateUpload";
 import Results from "./pages/Results";
+import Configuration from "./pages/Configuration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/persona-config" element={<PersonaConfig />} />
           <Route path="/candidate-upload" element={<CandidateUpload />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/configuration" element={<Configuration />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
