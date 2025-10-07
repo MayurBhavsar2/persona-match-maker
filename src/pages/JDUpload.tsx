@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Plus, ChevronRight, Type, File } from "lucide-react";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const JDUpload = () => {
@@ -293,11 +293,18 @@ const JDUpload = () => {
                           <p className="text-xs text-muted-foreground">File uploaded successfully</p>
                         </div>
                         <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fileInputRef.current?.click()}
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setFile(null);
+                            toast({
+                              title: "File removed",
+                              description: "The file has been removed.",
+                            });
+                          }}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
-                          Change File
+                          <X className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
