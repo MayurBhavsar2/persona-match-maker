@@ -226,7 +226,7 @@ Preferred Qualifications:
                   <CardTitle>AI-Enhanced Job Description</CardTitle>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-secondary text-secondary-foreground">
+                  <Badge variant="outline" className="bg-gradient-secondary text-secondary-foreground">
                     AI Optimized
                   </Badge>
                   {selectedVersion === "ai" && (
@@ -263,7 +263,7 @@ Preferred Qualifications:
                 </Button>
                 
                 <Button
-                  variant={selectedVersion === "ai" ? "success" : "default"}
+                  variant={selectedVersion === "ai" ? "success" : "gradient"}
                   onClick={() => handleSelectVersion("ai")}
                 >
                   {selectedVersion === "ai" ? "Selected" : "Select This Version"}
@@ -274,7 +274,7 @@ Preferred Qualifications:
         </div>
 
         {/* AI Enhancement Highlights */}
-        <Card className="shadow-card bg-muted/50">
+        <Card className="shadow-card bg-gradient-subtle">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-secondary" />

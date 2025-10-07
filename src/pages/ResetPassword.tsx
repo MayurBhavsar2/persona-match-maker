@@ -85,7 +85,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-10 -right-10 w-80 h-80 bg-warning/10 rounded-full blur-3xl animate-pulse"></div>
@@ -95,10 +95,10 @@ const ResetPassword = () => {
       <div className="w-full max-w-4xl relative z-10">
         <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-0 animate-scale-in">
           <CardHeader className="text-center pb-8">
-            <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-6 animate-slide-up">
+            <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mb-6 animate-slide-up">
               <Shield className="w-8 h-8 text-primary-foreground" />
             </div>
-            <CardTitle className="text-3xl font-bold text-primary animate-fade-in">
+            <CardTitle className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent animate-fade-in">
               Reset Your Password
             </CardTitle>
             <CardDescription className="text-lg animate-fade-in">
@@ -178,7 +178,7 @@ const ResetPassword = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-12 font-semibold text-lg shadow-lg animate-slide-up"
+                className="w-full h-12 bg-gradient-primary hover:opacity-90 transition-all duration-300 font-semibold text-lg shadow-lg animate-slide-up"
                 disabled={isLoading}
               >
                 {isLoading ? "Resetting..." : "Reset Password"}

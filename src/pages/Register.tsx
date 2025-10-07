@@ -110,7 +110,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-10 -right-10 w-80 h-80 bg-secondary/10 rounded-full blur-3xl animate-pulse"></div>
@@ -129,10 +129,10 @@ const Register = () => {
         
         <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-0 animate-scale-in">
           <CardHeader className="text-center pb-4">
-            <div className="mx-auto w-12 h-12 bg-secondary rounded-full flex items-center justify-center mb-4 animate-slide-up">
+            <div className="mx-auto w-12 h-12 bg-gradient-secondary rounded-full flex items-center justify-center mb-4 animate-slide-up">
               <UserPlus className="w-6 h-6 text-secondary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-secondary animate-fade-in">
+            <CardTitle className="text-2xl font-bold bg-gradient-secondary bg-clip-text text-transparent animate-fade-in">
               Join Our Platform
             </CardTitle>
             <CardDescription className="text-base animate-fade-in">
@@ -273,8 +273,7 @@ const Register = () => {
 
               <Button 
                 type="submit" 
-                variant="secondary"
-                className="w-full h-10 font-semibold shadow-lg animate-slide-up"
+                className="w-full h-10 bg-gradient-secondary hover:opacity-90 transition-all duration-300 font-semibold shadow-lg animate-slide-up"
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Create Account

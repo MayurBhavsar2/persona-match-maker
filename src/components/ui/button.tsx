@@ -18,6 +18,8 @@ const buttonVariants = cva(
         success: "bg-success text-success-foreground hover:bg-success/90 shadow-card",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-card",
         danger: "bg-danger text-danger-foreground hover:bg-danger/90 shadow-card",
+        gradient: "bg-gradient-primary text-primary-foreground hover:opacity-90 shadow-lg transition-smooth",
+        "gradient-secondary": "bg-gradient-secondary text-secondary-foreground hover:opacity-90 shadow-lg transition-smooth",
       },
       size: {
         default: "h-10 px-4 py-2",

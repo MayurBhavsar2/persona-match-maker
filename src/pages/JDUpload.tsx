@@ -354,7 +354,7 @@ const JDUpload = () => {
             <div className="flex justify-end pt-4">
               <Button
                 onClick={handleSubmit}
-                className="flex items-center space-x-2"
+                className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
               >
                 <span>Analyze Job Description</span>
                 <ChevronRight className="w-4 h-4" />

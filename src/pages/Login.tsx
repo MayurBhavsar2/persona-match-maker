@@ -71,7 +71,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-10 -right-10 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
@@ -90,10 +90,10 @@ const Login = () => {
         
         <Card className="shadow-xl backdrop-blur-sm bg-card/95 border-0 animate-scale-in">
           <CardHeader className="text-center pb-4">
-            <div className="mx-auto w-12 h-12 bg-primary rounded-full flex items-center justify-center mb-4 animate-slide-up">
+            <div className="mx-auto w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center mb-4 animate-slide-up">
               <Users className="w-6 h-6 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl font-bold text-primary animate-fade-in">
+            <CardTitle className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent animate-fade-in">
               Welcome Back
             </CardTitle>
             <CardDescription className="text-base animate-fade-in">
@@ -172,7 +172,7 @@ const Login = () => {
 
               <Button 
                 type="submit" 
-                className="w-full h-10 font-semibold shadow-lg animate-slide-up"
+                className="w-full h-10 bg-gradient-primary hover:opacity-90 transition-all duration-300 font-semibold shadow-lg animate-slide-up"
               >
                 <Briefcase className="w-4 h-4 mr-2" />
                 Sign In to Platform
