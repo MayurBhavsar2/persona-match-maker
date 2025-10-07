@@ -1,8 +1,17 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Users, BarChart3, Settings, ArrowLeft } from "lucide-react";
+import { Briefcase, Users, BarChart3, Settings, ArrowLeft, LogOut, User } from "lucide-react";
 import logoImage from "@/assets/logo.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/ui/use-toast";
 
 interface LayoutProps {
   children: ReactNode;
@@ -11,6 +20,31 @@ interface LayoutProps {
 
 const Layout = ({ children, currentStep }: LayoutProps) => {
   const navigate = useNavigate();
+  
+  // TODO: Replace with actual user data from your authentication system
+  const [user] = useState({
+    name: "John Doe",
+    email: "john.doe@company.com",
+    role: "Admin"
+  });
+  
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+  
+  const handleLogout = () => {
+    // TODO: Add actual logout logic here (clear tokens, session, etc.)
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account.",
+    });
+    navigate("/login");
+  };
   
   const steps = [
     { id: 1, title: "Job Description", icon: Briefcase },
@@ -37,7 +71,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-muted/30">
       {/* Header */}
       <header className="bg-background border-b border-border shadow-card">
         <div className="container mx-auto px-6 py-4">
@@ -52,15 +86,34 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">Admin User</p>
-                <p className="text-xs text-muted-foreground">admin@company.com</p>
-              </div>
-              <div className="w-8 h-8 bg-gradient-secondary rounded-full flex items-center justify-center">
-                <span className="text-xs font-bold text-secondary-foreground">AU</span>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center space-x-3 hover:bg-accent">
+                  <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-primary-foreground">{getInitials(user.name)}</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{user.name}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled className="cursor-default">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Role: {user.role}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -93,7 +146,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
                       <div className="flex items-center space-x-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-smooth ${
                           isActive 
-                            ? 'bg-gradient-primary text-primary-foreground shadow-lg' 
+                            ? 'bg-primary text-primary-foreground shadow-lg' 
                             : isCompleted 
                               ? 'bg-success text-success-foreground' 
                               : 'bg-muted text-muted-foreground'

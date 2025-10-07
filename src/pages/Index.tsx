@@ -40,14 +40,14 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-muted/30">
       {/* Hero Section */}
       <div className="container mx-auto px-6 py-16">
         <div className="text-center space-y-8 max-w-4xl mx-auto">
           <div className="space-y-4">
             <h1 className="text-5xl font-bold text-foreground leading-tight">
               Intelligent Recruitment
-              <span className="block bg-gradient-primary bg-clip-text text-transparent">
+              <span className="block text-primary">
                 Made Simple
               </span>
             </h1>
@@ -60,7 +60,8 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               onClick={() => navigate('/jd-upload')}
-              className="bg-gradient-primary hover:opacity-90 transition-smooth px-8 py-6 text-lg"
+              size="lg"
+              className="px-8 py-6 text-lg"
             >
               Start Recruiting
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -81,7 +82,7 @@ const Index = () => {
             return (
               <Card key={index} className="shadow-card hover:shadow-lg transition-all duration-300">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mb-4">
                     <IconComponent className="w-6 h-6 text-primary-foreground" />
                   </div>
                   <CardTitle className="text-xl">{feature.title}</CardTitle>
@@ -129,7 +130,7 @@ const Index = () => {
               }
             ].map((item, index) => (
               <div key={index} className="text-center">
-                <div className="w-16 h-16 bg-gradient-secondary rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-xl font-bold text-secondary-foreground">{item.step}</span>
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-2">{item.title}</h3>
@@ -141,7 +142,7 @@ const Index = () => {
 
         {/* CTA Section */}
         <div className="mt-24">
-          <Card className="shadow-xl bg-gradient-primary text-primary-foreground">
+          <Card className="shadow-xl bg-primary text-primary-foreground">
             <CardContent className="text-center py-16">
               <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Hiring?</h2>
               <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">

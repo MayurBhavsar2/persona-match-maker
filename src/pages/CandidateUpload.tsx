@@ -350,7 +350,7 @@ const CandidateUpload = () => {
           <Button
             onClick={handleEvaluate}
             disabled={files.length === 0 || isProcessing}
-            className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
+            className="flex items-center space-x-2"
           >
             <span>{isProcessing ? 'Evaluating...' : 'Evaluate Candidates'}</span>
             {!isProcessing && <ArrowRight className="w-4 h-4" />}

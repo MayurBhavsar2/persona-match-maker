@@ -296,7 +296,7 @@ const Configuration = () => {
             <div className="flex justify-end pt-4">
               <Button
                 onClick={handleSubmit}
-                className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
+                className="flex items-center space-x-2"
               >
                 <Save className="w-4 h-4" />
                 <span>Save Configuration</span>
