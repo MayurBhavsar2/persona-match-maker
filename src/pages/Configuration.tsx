@@ -12,31 +12,55 @@ const Configuration = () => {
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
-    companyName: "",
-    websiteUrl: "",
-    contactNumber: "",
-    email: "",
-    street: "",
-    city: "",
-    state: "",
-    country: "",
-    pincode: "",
-    twitterLink: "",
-    instagramLink: "",
-    facebookLink: "",
-    aboutCompany: "",
+    name: "",
+    website_url: "",
+    contact_number: "",
+    email_address: "",
+    about_company: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      country: "",
+      pincode: "",
+    },
+    social_media: {
+      twitter_link: "",
+      instagram_link: "",
+      facebook_link: "",
+    },
   });
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    if (field.startsWith('address.')) {
+      const addressField = field.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value
+        }
+      }));
+    } else if (field.startsWith('social_media.')) {
+      const socialField = field.split('.')[1];
+      setFormData(prev => ({
+        ...prev,
+        social_media: {
+          ...prev.social_media,
+          [socialField]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }));
+    }
   };
 
   const handleSubmit = async () => {
     // Validate required fields
-    if (!formData.companyName || !formData.email) {
+    if (!formData.name || !formData.email_address) {
       toast({
         title: "Required fields missing",
         description: "Please fill in company name and email address.",
@@ -120,25 +144,25 @@ const Configuration = () => {
             {/* Basic Information */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-base">Company Name *</Label>
+                <Label htmlFor="name" className="text-base">Company Name *</Label>
                 <Input
-                  id="companyName"
+                  id="name"
                   placeholder="Enter company name..."
-                  value={formData.companyName}
-                  onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="websiteUrl" className="text-base">Company Website URL</Label>
+                <Label htmlFor="website_url" className="text-base">Company Website URL</Label>
                 <div className="relative">
                   <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="websiteUrl"
+                    id="website_url"
                     type="url"
                     placeholder="https://www.example.com"
-                    value={formData.websiteUrl}
-                    onChange={(e) => handleInputChange('websiteUrl', e.target.value)}
+                    value={formData.website_url}
+                    onChange={(e) => handleInputChange('website_url', e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -148,30 +172,30 @@ const Configuration = () => {
             {/* Contact Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contactNumber" className="text-base">Contact Number</Label>
+                <Label htmlFor="contact_number" className="text-base">Contact Number</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="contactNumber"
+                    id="contact_number"
                     type="tel"
                     placeholder="+1 (555) 123-4567"
-                    value={formData.contactNumber}
-                    onChange={(e) => handleInputChange('contactNumber', e.target.value)}
+                    value={formData.contact_number}
+                    onChange={(e) => handleInputChange('contact_number', e.target.value)}
                     className="pl-10"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-base">Email Address *</Label>
+                <Label htmlFor="email_address" className="text-base">Email Address *</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    id="email"
+                    id="email_address"
                     type="email"
                     placeholder="contact@example.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    value={formData.email_address}
+                    onChange={(e) => handleInputChange('email_address', e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -188,8 +212,8 @@ const Configuration = () => {
                 <Input
                   id="street"
                   placeholder="123 Main Street"
-                  value={formData.street}
-                  onChange={(e) => handleInputChange('street', e.target.value)}
+                  value={formData.address.street}
+                  onChange={(e) => handleInputChange('address.street', e.target.value)}
                 />
               </div>
 
@@ -199,8 +223,8 @@ const Configuration = () => {
                   <Input
                     id="city"
                     placeholder="City name"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange('city', e.target.value)}
+                    value={formData.address.city}
+                    onChange={(e) => handleInputChange('address.city', e.target.value)}
                   />
                 </div>
 
@@ -209,8 +233,8 @@ const Configuration = () => {
                   <Input
                     id="state"
                     placeholder="State/Province"
-                    value={formData.state}
-                    onChange={(e) => handleInputChange('state', e.target.value)}
+                    value={formData.address.state}
+                    onChange={(e) => handleInputChange('address.state', e.target.value)}
                   />
                 </div>
               </div>
@@ -221,8 +245,8 @@ const Configuration = () => {
                   <Input
                     id="country"
                     placeholder="Country name"
-                    value={formData.country}
-                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    value={formData.address.country}
+                    onChange={(e) => handleInputChange('address.country', e.target.value)}
                   />
                 </div>
 
@@ -231,8 +255,8 @@ const Configuration = () => {
                   <Input
                     id="pincode"
                     placeholder="123456"
-                    value={formData.pincode}
-                    onChange={(e) => handleInputChange('pincode', e.target.value)}
+                    value={formData.address.pincode}
+                    onChange={(e) => handleInputChange('address.pincode', e.target.value)}
                   />
                 </div>
               </div>
@@ -243,47 +267,47 @@ const Configuration = () => {
               <h3 className="text-base font-medium text-foreground">Social Media Links</h3>
               
               <div className="space-y-2">
-                <Label htmlFor="twitterLink" className="text-base">Twitter Link</Label>
+                <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
                 <Input
-                  id="twitterLink"
+                  id="twitter_link"
                   type="url"
                   placeholder="https://twitter.com/yourcompany"
-                  value={formData.twitterLink}
-                  onChange={(e) => handleInputChange('twitterLink', e.target.value)}
+                  value={formData.social_media.twitter_link}
+                  onChange={(e) => handleInputChange('social_media.twitter_link', e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="instagramLink" className="text-base">Instagram Link</Label>
+                <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
                 <Input
-                  id="instagramLink"
+                  id="instagram_link"
                   type="url"
                   placeholder="https://instagram.com/yourcompany"
-                  value={formData.instagramLink}
-                  onChange={(e) => handleInputChange('instagramLink', e.target.value)}
+                  value={formData.social_media.instagram_link}
+                  onChange={(e) => handleInputChange('social_media.instagram_link', e.target.value)}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="facebookLink" className="text-base">Facebook Link</Label>
+                <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
                 <Input
-                  id="facebookLink"
+                  id="facebook_link"
                   type="url"
                   placeholder="https://facebook.com/yourcompany"
-                  value={formData.facebookLink}
-                  onChange={(e) => handleInputChange('facebookLink', e.target.value)}
+                  value={formData.social_media.facebook_link}
+                  onChange={(e) => handleInputChange('social_media.facebook_link', e.target.value)}
                 />
               </div>
             </div>
 
             {/* About Company */}
             <div className="space-y-2">
-              <Label htmlFor="aboutCompany" className="text-base">About Company</Label>
+              <Label htmlFor="about_company" className="text-base">About Company</Label>
               <Textarea
-                id="aboutCompany"
+                id="about_company"
                 placeholder="Tell us about your company, its mission, values, and culture..."
-                value={formData.aboutCompany}
-                onChange={(e) => handleInputChange('aboutCompany', e.target.value)}
+                value={formData.about_company}
+                onChange={(e) => handleInputChange('about_company', e.target.value)}
                 rows={6}
                 className="resize-none"
               />
@@ -296,7 +320,7 @@ const Configuration = () => {
             <div className="flex justify-end pt-4">
               <Button
                 onClick={handleSubmit}
-                className="bg-gradient-primary hover:opacity-90 transition-smooth flex items-center space-x-2"
+                className="flex items-center space-x-2"
               >
                 <Save className="w-4 h-4" />
                 <span>Save Configuration</span>
