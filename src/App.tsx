@@ -3,13 +3,13 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import JDComparison from "./pages/JDComparison";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import JDUpload from "./pages/JDUpload";
-import JDComparison from "./pages/JDComparison";
 import PersonaConfig from "./pages/PersonaConfig";
 import CandidateUpload from "./pages/CandidateUpload";
 import Results from "./pages/Results";
@@ -32,6 +32,7 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/jd-upload" element={<JDUpload />} />
           <Route path="/jd-comparison" element={<JDComparison />} />
+          <Route path="/jd-comparison/:jdId" element={<JDComparison />}/>
           <Route path="/persona-config" element={<PersonaConfig />} />
           <Route path="/candidate-upload" element={<CandidateUpload />} />
           <Route path="/results" element={<Results />} />

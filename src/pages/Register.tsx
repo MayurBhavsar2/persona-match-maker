@@ -13,9 +13,12 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
+    first_name: "",
+    last_name:"",
     email: "",
+    phone:"",
     role: "",
+    role_id:"",
     password: "",
     confirmPassword: "",
   });
@@ -32,18 +35,9 @@ const Register = () => {
       return;
     }
 
-    console.log("Starting registration with data:", {
-      fullName: formData.fullName,
-      email: formData.email,
-      role: formData.role,
-      // Don't log password for security
-    });
-
     try {
-      // TODO: Replace with your actual registration API endpoint
-      console.log("Making API call to registration endpoint");
-      
-      const response = await fetch('YOUR_API_ENDPOINT_FOR_REGISTRATION', {
+      // Replace with your backend API URL
+      const response = await fetch('/api/v1/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,9 +45,12 @@ const Register = () => {
           // 'Authorization': 'Bearer YOUR_API_KEY',
         },
         body: JSON.stringify({
-          fullName: formData.fullName,
+          first_name: formData.first_name,
+          last_name:formData.last_name,
           email: formData.email,
+          phone:formData.phone,
           role: formData.role,
+          role_id:formData.role_id,
           password: formData.password,
         }),
       });
@@ -144,13 +141,27 @@ const Register = () => {
               {/* First Row - Full Name and Email */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-slide-up">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName" className="text-sm font-medium">Full Name</Label>
+                  <Label htmlFor="first_name" className="text-sm font-medium">First Name</Label>
                   <Input
-                    id="fullName"
-                    name="fullName"
+                    id="first_name"
+                    name="first_name"
                     type="text"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
+                    placeholder="Enter your first name"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
+                    className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="last_name" className="text-sm font-medium">Last Name</Label>
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    type="text"
+                    placeholder="Enter your Last name"
+                    value={formData.last_name}
                     onChange={handleInputChange}
                     className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
                     required
@@ -170,8 +181,24 @@ const Register = () => {
                     required
                   />
                 </div>
+
+                <div className="space-y-2 animate-slide-up">
+                <Label htmlFor="phone" className="text-sm font-medium">Phone</Label>
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="text"
+                  placeholder="Enter your Phone Number"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300"
+                  required
+                />
               </div>
 
+            </div>
+              
+              
               {/* Second Row - Role */}
               <div className="grid grid-cols-1 gap-4 animate-slide-up">
                 <div className="space-y-2">
