@@ -18,6 +18,7 @@ const Register = () => {
     email: "",
     phone:"",
     role: "",
+    role_id:"",
     password: "",
     confirmPassword: "",
   });
@@ -49,6 +50,7 @@ const Register = () => {
           email: formData.email,
           phone:formData.phone,
           role: formData.role,
+          role_id:formData.role_id,
           password: formData.password,
         }),
       });

@@ -37,6 +37,9 @@ const Login = () => {
       if (response.ok) {
         const data = await response.json();
         // Handle successful login (store token, user data, etc.)
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        console.log(data.user);
         toast({
           title: "Login Successful",
           description: "Welcome back to your HR platform!",
