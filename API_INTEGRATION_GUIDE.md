@@ -33,9 +33,23 @@ This document outlines all the locations in your project where you need to integ
 ```
 **Expected Response:** User data + authentication token
 
+### 3. Password Reset (`src/pages/ResetPassword.tsx`)
+**Location:** Line 50
+**Endpoint to Replace:** `YOUR_API_ENDPOINT_FOR_RESET_PASSWORD`
+**Method:** POST
+**Request Body:**
+```json
+{
+  "token": "string",
+  "newPassword": "string",
+  "confirmPassword": "string"
+}
+```
+**Expected Response:** Success message
+
 ## 📄 Job Description Processing APIs
 
-### 3. File Upload Processing (`src/pages/JDUpload.tsx`)
+### 4. File Upload Processing (`src/pages/JDUpload.tsx`)
 **Location:** Line 95
 **Endpoint to Replace:** `YOUR_API_ENDPOINT_FOR_FILE_UPLOAD`
 **Method:** POST
@@ -54,7 +68,7 @@ This document outlines all the locations in your project where you need to integ
 }
 ```
 
-### 4. Text Processing (`src/pages/JDUpload.tsx`)
+### 5. Text Processing (`src/pages/JDUpload.tsx`)
 **Location:** Line 124
 **Endpoint to Replace:** `YOUR_API_ENDPOINT_FOR_TEXT_PROCESSING`
 **Method:** POST
@@ -75,7 +89,7 @@ This document outlines all the locations in your project where you need to integ
 }
 ```
 
-### 5. JD Version Selection (`src/pages/JDComparison.tsx`)
+### 6. JD Version Selection (`src/pages/JDComparison.tsx`)
 **Location:** Line 76
 **Endpoint to Replace:** `YOUR_API_ENDPOINT_FOR_JD_SELECTION`
 **Method:** POST
@@ -97,7 +111,7 @@ This document outlines all the locations in your project where you need to integ
 
 ## 👥 Candidate Evaluation APIs
 
-### 6. Candidate CV Evaluation (`src/pages/CandidateUpload.tsx`)
+### 7. Candidate CV Evaluation (`src/pages/CandidateUpload.tsx`)
 **Location:** Line 105
 **Endpoint to Replace:** `YOUR_API_ENDPOINT_FOR_CANDIDATE_EVALUATION`
 **Method:** POST
@@ -158,6 +172,7 @@ Ensure your backend APIs return data in the expected format, or modify the respo
 |---------|------|------|------------------|
 | Registration | `Register.tsx` | 46 | `YOUR_API_ENDPOINT_FOR_REGISTRATION` |
 | Login | `Login.tsx` | 25 | `YOUR_API_ENDPOINT_FOR_LOGIN` |
+| Password Reset | `ResetPassword.tsx` | 50 | `YOUR_API_ENDPOINT_FOR_RESET_PASSWORD` |
 | File Upload | `JDUpload.tsx` | 95 | `YOUR_API_ENDPOINT_FOR_FILE_UPLOAD` |
 | Text Processing | `JDUpload.tsx` | 124 | `YOUR_API_ENDPOINT_FOR_TEXT_PROCESSING` |
 | JD Selection | `JDComparison.tsx` | 76 | `YOUR_API_ENDPOINT_FOR_JD_SELECTION` |

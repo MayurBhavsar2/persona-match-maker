@@ -521,7 +521,7 @@ const handleSaveRole = async () => {
 
             {/* Instructions */}
             <div className="space-y-2">
-              <Label htmlFor="instructions">Additional Instructions (Optional)</Label>
+              <Label htmlFor="instructions" className="text-base">Additional Instructions (Optional)</Label>
               <Textarea
                 id="instructions"
                 placeholder="Add any specific requirements, preferences, or areas of focus for this role..."
