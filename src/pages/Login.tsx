@@ -12,6 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
+    role: "",
     email: "",
     password: "",
   });
@@ -20,8 +21,8 @@ const Login = () => {
     e.preventDefault();
     
     try {
-      // Replace with your backend API URL
-      const response = await fetch('/api/v1/auth/login', {
+      // TODO: Replace with your actual login API endpoint
+      const response = await fetch('YOUR_API_ENDPOINT_FOR_LOGIN', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -29,6 +30,7 @@ const Login = () => {
           // 'Authorization': 'Bearer YOUR_API_KEY',
         },
         body: JSON.stringify({
+          role: formData.role,
           email: formData.email,
           password: formData.password,
         }),
@@ -37,9 +39,6 @@ const Login = () => {
       if (response.ok) {
         const data = await response.json();
         // Handle successful login (store token, user data, etc.)
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        console.log(data.user);
         toast({
           title: "Login Successful",
           description: "Welcome back to your HR platform!",
@@ -64,12 +63,12 @@ const Login = () => {
     });
   };
 
-  // const handleRoleChange = (value: string) => {
-  //   setFormData({
-  //     ...formData,
-  //     role: value,
-  //   });
-  // };
+  const handleRoleChange = (value: string) => {
+    setFormData({
+      ...formData,
+      role: value,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 relative overflow-hidden">
@@ -102,8 +101,8 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* <div className="space-y-2 animate-slide-up">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="role" className="text-sm font-medium">Role</Label>
                 <Select value={formData.role} onValueChange={handleRoleChange} required>
                   <SelectTrigger className="h-10 bg-background/50 border-border/50 backdrop-blur-sm focus:bg-background transition-all duration-300">
@@ -115,7 +114,7 @@ const Login = () => {
                     <SelectItem value="admin">Admin</SelectItem>
                   </SelectContent>
                 </Select>
-              </div> */}
+              </div>
 
               <div className="space-y-2 animate-slide-up">
                 <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>

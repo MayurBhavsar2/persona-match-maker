@@ -87,32 +87,7 @@ const PersonaConfig = () => {
     }, 150);
   };
   
-  // ============================================================================
-  // TODO: BACKEND API INTEGRATION POINT #2 - Generate Cognitive Demands
-  // ============================================================================
-  // This function should call your AI API to generate cognitive skill requirements
-  // 
-  // API Endpoint: POST /api/persona/cognitive-demands
-  // 
-  // Request Body:
-  // {
-  //   "job_description": string,
-  //   "role": string
-  // }
-  // 
-  // Expected Response:
-  // {
-  //   "skills": [
-  //     {
-  //       "name": string,          // e.g., "Remember / Understand"
-  //       "weight": number,        // Percentage (0-100)
-  //       "requiredLevel": number, // 1-5 scale
-  //       "notes": string          // Detailed description
-  //     }
-  //   ]
-  // }
-  // ============================================================================
-  
+  // Helper function to analyze JD and generate cognitive demands
   const generateCognitiveDemands = () => {
     const storedJD = localStorage.getItem('selectedJD');
     if (!storedJD) {
@@ -225,22 +200,7 @@ const PersonaConfig = () => {
     });
   };
   
-  // ============================================================================
-  // TODO: BACKEND API INTEGRATION POINT #3 - Generate Leadership Skills
-  // ============================================================================
-  // This function should call your AI API to generate leadership skill requirements
-  // 
-  // API Endpoint: POST /api/persona/leadership-skills
-  // 
-  // Request Body:
-  // {
-  //   "job_description": string,
-  //   "role": string
-  // }
-  // 
-  // Expected Response: Same structure as cognitive demands
-  // ============================================================================
-  
+  // Helper function to analyze JD and generate leadership skills
   const generateLeadershipSkills = () => {
     const storedJD = localStorage.getItem('selectedJD');
     if (!storedJD) {
@@ -328,22 +288,7 @@ const PersonaConfig = () => {
       };
     });
   };
-  // ============================================================================
-  // TODO: BACKEND API INTEGRATION POINT #4 - Generate Foundational Behaviors
-  // ============================================================================
-  // This function should call your AI API to generate foundational behavior requirements
-  // 
-  // API Endpoint: POST /api/persona/foundational-behaviors
-  // 
-  // Request Body:
-  // {
-  //   "job_description": string,
-  //   "role": string
-  // }
-  // 
-  // Expected Response: Same structure as cognitive demands
-  // ============================================================================
-  
+  // Helper function to analyze JD and generate foundational behaviors
   const generateFoundationalBehaviors = () => {
     const storedJD = localStorage.getItem('selectedJD');
     if (!storedJD) {
@@ -444,90 +389,7 @@ const PersonaConfig = () => {
     });
   };
   
-  // ============================================================================
-  // TODO: BACKEND API INTEGRATION POINT #1 - AI Analysis & Persona Generation
-  // ============================================================================
-  // This function should call your AI API to generate persona configuration
-  // 
-  // API Endpoint: POST /api/persona/generate-analysis
-  // 
-  // Request Body:
-  // {
-  //   "job_description": string,           // The JD content from localStorage
-  //   "current_categories": SkillCategory[], // Current persona configuration
-  //   "role": string                        // The job role/title
-  // }
-  // 
-  // Expected Response:
-  // {
-  //   "suggestions": [
-  //     {
-  //       "type": "critical" | "improvement",
-  //       "title": string,
-  //       "description": string,
-  //       "action": string
-  //     }
-  //   ],
-  //   "insights": [
-  //     {
-  //       "icon": "TrendingUp" | "Target" | "Lightbulb",
-  //       "title": string,
-  //       "description": string,
-  //       "recommendation": string
-  //     }
-  //   ],
-  //   "optimizations": [
-  //     {
-  //       "category": string,
-  //       "suggestion": string,
-  //       "impact": string
-  //     }
-  //   ]
-  // }
-  // 
-  // Integration Steps:
-  // 1. Replace this function with an async function
-  // 2. Add try-catch error handling
-  // 3. Show loading state while API is processing
-  // 4. Handle API errors gracefully with toast notifications
-  // 
-  // Example Implementation:
-  // const generateAIAnalysis = async () => {
-  //   try {
-  //     const storedJD = localStorage.getItem('selectedJD');
-  //     const jdData = storedJD ? JSON.parse(storedJD) : null;
-  //     
-  //     const response = await fetch('YOUR_API_ENDPOINT/persona/generate-analysis', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({
-  //         job_description: jdData?.content || '',
-  //         current_categories: categories,
-  //         role: selectedRole
-  //       })
-  //     });
-  //     
-  //     if (!response.ok) throw new Error('API request failed');
-  //     
-  //     const data = await response.json();
-  //     return {
-  //       suggestions: data.suggestions || [],
-  //       insights: data.insights || [],
-  //       optimizations: data.optimizations || []
-  //     };
-  //   } catch (error) {
-  //     console.error('AI Analysis error:', error);
-  //     toast({
-  //       title: "AI Analysis Failed",
-  //       description: "Unable to generate AI insights. Please try again.",
-  //       variant: "destructive"
-  //     });
-  //     return { suggestions: [], insights: [], optimizations: [] };
-  //   }
-  // };
-  // ============================================================================
-  
-  // CURRENT IMPLEMENTATION (Replace with API call above)
+  // AI Analysis function to provide improvement suggestions
   const generateAIAnalysis = () => {
     const storedJD = localStorage.getItem('selectedJD');
     const jdContent = storedJD ? JSON.parse(storedJD).content.toLowerCase() : '';
@@ -816,35 +678,6 @@ const PersonaConfig = () => {
     setShowSaveDialog(true);
   };
 
-  // ============================================================================
-  // TODO: BACKEND API INTEGRATION POINT #5 - Save Persona Configuration
-  // ============================================================================
-  // This function should send the final persona configuration to your backend
-  // 
-  // API Endpoint: POST /api/persona/save
-  // 
-  // Request Body:
-  // {
-  //   "name": string,              // Persona name
-  //   "role": string,              // Job role
-  //   "categories": SkillCategory[], // Complete persona configuration
-  //   "job_description_id": string   // Optional: Reference to the JD
-  // }
-  // 
-  // Expected Response:
-  // {
-  //   "success": boolean,
-  //   "persona_id": string,        // Generated ID for this persona
-  //   "message": string
-  // }
-  // 
-  // Integration Steps:
-  // 1. Make this function async
-  // 2. Call your save API endpoint
-  // 3. Store the returned persona_id in localStorage
-  // 4. Handle errors with toast notifications
-  // ============================================================================
-  
   const confirmSavePersona = () => {
     if (!personaName.trim()) {
       toast({
@@ -854,21 +687,6 @@ const PersonaConfig = () => {
       });
       return;
     }
-
-    // TODO: Replace localStorage with API call
-    // Example:
-    // const response = await fetch('YOUR_API_ENDPOINT/persona/save', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     name: personaName.trim(),
-    //     role: selectedRole,
-    //     categories: categories,
-    //     job_description_id: localStorage.getItem('jdId') // If you have a JD ID
-    //   })
-    // });
-    // const data = await response.json();
-    // localStorage.setItem('personaId', data.persona_id);
 
     localStorage.setItem('personaConfig', JSON.stringify({
       categories,

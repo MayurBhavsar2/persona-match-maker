@@ -1,7 +1,6 @@
-import { useState,useEffect } from "react";
-import { useNavigate,useParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,172 +9,62 @@ import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles } from "lucide-react
 import { useToast } from "@/components/ui/use-toast";
 
 const JDComparison = () => {
-  const { jdId } = useParams<{ jdId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedVersion, setSelectedVersion] = useState<"original" | "ai" | null>(null);
   const [isEditing, setIsEditing] = useState({ original: false, ai: false });
-  
-  const [originalJD, setOriginalJD] = useState<string>("Loading Original JD.....");
-  const [aiGeneratedJD, setAiGeneratedJD] = useState<string>(`Loading AI Enhanced JD.....`);
-    
-                  //     `Position: RPA Developer
+  const [originalJD, setOriginalJD] = useState(`Position: RPA Developer
 
-                  // Job Summary:
-                  // We are seeking an experienced RPA Developer to join our automation team. The candidate will be responsible for developing, testing, and maintaining robotic process automation solutions.
+Job Summary:
+We are seeking an experienced RPA Developer to join our automation team. The candidate will be responsible for developing, testing, and maintaining robotic process automation solutions.
 
-                  // Key Responsibilities:
-                  // • Design and develop RPA workflows using UiPath/Blue Prism
-                  // • Collaborate with business analysts to identify automation opportunities
-                  // • Test and debug automation scripts
-                  // • Provide technical support for deployed bots
+Key Responsibilities:
+• Design and develop RPA workflows using UiPath/Blue Prism
+• Collaborate with business analysts to identify automation opportunities
+• Test and debug automation scripts
+• Provide technical support for deployed bots
 
-                  // Requirements:
-                  // • 3+ years of experience in RPA development
-                  // • Proficiency in UiPath or Blue Prism
-                  // • Basic understanding of programming languages
-                  // • Strong analytical skills`
+Requirements:
+• 3+ years of experience in RPA development
+• Proficiency in UiPath or Blue Prism
+• Basic understanding of programming languages
+• Strong analytical skills`);
 
+  const [aiGeneratedJD, setAiGeneratedJD] = useState(`Position: RPA Developer - Senior Level
 
-  
-    
-                      //     `Position: RPA Developer - Senior Level
+Job Summary:
+We are seeking a highly skilled RPA Developer to design, develop, and deploy enterprise-grade robotic process automation solutions. The ideal candidate will drive digital transformation initiatives and optimize business processes through intelligent automation.
 
-                      // Job Summary:
-                      // We are seeking a highly skilled RPA Developer to design, develop, and deploy enterprise-grade robotic process automation solutions. The ideal candidate will drive digital transformation initiatives and optimize business processes through intelligent automation.
+Key Responsibilities:
+• Architect and develop scalable RPA workflows using UiPath, Blue Prism, or Automation Anywhere
+• Conduct comprehensive process analysis and automation feasibility assessments
+• Implement advanced automation features including AI/ML integration, OCR, and API connectivity
+• Collaborate with cross-functional teams to identify high-impact automation opportunities
+• Establish automation governance frameworks and best practices
+• Mentor junior developers and provide technical leadership
+• Monitor bot performance and implement continuous improvement strategies
 
-                      // Key Responsibilities:
-                      // • Architect and develop scalable RPA workflows using UiPath, Blue Prism, or Automation Anywhere
-                      // • Conduct comprehensive process analysis and automation feasibility assessments
-                      // • Implement advanced automation features including AI/ML integration, OCR, and API connectivity
-                      // • Collaborate with cross-functional teams to identify high-impact automation opportunities
-                      // • Establish automation governance frameworks and best practices
-                      // • Mentor junior developers and provide technical leadership
-                      // • Monitor bot performance and implement continuous improvement strategies
+Technical Requirements:
+• 5+ years of hands-on experience in RPA development
+• Expert proficiency in UiPath, Blue Prism, or Automation Anywhere platforms
+• Strong programming skills in C#, Python, VB.NET, or Java
+• Experience with database technologies (SQL Server, Oracle, MySQL)
+• Knowledge of web technologies (HTML, CSS, JavaScript, REST APIs)
+• Familiarity with cloud platforms (Azure, AWS) and containerization (Docker)
+• Understanding of AI/ML concepts and integration with RPA platforms
 
-                      // Technical Requirements:
-                      // • 5+ years of hands-on experience in RPA development
-                      // • Expert proficiency in UiPath, Blue Prism, or Automation Anywhere platforms
-                      // • Strong programming skills in C#, Python, VB.NET, or Java
-                      // • Experience with database technologies (SQL Server, Oracle, MySQL)
-                      // • Knowledge of web technologies (HTML, CSS, JavaScript, REST APIs)
-                      // • Familiarity with cloud platforms (Azure, AWS) and containerization (Docker)
-                      // • Understanding of AI/ML concepts and integration with RPA platforms
+Soft Skills:
+• Excellent analytical and problem-solving abilities
+• Strong communication and stakeholder management skills
+• Detail-oriented with focus on quality and accuracy
+• Ability to work independently and manage multiple projects
+• Continuous learning mindset and adaptability to new technologies
 
-                      // Soft Skills:
-                      // • Excellent analytical and problem-solving abilities
-                      // • Strong communication and stakeholder management skills
-                      // • Detail-oriented with focus on quality and accuracy
-                      // • Ability to work independently and manage multiple projects
-                      // • Continuous learning mindset and adaptability to new technologies
-
-                      // Preferred Qualifications:
-                      // • RPA platform certifications (UiPath Advanced Developer, Blue Prism Professional)
-                      // • Experience with process mining tools (Celonis, Process Street)
-                      // • Knowledge of business process management (BPM) principles
-                      // • Agile/Scrum methodology experience`
-                      
-
-  // const handleSelectVersion = (version: "original" | "ai") => {
-  //   setSelectedVersion(version);
-    
-  //   const finalJD = version === "original" ? originalJD : aiGeneratedJD;
-  //   localStorage.setItem('selectedJD', JSON.stringify({
-  //     version: version,
-  //     content: finalJD,
-  //     timestamp: Date.now()
-  //   }));
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    if (!jdId) return;
-    const fetchOriginalJD = async () => {
-      setLoading(true);
-      try {
-        // if backend requires token
-        
-        //const { jdId } = useParams<{ jdId: string }>();
-        const response = await fetch(`/api/v1/jd/${jdId}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          }
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch Original JD");
-
-        const data = await response.json();
-      
-        // Assuming backend returns { original_text: "JD content..." }
-        setOriginalJD(data.original_text);
-        await generateAIEnhancedJD(data);
-
-      } catch (error) {
-        console.error("Error fetching Original JD:", error);
-         if (error instanceof Response) {
-    console.log(await error.text());
-    }
-        setOriginalJD("⚠️ Failed to load Job Description from server.");
-      }finally{
-        setLoading(false);
-      }
-    };
-
-    fetchOriginalJD();
-  }, [jdId]);
-
-  const generateAIEnhancedJD = async (jdData: any) => {
-    try {
-      
-      const payload = {
-        role: jdData.role ||"",
-        company_id: "", // empty for now
-        methodology: "direct",
-        min_similarity: 0.5,
-      };
-
-      const response = await fetch(`/api/v1/jd/${jdId}/refine/ai`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
-
-      const data = await response.json();
-      const cleanedRefinedText = (data.refined_text ||"⚠️ No AI-enhanced JD returned").replace(/\*/g,"");
-      setAiGeneratedJD(cleanedRefinedText);
-
-      await fetchHighlights();
-
-    } catch (error) {
-      console.error("Error generating AI Enhanced JD:", error);
-      setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
-    }
-  };
-
-  const fetchHighlights = async () => {
-  try {
-    const response = await fetch(`/api/v1/jd/${jdId}/diff?format=table`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    if (!response.ok) throw new Error("Failed to fetch highlights");
-    const data = await response.json();
-
-    // Render the diff_html directly
-    setAiGeneratedJD(data.diff_html || "⚠️ No highlights returned");
-  } catch (error) {
-    console.error("Error fetching highlights:", error);
-  }
-};
+Preferred Qualifications:
+• RPA platform certifications (UiPath Advanced Developer, Blue Prism Professional)
+• Experience with process mining tools (Celonis, Process Street)
+• Knowledge of business process management (BPM) principles
+• Agile/Scrum methodology experience`);
 
   const handleSelectVersion = async (version: "original" | "ai") => {
     setSelectedVersion(version);
@@ -184,11 +73,10 @@ const JDComparison = () => {
     
     try {
       // TODO: Replace with your actual API endpoint for JD version selection
-      const response = await fetch(`/api/v1/jd/${jdId}`, {
-        method: 'PATCH',
+      const response = await fetch('YOUR_API_ENDPOINT_FOR_JD_SELECTION', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
           // Add any required headers (authorization, etc.)
           // 'Authorization': 'Bearer YOUR_API_KEY',
         },
@@ -283,7 +171,7 @@ const JDComparison = () => {
                   <CardTitle>Original Job Description</CardTitle>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge className="bg-blue-100 text-blue-800 font-medium px-2 py-1 rounded-md">Your Version</Badge>
+                  <Badge variant="secondary">Your Version</Badge>
                   {selectedVersion === "original" && (
                     <CheckCircle className="w-5 h-5 text-success" />
                   )}
@@ -317,29 +205,12 @@ const JDComparison = () => {
                   <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
                 </Button>
                 
-                <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="originalJD"
-                          checked={selectedVersion === "original"}
-                          onCheckedChange={(checked) => {
-                            if (checked) handleSelectVersion("original");
-                          }}
-                          className={`w-5 h-5 rounded border ${
-                            selectedVersion === "original"
-                              ? 'bg-success border-success hover:bg-success/90'
-                              : 'bg-muted border-border hover:bg-muted/80'
-                          }`}
-                        />
-                        <label
-                          htmlFor="originalJD"
-                          className={`text-sm font-medium leading-none ${
-                            selectedVersion === "original" ? 'text-success' : 'text-foreground'
-                          }`}
-                        >
-                          Select Original JD
-                        </label>
-                      </div>
-
+                <Button
+                  variant={selectedVersion === "original" ? "success" : "default"}
+                  onClick={() => handleSelectVersion("original")}
+                >
+                  {selectedVersion === "original" ? "Selected" : "Select This Version"}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -355,7 +226,7 @@ const JDComparison = () => {
                   <CardTitle>AI-Enhanced Job Description</CardTitle>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-purple-100 text-purple-800 font-medium px-2 py-1 rounded-md">
+                  <Badge variant="outline" className="bg-gradient-secondary text-secondary-foreground">
                     AI Optimized
                   </Badge>
                   {selectedVersion === "ai" && (
@@ -376,11 +247,9 @@ const JDComparison = () => {
                   className="font-mono text-sm"
                 />
               ) : (
-                <div
-                    className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto prose"
-                    dangerouslySetInnerHTML={{ __html: aiGeneratedJD }}
-                  ></div>
-
+                <div className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <pre className="text-sm whitespace-pre-wrap font-sans">{aiGeneratedJD}</pre>
+                </div>
               )}
               
               <div className="flex justify-between">
@@ -393,30 +262,12 @@ const JDComparison = () => {
                   <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
                 </Button>
                 
-                <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="aiJD"
-                        checked={selectedVersion === "ai"}
-                        onCheckedChange={(checked) => {
-                          if (checked) handleSelectVersion("ai");
-                        }}
-                        className={`w-5 h-5 rounded border ${
-                          selectedVersion === "ai"
-                            ? 'bg-success border-success hover:bg-success/90'
-                            : 'bg-muted border-border hover:bg-muted/80'
-                        }`}
-                      />
-                      <label
-                        htmlFor="aiJD"
-                        className={`text-sm font-medium leading-none ${
-                          selectedVersion === "ai" ? 'text-success' : 'text-foreground'
-                        }`}
-                      >
-                        Select AI Enhanced JD
-                      </label>
-
-                    </div>
-
+                <Button
+                  variant={selectedVersion === "ai" ? "success" : "gradient"}
+                  onClick={() => handleSelectVersion("ai")}
+                >
+                  {selectedVersion === "ai" ? "Selected" : "Select This Version"}
+                </Button>
               </div>
             </CardContent>
           </Card>
