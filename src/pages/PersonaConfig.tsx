@@ -796,7 +796,7 @@ const PersonaConfig = () => {
           </Card>
 
           {/* Categories */}
-          <Accordion type="multiple" className="space-y-4">
+          <Accordion type="multiple" className="space-y-3">
           {categories.map((category) => {
             const skillTotal = getCategorySkillTotal(category.id);
             const isSkillTotalValid = skillTotal === 100;
@@ -804,7 +804,7 @@ const PersonaConfig = () => {
             return (
               <AccordionItem key={category.id} value={category.id} className="border-0">
                 <Card className="shadow-card overflow-hidden">
-                  <AccordionTrigger className="pl-4 pr-6 py-4 hover:no-underline">
+                  <AccordionTrigger className="pl-4 pr-6 py-3 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-4">
                         <h3 className="text-lg font-semibold text-foreground w-[220px] text-left">{category.name}</h3>
@@ -834,8 +834,8 @@ const PersonaConfig = () => {
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent>
-                    <CardContent className="pt-0 space-y-4">
+                   <AccordionContent>
+                    <CardContent className="pt-0 pb-4 space-y-4">
                       <div className="rounded-md border">
                         <Table>
                           <TableHeader>
