@@ -770,9 +770,9 @@ const PersonaConfig = () => {
             
             return (
               <AccordionItem key={category.id} value={category.id} className="border-0">
-                <Card className="shadow-card pl-0">
-                  <AccordionTrigger className="pl-6 pr-6 py-4 hover:no-underline">
-                    <div className="flex items-center justify-between w-full">
+                <Card className="shadow-card overflow-hidden">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center justify-between w-full -ml-6">
                       <div className="flex items-center space-x-4">
                         <h3 className="text-lg font-semibold text-foreground min-w-[350px]">{category.name}</h3>
                         <div className="flex items-center space-x-1">
