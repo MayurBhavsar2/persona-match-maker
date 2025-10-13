@@ -797,7 +797,7 @@ const PersonaConfig = () => {
 
           {/* Total Category Weight - Moved here for better visibility */}
           <Card className="shadow-card border-2 border-primary/20 bg-primary/5">
-            <CardContent className="py-4">
+            <CardContent className="py-2 px-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-semibold text-foreground">Total Category Weight</span>
