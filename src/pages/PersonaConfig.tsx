@@ -773,27 +773,28 @@ const PersonaConfig = () => {
                 <Card className="shadow-card">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center space-x-4">
-                        <h3 className="text-lg font-semibold text-foreground">{category.name}</h3>
-                        <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-4 min-w-0">
+                        <h3 className="text-lg font-semibold text-foreground whitespace-nowrap">{category.name}</h3>
+                        <div className="flex items-center space-x-1">
+                          <span className="text-sm font-medium text-muted-foreground">Weight:</span>
                           <Input
                             type="number"
                             value={category.weight}
                             onChange={(e) => updateCategoryWeight(category.id, parseInt(e.target.value) || 0)}
-                            className="w-20 h-8 text-center"
+                            className="w-16 h-8 text-center font-mono"
                             min="0"
                             max="100"
                           />
-                          <span className="text-sm text-muted-foreground">%</span>
+                          <span className="text-sm font-mono text-muted-foreground">%</span>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3 ml-4">
                         {isSkillTotalValid ? (
-                          <CheckCircle2 className="w-4 h-4 text-success" />
+                          <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
                         ) : (
-                          <AlertCircle className="w-4 h-4 text-destructive" />
+                          <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                         )}
-                        <span className={`text-xs font-mono ${
+                        <span className={`text-sm font-mono whitespace-nowrap ${
                           isSkillTotalValid ? 'text-success' : 'text-destructive'
                         }`}>
                           Skills: {skillTotal}%
