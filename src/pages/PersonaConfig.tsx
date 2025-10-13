@@ -771,10 +771,10 @@ const PersonaConfig = () => {
             return (
               <AccordionItem key={category.id} value={category.id} className="border-0">
                 <Card className="shadow-card overflow-hidden">
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                  <AccordionTrigger className="pl-4 pr-6 py-4 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-8">
-                        <h3 className="text-lg font-semibold text-foreground w-[250px]">{category.name}</h3>
+                      <div className="flex items-center gap-4">
+                        <h3 className="text-lg font-semibold text-foreground w-[220px] text-left">{category.name}</h3>
                         <div className="flex items-center space-x-1">
                           <Input
                             type="number"
