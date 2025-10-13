@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -498,6 +499,7 @@ const PersonaConfig = () => {
     return { suggestions, insights, optimizations };
   };
   
+  const [deleteConfirm, setDeleteConfirm] = useState<{ categoryId: string; skillIndex: number } | null>(null);
   const [categories, setCategories] = useState<SkillCategory[]>([
     {
       id: "technical",
@@ -734,6 +736,7 @@ const PersonaConfig = () => {
       return cat;
     });
     setCategories(updatedCategories);
+    setDeleteConfirm(null);
   };
 
   const validation = validateWeights();
@@ -906,7 +909,7 @@ const PersonaConfig = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => removeSkillFromCategory(category.id, index)}
+                                    onClick={() => setDeleteConfirm({ categoryId: category.id, skillIndex: index })}
                                     className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
                                   >
                                     <Minus className="h-4 w-4" />
@@ -1223,6 +1226,26 @@ const PersonaConfig = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      <AlertDialog open={!!deleteConfirm} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this row? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteConfirm && removeSkillFromCategory(deleteConfirm.categoryId, deleteConfirm.skillIndex)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 };
