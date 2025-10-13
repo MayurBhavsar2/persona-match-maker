@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target } from "lucide-react";
+import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SkillCategory {
@@ -607,6 +607,23 @@ const PersonaConfig = () => {
     );
   };
 
+  const addSkillToCategory = (categoryId: string) => {
+    setCategories(prev =>
+      prev.map(cat => {
+        if (cat.id === categoryId) {
+          const newSkill = {
+            name: "New Skill",
+            weight: 0,
+            requiredLevel: 3,
+            notes: ""
+          };
+          return { ...cat, skills: [...cat.skills, newSkill] };
+        }
+        return cat;
+      })
+    );
+  };
+
   const getTotalWeight = () => {
     return categories.reduce((sum, cat) => sum + cat.weight, 0);
   };
@@ -877,9 +894,20 @@ const PersonaConfig = () => {
                         </Table>
                       </div>
                       <div className="flex justify-between items-center pt-2">
-                        <span className="text-sm text-muted-foreground">
-                          Skills total: <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-muted-foreground">
+                            <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
+                          </span>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => addSkillToCategory(category.id)}
+                            className="h-7 w-7 p-0"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
                         <Progress 
                           value={skillTotal} 
                           className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
