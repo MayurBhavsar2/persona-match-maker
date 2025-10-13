@@ -773,8 +773,8 @@ const PersonaConfig = () => {
                 <Card className="shadow-card">
                   <AccordionTrigger className="px-6 py-4 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center space-x-4">
-                        <h3 className="text-lg font-semibold text-foreground">{category.name}</h3>
+                      <div className="flex items-center space-x-4 flex-1">
+                        <h3 className="text-lg font-semibold text-foreground flex-1">{category.name}</h3>
                         <div className="flex items-center space-x-1">
                           <Input
                             type="number"
@@ -787,7 +787,7 @@ const PersonaConfig = () => {
                           <span className="text-sm font-mono text-muted-foreground">%</span>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-3 ml-4">
                         {isSkillTotalValid ? (
                           <CheckCircle2 className="w-4 h-4 text-success flex-shrink-0" />
                         ) : (
