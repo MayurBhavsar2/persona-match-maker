@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus } from "lucide-react";
+import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SkillCategory {
@@ -624,6 +624,18 @@ const PersonaConfig = () => {
     );
   };
 
+  const removeSkillFromCategory = (categoryId: string, skillIndex: number) => {
+    setCategories(prev =>
+      prev.map(cat => {
+        if (cat.id === categoryId) {
+          const newSkills = cat.skills.filter((_, index) => index !== skillIndex);
+          return { ...cat, skills: newSkills };
+        }
+        return cat;
+      })
+    );
+  };
+
   const getTotalWeight = () => {
     return categories.reduce((sum, cat) => sum + cat.weight, 0);
   };
@@ -820,6 +832,18 @@ const PersonaConfig = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <CardContent className="pt-0 space-y-4">
+                      <div className="flex justify-end mb-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addSkillToCategory(category.id)}
+                          className="h-8 gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Skill
+                        </Button>
+                      </div>
                       <div className="rounded-md border">
                         <Table>
                           <TableHeader>
@@ -827,7 +851,8 @@ const PersonaConfig = () => {
                               <TableHead className="w-[25%]">Skill Name</TableHead>
                               <TableHead className="w-[15%] text-center">Weight (%)</TableHead>
                               <TableHead className="w-[15%] text-center">Required Level</TableHead>
-                              <TableHead className="w-[45%]">Skills & Technologies</TableHead>
+                              <TableHead className="w-[40%]">Skills & Technologies</TableHead>
+                              <TableHead className="w-[5%]"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -888,26 +913,26 @@ const PersonaConfig = () => {
                                     placeholder="React, Node.js, TypeScript..."
                                   />
                                 </TableCell>
+                                <TableCell className="text-center">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => removeSkillFromCategory(category.id, index)}
+                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
                         </Table>
                       </div>
                       <div className="flex justify-between items-center pt-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-muted-foreground">
-                            <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
-                          </span>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => addSkillToCategory(category.id)}
-                            className="h-7 w-7 p-0"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
+                        </span>
                         <Progress 
                           value={skillTotal} 
                           className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
