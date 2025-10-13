@@ -795,6 +795,32 @@ const PersonaConfig = () => {
             </CardContent>
           </Card>
 
+          {/* Total Category Weight - Moved here for better visibility */}
+          <Card className="shadow-card border-2 border-primary/20 bg-primary/5">
+            <CardContent className="py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-semibold text-foreground">Total Category Weight</span>
+                  {validation.totalValid ? (
+                    <CheckCircle2 className="w-5 h-5 text-success" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-destructive" />
+                  )}
+                </div>
+                <div className={`text-lg font-mono font-bold ${
+                  validation.totalValid ? 'text-success' : 'text-destructive'
+                }`}>
+                  {getTotalWeight()}% / 100%
+                </div>
+              </div>
+              {!validation.totalValid && (
+                <p className="text-xs text-destructive mt-2">
+                  Category weights must total exactly 100%
+                </p>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Categories */}
           <Accordion type="multiple" className="space-y-3">
           {categories.map((category) => {
@@ -1043,14 +1069,6 @@ const PersonaConfig = () => {
                       <span className="text-sm text-warning font-medium">Needs Adjustment</span>
                     </div>
                   )}
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-muted-foreground">Total Category Weight</div>
-                  <div className={`text-sm font-mono font-semibold ${
-                    validation.totalValid ? 'text-success' : 'text-destructive'
-                  }`}>
-                    {getTotalWeight()}% / 100%
-                  </div>
                 </div>
               </div>
             </div>
