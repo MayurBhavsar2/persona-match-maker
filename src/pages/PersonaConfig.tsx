@@ -795,54 +795,6 @@ const PersonaConfig = () => {
             </CardContent>
           </Card>
 
-          {/* Education and Experience */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Education and Experience</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Minimum Education Level:</span>
-                  <span className="font-medium">Bachelor's Degree</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Years of Experience:</span>
-                  <span className="font-medium">3-5 years</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Category Weight Total */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Category Weight Total</span>
-                <div className="flex items-center space-x-2">
-                  {validation.totalValid ? (
-                    <CheckCircle2 className="w-5 h-5 text-success" />
-                  ) : (
-                    <AlertCircle className="w-5 h-5 text-destructive" />
-                  )}
-                  <span className={`text-sm font-mono ${
-                    validation.totalValid ? 'text-success' : 'text-destructive'
-                  }`}>
-                    {getTotalWeight()}%
-                  </span>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={getTotalWeight()} className="h-3" />
-              <p className="text-xs text-muted-foreground mt-2">
-                Total must equal 100% to proceed
-              </p>
-            </CardContent>
-          </Card>
-
           {/* Categories */}
           <Accordion type="multiple" className="space-y-4">
           {categories.map((category) => {
@@ -969,15 +921,6 @@ const PersonaConfig = () => {
                         </Table>
                       </div>
                       <div className="flex justify-between items-center pt-2">
-                        <span className="text-sm text-muted-foreground">
-                          <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
-                        </span>
-                        <Progress 
-                          value={skillTotal} 
-                          className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
-                        />
-                      </div>
-                      <div className="flex justify-between items-center pt-2">
                         <div className="flex items-center gap-3">
                           <Button
                             variant="outline"
@@ -989,6 +932,15 @@ const PersonaConfig = () => {
                             Add Skill
                           </Button>
                         </div>
+                      </div>
+                      <div className="flex justify-between items-center pt-2">
+                        <span className="text-sm text-muted-foreground">
+                          <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
+                        </span>
+                        <Progress 
+                          value={skillTotal} 
+                          className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
+                        />
                       </div>
                       
                       {/* Custom Addition for this category */}
