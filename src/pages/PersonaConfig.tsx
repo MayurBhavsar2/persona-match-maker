@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus } from "lucide-react";
+import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface SkillCategory {
@@ -723,6 +723,19 @@ const PersonaConfig = () => {
     navigate('/candidate-upload');
   };
 
+  const removeSkillFromCategory = (categoryId: string, skillIndex: number) => {
+    const updatedCategories = categories.map(cat => {
+      if (cat.id === categoryId) {
+        return {
+          ...cat,
+          skills: cat.skills.filter((_, index) => index !== skillIndex)
+        };
+      }
+      return cat;
+    });
+    setCategories(updatedCategories);
+  };
+
   const validation = validateWeights();
 
   return (
@@ -827,7 +840,8 @@ const PersonaConfig = () => {
                               <TableHead className="w-[25%]">Skill Name</TableHead>
                               <TableHead className="w-[15%] text-center">Weight (%)</TableHead>
                               <TableHead className="w-[15%] text-center">Required Level</TableHead>
-                              <TableHead className="w-[45%]">Skills & Technologies</TableHead>
+                              <TableHead className="w-[40%]">Skills & Technologies</TableHead>
+                              <TableHead className="w-[5%]"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -888,6 +902,16 @@ const PersonaConfig = () => {
                                     placeholder="React, Node.js, TypeScript..."
                                   />
                                 </TableCell>
+                                <TableCell className="text-center">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeSkillFromCategory(category.id, index)}
+                                    className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                  >
+                                    <Minus className="h-4 w-4" />
+                                  </Button>
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
@@ -895,19 +919,21 @@ const PersonaConfig = () => {
                       </div>
                       <div className="flex justify-between items-center pt-2">
                         <div className="flex items-center gap-3">
-                          <span className="text-sm text-muted-foreground">
-                            <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
-                          </span>
                           <Button
-                            type="button"
-                            size="sm"
                             variant="outline"
+                            size="sm"
                             onClick={() => addSkillToCategory(category.id)}
-                            className="h-7 w-7 p-0"
+                            className="h-8 gap-2"
                           >
                             <Plus className="h-4 w-4" />
+                            Add Skill
                           </Button>
                         </div>
+                      </div>
+                      <div className="flex justify-between items-center pt-2">
+                        <span className="text-sm text-muted-foreground">
+                          <span className="font-bold">Skills total:</span> <span className={`font-mono ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
+                        </span>
                         <Progress 
                           value={skillTotal} 
                           className={`h-2 w-32 ${isSkillTotalValid ? '' : 'opacity-75'}`}
