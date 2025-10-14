@@ -819,27 +819,20 @@ const Results = () => {
           {sidebarCandidate && (
             <div className="flex flex-col h-full">
               {/* Candidate Header Info */}
-              <div className="border-b bg-muted/30 p-6">
-                <div className="flex items-center justify-between mb-4">
+              <div className="border-b bg-background p-4">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg font-semibold text-primary">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                      <span className="text-lg font-semibold text-muted-foreground">
                         {sidebarCandidate.name.split(' ').map(n => n[0]).join('')}
                       </span>
                     </div>
-                    <div>
-                      <h2 className="text-xl font-semibold">{sidebarCandidate.name}</h2>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
-                          candidate@example.com
-                        </span>
-                        <span>|</span>
-                        <span className="flex items-center gap-1">
-                          <Phone className="w-3 h-3" />
-                          +1 (555) 123-4567
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-2 text-base">
+                      <span className="font-semibold text-foreground">{sidebarCandidate.name}</span>
+                      <span className="text-muted-foreground">|</span>
+                      <span className="text-muted-foreground">candidate@example.com</span>
+                      <span className="text-muted-foreground">|</span>
+                      <span className="text-muted-foreground">+91-9876543210</span>
                     </div>
                   </div>
                   <Button 
@@ -847,7 +840,7 @@ const Results = () => {
                     size="icon"
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-5 w-5" />
                   </Button>
                 </div>
               </div>
