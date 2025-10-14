@@ -667,23 +667,15 @@ const Results = () => {
   return (
     <Layout currentStep={4}>
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
+        <div className="space-y-4">
           <h1 className="text-3xl font-bold text-foreground">Candidate Evaluation Results</h1>
-          <p className="text-lg text-muted-foreground">
-            Review and analyze candidate matches based on your configured persona
-          </p>
-        </div>
-
-        {/* Role and Persona Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="text-lg">Role</CardTitle>
-              <CardDescription>Select the role for evaluation</CardDescription>
-            </CardHeader>
-            <CardContent>
+          
+          {/* Role and Persona Selection in one row */}
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">Role:</label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-full bg-background border-border">
+                <SelectTrigger className="w-[250px] bg-background border-border">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
@@ -694,17 +686,12 @@ const Results = () => {
                   <SelectItem value="Product Manager">Product Manager</SelectItem>
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="text-lg">Persona</CardTitle>
-              <CardDescription>Select the evaluation persona</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">Persona:</label>
               <Select value={selectedPersona} onValueChange={setSelectedPersona}>
-                <SelectTrigger className="w-full bg-background border-border">
+                <SelectTrigger className="w-[350px] bg-background border-border">
                   <SelectValue placeholder="Select a persona" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
@@ -715,8 +702,8 @@ const Results = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
 
