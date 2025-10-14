@@ -667,10 +667,9 @@ const Results = () => {
   return (
     <Layout currentStep={4}>
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="space-y-4">
+        <div className="flex items-center justify-between gap-6">
           <h1 className="text-3xl font-bold text-foreground">Candidate Evaluation Results</h1>
           
-          {/* Role and Persona Selection in one row */}
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-foreground">Role:</label>
