@@ -225,10 +225,10 @@ const CandidateUpload = () => {
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-foreground">Upload Candidate CVs</h1>
             <div className="flex items-center gap-3 text-sm">
-              <span className="px-3 py-1 bg-primary/10 text-primary rounded-md font-medium">
+              <span className="px-3 py-1 bg-muted text-foreground rounded-md font-medium">
                 Role: {roleName}
               </span>
-              <span className="px-3 py-1 bg-secondary/10 text-secondary rounded-md font-medium">
+              <span className="px-3 py-1 bg-muted text-foreground rounded-md font-medium">
                 Persona: {personaName}
               </span>
             </div>
