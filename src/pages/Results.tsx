@@ -815,7 +815,7 @@ const Results = () => {
 
       {/* Candidate Details Sheet */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-[calc(100vw-60px)] max-w-full overflow-y-auto p-0">
+        <SheetContent side="right" className="w-[calc(100vw-150px)] max-w-full overflow-y-auto p-0">
           {sidebarCandidate && (
             <div className="flex flex-col h-full">
               {/* Candidate Header Info */}
