@@ -852,11 +852,6 @@ const PersonaConfig = () => {
                         ) : (
                           <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0" />
                         )}
-                        <span className={`text-sm font-mono whitespace-nowrap ${
-                          isSkillTotalValid ? 'text-success' : 'text-destructive'
-                        }`}>
-                          Skills: {skillTotal}%
-                        </span>
                       </div>
                     </div>
                   </AccordionTrigger>
