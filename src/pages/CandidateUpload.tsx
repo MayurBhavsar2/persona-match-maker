@@ -21,6 +21,12 @@ const CandidateUpload = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
+  // Get role and persona from localStorage
+  const selectedJD = localStorage.getItem('selectedJD');
+  const personaData = localStorage.getItem('personaData');
+  const roleName = selectedJD ? JSON.parse(selectedJD).role : 'N/A';
+  const personaName = personaData ? JSON.parse(personaData).personaName : 'N/A';
+
   const handleFileUpload = (uploadedFiles: FileList | null) => {
     if (!uploadedFiles) return;
 
@@ -215,27 +221,37 @@ const CandidateUpload = () => {
   return (
     <Layout currentStep={3}>
       <div className="max-w-4xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Upload Candidate CVs</h1>
-          <p className="text-lg text-muted-foreground">
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-foreground">Upload Candidate CVs</h1>
+            <div className="flex items-center gap-3 text-sm">
+              <span className="px-3 py-1 bg-primary/10 text-primary rounded-md font-medium">
+                Role: {roleName}
+              </span>
+              <span className="px-3 py-1 bg-secondary/10 text-secondary rounded-md font-medium">
+                Persona: {personaName}
+              </span>
+            </div>
+          </div>
+          <p className="text-base text-muted-foreground">
             Upload candidate resumes to evaluate them against your configured persona
           </p>
         </div>
 
         {/* Upload Area */}
         <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Upload className="w-5 h-5 text-primary" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-lg">
+              <Upload className="w-4 h-4 text-primary" />
               <span>CV Upload</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Upload PDF, DOC, DOCX files. Multiple files supported.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div
-              className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
                 dragActive 
                   ? 'border-primary bg-primary/5' 
                   : 'border-border hover:border-primary hover:bg-muted/50'
@@ -254,15 +270,15 @@ const CandidateUpload = () => {
                 onChange={(e) => handleFileUpload(e.target.files)}
               />
               <label htmlFor="cv-upload" className="cursor-pointer">
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-primary" />
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-medium text-foreground">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-medium text-foreground">
                       Drop files here or click to upload
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Supports PDF, DOC, DOCX files up to 10MB each
                     </p>
                   </div>
