@@ -567,6 +567,25 @@ const PersonaConfig = () => {
         if (cat.id === categoryId) {
           const newSkills = [...cat.skills];
           newSkills[skillIndex] = { ...newSkills[skillIndex], weight: newWeight };
+          
+          // Calculate new total
+          const newTotal = newSkills.reduce((sum, skill) => sum + skill.weight, 0);
+          
+          // Show toast if not 100%
+          if (newTotal > 100) {
+            toast({
+              title: "Skills total above 100%",
+              description: `The skills in this category total ${newTotal}%. Please adjust to exactly 100%.`,
+              variant: "destructive",
+            });
+          } else if (newTotal < 100) {
+            toast({
+              title: "Skills total below 100%",
+              description: `The skills in this category total ${newTotal}%. Please adjust to exactly 100%.`,
+              variant: "destructive",
+            });
+          }
+          
           return { ...cat, skills: newSkills };
         }
         return cat;
