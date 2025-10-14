@@ -815,124 +815,258 @@ const Results = () => {
 
       {/* Candidate Details Sheet */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-96 overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Candidate Details</SheetTitle>
-            <SheetDescription>
-              {sidebarCandidate?.name} - Complete Profile Information
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="space-y-6 mt-6">
-            {sidebarCandidate && (
-              <>
-                {/* Basic Contact Details */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{sidebarCandidate.name}</CardTitle>
-                    <CardDescription>Contact Information</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Mail className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">candidate@example.com</span>
+        <SheetContent side="right" className="w-[800px] overflow-y-auto p-0">
+          {sidebarCandidate && (
+            <div className="flex flex-col h-full">
+              {/* Candidate Header Info */}
+              <div className="border-b bg-muted/30 p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-lg font-semibold text-primary">
+                        {sidebarCandidate.name.split(' ').map(n => n[0]).join('')}
+                      </span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">+1 (555) 123-4567</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">San Francisco, CA</span>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Role Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Role</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm font-medium">{selectedRole}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Applied for this position</p>
-                  </CardContent>
-                </Card>
-
-                {/* Persona Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Persona</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm font-medium">{selectedPersona}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Evaluation based on this persona</p>
-                  </CardContent>
-                </Card>
-
-                {/* Summary */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
                     <div>
-                      <p className="text-sm font-medium mb-2">Overall Score</p>
-                      <div className="flex items-center space-x-2">
-                        <span className={`font-bold text-lg ${getScoreColor(sidebarCandidate.overallScore)}`}>
-                          {sidebarCandidate.overallScore}%
+                      <h2 className="text-xl font-semibold">{sidebarCandidate.name}</h2>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <span className="flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          candidate@example.com
                         </span>
-                        <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
-                          {sidebarCandidate.fitCategory} fit
-                        </Badge>
+                        <span>|</span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          +1 (555) 123-4567
+                        </span>
                       </div>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Technical Skills</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.technicalSkills} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="text-xs text-muted-foreground">Experience</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.experience} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="text-xs text-muted-foreground">Communication</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.communication} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="text-xs text-muted-foreground">Certifications</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.certifications} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.certifications}%</span>
-                        </div>
-                      </div>
-                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
 
-                    <div>
-                      <p className="text-xs text-muted-foreground">Application Date</p>
-                      <p className="text-sm font-medium">
-                        {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
-                      </p>
+              {/* Tabs */}
+              <Tabs defaultValue="evaluation" className="flex-1 flex flex-col">
+                <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
+                  <TabsTrigger 
+                    value="evaluation" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  >
+                    Attribution Evaluation
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="overview" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  >
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="documents" 
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  >
+                    Documents
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="evaluation" className="flex-1 p-6 mt-0 overflow-y-auto">
+                  <div className="space-y-4">
+                    <Accordion type="multiple" className="w-full space-y-3">
+                      {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
+                        <AccordionItem key={index} value={`category-${index}`} className="border rounded-lg px-4">
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center justify-between w-full mr-4">
+                              <span className="font-semibold text-left">{category.name}</span>
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline">Weight: {category.weight}</Badge>
+                                <Badge variant="outline" className="bg-transparent">
+                                  <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
+                                    {category.percentScored}
+                                  </span>
+                                </Badge>
+                                <Badge variant="outline" className="bg-transparent">
+                                  <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
+                                    Score: {category.attributeScore}
+                                  </span>
+                                </Badge>
+                              </div>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="pt-4">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Sub-Attribute</TableHead>
+                                    <TableHead>Weight (%)</TableHead>
+                                    <TableHead>Expected</TableHead>
+                                    <TableHead>Actual</TableHead>
+                                    <TableHead>Scored</TableHead>
+                                    <TableHead>Score</TableHead>
+                                    <TableHead>Notes</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {category.subAttributes.map((subAttr, subIndex) => {
+                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                                    const subAttributeScore = (subScore * subAttr.weightage / 100).toFixed(1);
+                                    return (
+                                      <TableRow key={subIndex}>
+                                        <TableCell className="font-medium text-sm">{subAttr.name}</TableCell>
+                                        <TableCell>{subAttr.weightage}%</TableCell>
+                                        <TableCell>Lvl {subAttr.expectedLevel}</TableCell>
+                                        <TableCell>Lvl {subAttr.actualLevel}</TableCell>
+                                        <TableCell className={getScoreColor(subScore)}>
+                                          {subScore.toFixed(1)}%
+                                        </TableCell>
+                                        <TableCell>{subAttributeScore}%</TableCell>
+                                        <TableCell className="text-xs text-muted-foreground max-w-xs">
+                                          {subAttr.notes}
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+
+                    {/* Final Score Summary */}
+                    <div className="mt-6 p-4 rounded-lg border-2 bg-muted/20">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-lg">Final Overall Score</span>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline">Weight: 100%</Badge>
+                          <Badge variant="outline" className="text-lg px-4 py-1">
+                            <span className={getScoreColor(sidebarCandidate.overallScore)}>
+                              {sidebarCandidate.overallScore}%
+                            </span>
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="overview" className="flex-1 p-6 mt-0 overflow-y-auto">
+                  <div className="space-y-4">
+                    {/* Role Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Role</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm font-medium">{selectedRole}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Applied for this position</p>
+                      </CardContent>
+                    </Card>
+
+                    {/* Persona Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Persona</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm font-medium">{selectedPersona}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Evaluation based on this persona</p>
+                      </CardContent>
+                    </Card>
+
+                    {/* Overall Fit */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Overall Fit</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center space-x-2">
+                          {getFitIcon(sidebarCandidate.fitCategory)}
+                          <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
+                            {sidebarCandidate.fitCategory.charAt(0).toUpperCase() + sidebarCandidate.fitCategory.slice(1)} Fit
+                          </Badge>
+                        </div>
+                        <div className="mt-3">
+                          <p className="text-sm text-muted-foreground mb-2">Overall Score</p>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-2xl font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                              {sidebarCandidate.overallScore}%
+                            </span>
+                          </div>
+                          <Progress value={sidebarCandidate.overallScore} className="mt-2" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Skills Breakdown */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Skills Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Technical Skills</p>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={sidebarCandidate.technicalSkills} className="flex-1 h-2" />
+                            <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Experience</p>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={sidebarCandidate.experience} className="flex-1 h-2" />
+                            <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Communication</p>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={sidebarCandidate.communication} className="flex-1 h-2" />
+                            <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Certifications</p>
+                          <div className="flex items-center space-x-2">
+                            <Progress value={sidebarCandidate.certifications} className="flex-1 h-2" />
+                            <span className="text-sm font-medium">{sidebarCandidate.certifications}%</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Application Details</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span>Applied on {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="documents" className="flex-1 p-6 mt-0 overflow-y-auto">
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No documents uploaded yet</p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     </Layout>
