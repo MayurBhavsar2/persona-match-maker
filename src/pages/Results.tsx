@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -983,36 +983,39 @@ const Results = () => {
 
                   {/* Score Details Dialog */}
                   <Dialog open={showScoreDetails} onOpenChange={setShowScoreDetails}>
-                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Attribution Evaluation Summary</DialogTitle>
+                    <DialogContent className="max-w-2xl max-h-[70vh] overflow-y-auto p-4">
+                      <DialogHeader className="pb-2">
+                        <DialogTitle className="text-lg">Attribution Evaluation Summary</DialogTitle>
+                        <DialogDescription className="text-sm">
+                          Breakdown of evaluation scores by attribute
+                        </DialogDescription>
                       </DialogHeader>
-                      <div className="mt-4">
+                      <div className="mt-2">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[40%]">Attribute</TableHead>
-                              <TableHead className="w-[15%] text-center">Weight</TableHead>
-                              <TableHead className="w-[15%] text-center">Score</TableHead>
-                              <TableHead className="w-[15%] text-center">Scored</TableHead>
+                            <TableRow className="border-b">
+                              <TableHead className="w-[45%] py-2 px-2">Attribute</TableHead>
+                              <TableHead className="w-[15%] text-center py-2 px-1">Weight</TableHead>
+                              <TableHead className="w-[18%] text-center py-2 px-1">Score</TableHead>
+                              <TableHead className="w-[18%] text-center py-2 px-1">Scored</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
                               <TableRow key={index}>
-                                <TableCell className="font-medium">{category.name}</TableCell>
-                                <TableCell className="text-center">{category.weight}</TableCell>
-                                <TableCell className="text-center">{category.attributeScore}</TableCell>
-                                <TableCell className={`text-center font-semibold ${getScoreColor(parseFloat(category.percentScored.replace("%", "")))}`}>
+                                <TableCell className="font-medium py-2 px-2 text-sm">{category.name}</TableCell>
+                                <TableCell className="text-center py-2 px-1 text-sm">{category.weight}</TableCell>
+                                <TableCell className="text-center py-2 px-1 text-sm">{category.attributeScore}</TableCell>
+                                <TableCell className={`text-center font-semibold py-2 px-1 text-sm ${getScoreColor(parseFloat(category.percentScored.replace("%", "")))}`}>
                                   {category.percentScored}
                                 </TableCell>
                               </TableRow>
                             ))}
                             <TableRow className="border-t-2 bg-muted/20">
-                              <TableCell className="font-bold">Overall Score</TableCell>
-                              <TableCell className="text-center font-bold">100%</TableCell>
-                              <TableCell className="text-center font-bold">{sidebarCandidate.overallScore}%</TableCell>
-                              <TableCell className={`text-center font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                              <TableCell className="font-bold py-2 px-2 text-sm">Overall Score</TableCell>
+                              <TableCell className="text-center font-bold py-2 px-1 text-sm">100%</TableCell>
+                              <TableCell className="text-center font-bold py-2 px-1 text-sm">{sidebarCandidate.overallScore}%</TableCell>
+                              <TableCell className={`text-center font-bold py-2 px-1 text-sm ${getScoreColor(sidebarCandidate.overallScore)}`}>
                                 {sidebarCandidate.overallScore}%
                               </TableCell>
                             </TableRow>
