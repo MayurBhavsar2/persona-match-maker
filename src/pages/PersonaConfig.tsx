@@ -817,7 +817,7 @@ const PersonaConfig = () => {
           {/* Total Category Weight - Moved here for better visibility */}
           <Card className="shadow-card border-2 border-primary/20 bg-primary/5">
             <CardContent className="py-2 px-4">
-              <div className="flex items-center justify-between">
+              <div className="grid grid-cols-[1fr,auto] gap-4 items-center">
                 <div className="flex items-center space-x-2">
                   <span className="text-sm font-semibold text-foreground">Total Category Weight</span>
                   {validation.totalValid ? (
@@ -826,7 +826,7 @@ const PersonaConfig = () => {
                     <AlertCircle className="w-5 h-5 text-destructive" />
                   )}
                 </div>
-                <div className={`text-lg font-mono font-bold ${
+                <div className={`text-lg font-mono font-bold text-right ${
                   validation.totalValid ? 'text-success' : 'text-destructive'
                 }`}>
                   {getTotalWeight()}% / 100%
