@@ -720,36 +720,30 @@ const Results = () => {
 
         {/* Results Table */}
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              <span className="font-semibold">
-                {showAllCandidates ? `All Candidates (${candidates.length})` : `Top Candidates (${topCandidatesCount})`}
-              </span>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-end pb-3">
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setShowAllCandidates(!showAllCandidates)}
             >
-              {showAllCandidates ? 'Show Top Performers (90%+)' : 'Show All Candidates'}
+              {showAllCandidates ? 'Perfect Fit' : 'All'}
             </Button>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="py-2">Candidate</TableHead>
-                    <TableHead className="py-2">Overall Score</TableHead>
-                    <TableHead className="py-2">Application Date</TableHead>
-                    <TableHead className="py-2">Actions</TableHead>
+                    <TableHead className="py-2 px-3">Candidate</TableHead>
+                    <TableHead className="py-2 px-3">Overall Score</TableHead>
+                    <TableHead className="py-2 px-3">Application Date</TableHead>
+                    <TableHead className="py-2 px-3">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCandidates.map((candidate) => (
                     <TableRow key={candidate.id}>
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 px-3">
                         <div>
                           <button
                             className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
@@ -763,12 +757,12 @@ const Results = () => {
                           <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 px-3">
                         <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>
                           {candidate.overallScore}%
                         </span>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 px-3">
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm">
@@ -776,7 +770,7 @@ const Results = () => {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 px-3">
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm" onClick={() => setSelectedCandidate(candidate)}>
