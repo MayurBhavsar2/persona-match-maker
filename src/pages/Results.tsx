@@ -816,8 +816,8 @@ const Results = () => {
         <SheetContent side="right" className="w-[calc(100vw-220px)] max-w-full overflow-y-auto p-0">
           {sidebarCandidate && (
             <div className="flex flex-col h-full">
-              {/* Candidate Header Info */}
-              <div className="border-b bg-background p-4">
+              {/* Candidate Header Info - Sticky */}
+              <div className="sticky top-0 z-10 border-b bg-background p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
@@ -855,7 +855,7 @@ const Results = () => {
                     value="overview"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
                   >
-                    Overview
+                    Summary
                   </TabsTrigger>
                   <TabsTrigger
                     value="documents"
@@ -989,47 +989,6 @@ const Results = () => {
                             <span className={`text-2xl font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
                               {sidebarCandidate.overallScore}%
                             </span>
-                          </div>
-                          <Progress value={sidebarCandidate.overallScore} className="mt-2" />
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Skills Breakdown */}
-                    <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">Skills Breakdown</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3 p-3 pt-0">
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Technical Skills</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.technicalSkills} className="flex-1 h-2" />
-                            <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Experience</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.experience} className="flex-1 h-2" />
-                            <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Communication</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.communication} className="flex-1 h-2" />
-                            <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p className="text-xs text-muted-foreground mb-1">Certifications</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.certifications} className="flex-1 h-2" />
-                            <span className="text-sm font-medium">{sidebarCandidate.certifications}%</span>
                           </div>
                         </div>
                       </CardContent>
