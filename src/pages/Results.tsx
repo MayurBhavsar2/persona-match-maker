@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -78,6 +78,7 @@ const Results = () => {
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<Candidate | null>(null);
+  const [showScoreDetails, setShowScoreDetails] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("evaluatedCandidates");
@@ -948,64 +949,112 @@ const Results = () => {
                 </TabsContent>
 
                 <TabsContent value="overview" className="flex-1 p-6 mt-0 overflow-y-auto">
-                  <div className="space-y-2">
-                    {/* Role Information */}
-                    <Card>
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-muted-foreground">Role:</span>
-                          <span className="text-sm font-semibold">{selectedRole}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Persona Information */}
-                    <Card>
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-muted-foreground">Persona:</span>
-                          <span className="text-sm font-semibold">{selectedPersona}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Overall Fit */}
-                    <Card>
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-muted-foreground">Overall Fit:</span>
-                          <div className="flex items-center space-x-2">
-                            {getFitIcon(sidebarCandidate.fitCategory)}
-                            <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
-                              {sidebarCandidate.fitCategory.charAt(0).toUpperCase() +
-                                sidebarCandidate.fitCategory.slice(1)}{" "}
-                              Fit
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="mt-3">
-                          <p className="text-sm text-muted-foreground mb-1">Overall Score</p>
-                          <div className="flex items-center space-x-2">
-                            <span className={`text-2xl font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[30%]">Role</TableHead>
+                          <TableHead className="w-[30%]">Persona</TableHead>
+                          <TableHead className="w-[20%] text-center">Overall Score</TableHead>
+                          <TableHead className="w-[20%] text-center">Application Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium">{selectedRole}</TableCell>
+                          <TableCell className="font-medium">{selectedPersona}</TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="link"
+                              className={`font-bold text-lg p-0 h-auto ${getScoreColor(sidebarCandidate.overallScore)}`}
+                              onClick={() => setShowScoreDetails(true)}
+                            >
                               {sidebarCandidate.overallScore}%
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardContent className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-muted-foreground">Application Details:</span>
-                          <div className="flex items-center gap-2 text-sm font-semibold">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span>{new Date(sidebarCandidate.applicationDate).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                            </Button>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
+
+                  {/* Score Details Dialog */}
+                  <Dialog open={showScoreDetails} onOpenChange={setShowScoreDetails}>
+                    <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Detailed Attribution Evaluation</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
+                          <Card key={index}>
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <CardTitle className="text-base">{category.name}</CardTitle>
+                                <div className="flex items-center gap-3">
+                                  <Badge variant="outline">Weight: {category.weight}</Badge>
+                                  <Badge variant="outline">Score: {category.attributeScore}</Badge>
+                                  <Badge variant="outline" className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
+                                    Scored: {category.percentScored}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="w-[25%]">Sub-Attribute</TableHead>
+                                    <TableHead className="w-[10%] text-center">Weight (%)</TableHead>
+                                    <TableHead className="w-[10%] text-center">Score</TableHead>
+                                    <TableHead className="w-[10%] text-center">Scored</TableHead>
+                                    <TableHead className="w-[45%]">Notes</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {category.subAttributes.map((subAttr, subIndex) => {
+                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
+                                    return (
+                                      <TableRow key={subIndex}>
+                                        <TableCell className="font-medium">{subAttr.name}</TableCell>
+                                        <TableCell className="text-center">{subAttr.weightage}%</TableCell>
+                                        <TableCell className="text-center">{subAttributeScore}%</TableCell>
+                                        <TableCell className={`text-center ${getScoreColor(subScore)}`}>
+                                          {subScore.toFixed(1)}%
+                                        </TableCell>
+                                        <TableCell className="text-sm text-muted-foreground">
+                                          {subAttr.notes}
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        
+                        {/* Final Score Summary */}
+                        <Card className="border-2 bg-muted/20">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-lg">Final Overall Score</span>
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline">Weight: 100%</Badge>
+                                <Badge variant="outline" className="text-lg px-4 py-1">
+                                  <span className={getScoreColor(sidebarCandidate.overallScore)}>
+                                    {sidebarCandidate.overallScore}%
+                                  </span>
+                                </Badge>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </TabsContent>
 
                 <TabsContent value="documents" className="flex-1 p-6 mt-0 overflow-y-auto">
