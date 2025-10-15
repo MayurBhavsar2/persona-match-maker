@@ -715,16 +715,16 @@ const Results = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowAllCandidates(!showAllCandidates)}
-              >
-                {showAllCandidates ? 'Perfect Fit' : 'All'}
-              </Button>
-            </div>
+          <div className="flex justify-start mt-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAllCandidates(!showAllCandidates)}
+            >
+              {showAllCandidates ? 'Perfect Fit' : 'All'}
+            </Button>
           </div>
         </div>
 
