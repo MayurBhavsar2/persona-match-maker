@@ -715,21 +715,22 @@ const Results = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowAllCandidates(!showAllCandidates)}
+              >
+                {showAllCandidates ? 'Perfect Fit' : 'All'}
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Results Table */}
         <Card className="shadow-card">
-          <CardHeader className="flex flex-row items-center justify-end pb-3">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowAllCandidates(!showAllCandidates)}
-            >
-              {showAllCandidates ? 'Perfect Fit' : 'All'}
-            </Button>
-          </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="p-0">
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
