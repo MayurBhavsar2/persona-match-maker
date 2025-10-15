@@ -1002,35 +1002,35 @@ const Results = () => {
                       </CardHeader>
                       <CardContent className="space-y-3 p-3 pt-0">
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Technical Skills</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.technicalSkills} className="flex-1 h-2" />
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs text-muted-foreground">Technical Skills</p>
                             <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
                           </div>
+                          <Progress value={sidebarCandidate.technicalSkills} className="h-2" />
                         </div>
 
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Experience</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.experience} className="flex-1 h-2" />
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs text-muted-foreground">Experience</p>
                             <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
                           </div>
+                          <Progress value={sidebarCandidate.experience} className="h-2" />
                         </div>
 
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Communication</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.communication} className="flex-1 h-2" />
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs text-muted-foreground">Communication</p>
                             <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
                           </div>
+                          <Progress value={sidebarCandidate.communication} className="h-2" />
                         </div>
 
                         <div>
-                          <p className="text-xs text-muted-foreground mb-1">Certifications</p>
-                          <div className="flex items-center space-x-2">
-                            <Progress value={sidebarCandidate.certifications} className="flex-1 h-2" />
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-xs text-muted-foreground">Certifications</p>
                             <span className="text-sm font-medium">{sidebarCandidate.certifications}%</span>
                           </div>
+                          <Progress value={sidebarCandidate.certifications} className="h-2" />
                         </div>
                       </CardContent>
                     </Card>
