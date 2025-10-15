@@ -948,13 +948,13 @@ const Results = () => {
                 </TabsContent>
 
                 <TabsContent value="overview" className="flex-1 p-6 mt-0 overflow-y-auto">
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {/* Role Information */}
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Role</CardTitle>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Role</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <p className="text-sm font-medium">{selectedRole}</p>
                         <p className="text-xs text-muted-foreground mt-1">Applied for this position</p>
                       </CardContent>
@@ -962,10 +962,10 @@ const Results = () => {
 
                     {/* Persona Information */}
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Persona</CardTitle>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Persona</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <p className="text-sm font-medium">{selectedPersona}</p>
                         <p className="text-xs text-muted-foreground mt-1">Evaluation based on this persona</p>
                       </CardContent>
@@ -973,10 +973,10 @@ const Results = () => {
 
                     {/* Overall Fit */}
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Overall Fit</CardTitle>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Overall Fit</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <div className="flex items-center space-x-2">
                           {getFitIcon(sidebarCandidate.fitCategory)}
                           <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
@@ -985,8 +985,8 @@ const Results = () => {
                             Fit
                           </Badge>
                         </div>
-                        <div className="mt-3">
-                          <p className="text-sm text-muted-foreground mb-2">Overall Score</p>
+                        <div className="mt-2">
+                          <p className="text-sm text-muted-foreground mb-1">Overall Score</p>
                           <div className="flex items-center space-x-2">
                             <span className={`text-2xl font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
                               {sidebarCandidate.overallScore}%
@@ -999,10 +999,10 @@ const Results = () => {
 
                     {/* Skills Breakdown */}
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Skills Breakdown</CardTitle>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Skills Breakdown</CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
+                      <CardContent className="space-y-3 p-3 pt-0">
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Technical Skills</p>
                           <div className="flex items-center space-x-2">
@@ -1038,10 +1038,10 @@ const Results = () => {
                     </Card>
 
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Application Details</CardTitle>
+                      <CardHeader className="p-3">
+                        <CardTitle className="text-base">Application Details</CardTitle>
                       </CardHeader>
-                      <CardContent>
+                      <CardContent className="p-3 pt-0">
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="w-4 h-4 text-muted-foreground" />
                           <span>Applied on {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}</span>
