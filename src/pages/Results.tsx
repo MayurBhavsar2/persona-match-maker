@@ -9,18 +9,12 @@ import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription
-} from "@/components/ui/sheet";
-import { 
-  Trophy, 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Trophy,
+  TrendingUp,
+  TrendingDown,
+  Users,
   Calendar,
   Eye,
   Download,
@@ -33,7 +27,7 @@ import {
   X,
   Mail,
   Phone,
-  MapPin
+  MapPin,
 } from "lucide-react";
 
 interface SubAttribute {
@@ -58,7 +52,7 @@ interface Candidate {
   name: string;
   fileName: string;
   overallScore: number;
-  fitCategory: 'perfect' | 'moderate' | 'low';
+  fitCategory: "perfect" | "moderate" | "low";
   technicalSkills: number;
   experience: number;
   communication: number;
@@ -79,67 +73,90 @@ interface Candidate {
 const Results = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [filterCategory, setFilterCategory] = useState<'all' | 'perfect' | 'moderate' | 'low'>('all');
-  const [selectedRole, setSelectedRole] = useState<string>('');
-  const [selectedPersona, setSelectedPersona] = useState<string>('');
+  const [filterCategory, setFilterCategory] = useState<"all" | "perfect" | "moderate" | "low">("all");
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<Candidate | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('evaluatedCandidates');
+    const stored = localStorage.getItem("evaluatedCandidates");
     if (stored) {
       const data = JSON.parse(stored);
-      
+
       // Realistic candidate names to replace "Candidate X" format
       const candidateNames = [
-        'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
-        'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
+        "Mayur Bhavsar",
+        "Priya Sharma",
+        "Rajesh Kumar",
+        "Anita Patel",
+        "Vikram Singh",
+        "Sneha Gupta",
+        "Arjun Mehta",
+        "Kavya Iyer",
+        "Rohit Joshi",
+        "Deepika Rao",
       ];
-      
+
       // Generate detailed evaluation data if not present and fix candidate names
       const candidatesWithDetailedData = data.candidates.map((candidate: any, index: number) => {
         // Fix candidate name if it's in "Candidate X" format
-        if (candidate.name.startsWith('Candidate ')) {
+        if (candidate.name.startsWith("Candidate ")) {
           candidate.name = candidateNames[index % candidateNames.length];
         }
-        
+
         if (!candidate.detailedEvaluation) {
           const categories = generateDetailedEvaluation(candidate);
           candidate.detailedEvaluation = {
             categories: categories,
             summary: [
-              { attribute: "Technical Skills", weight: "54%", percentScored: `${candidate.technicalSkills}%`, attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%` },
+              {
+                attribute: "Technical Skills",
+                weight: "54%",
+                percentScored: `${candidate.technicalSkills}%`,
+                attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%`,
+              },
               { attribute: "Cognitive Demands", weight: "24%", percentScored: "93.8%", attributeScore: "22.50%" },
               { attribute: "Values", weight: "6%", percentScored: "92.5%", attributeScore: "5.55%" },
-              { attribute: "Foundational Behaviors", weight: "10%", percentScored: `${candidate.communication}%`, attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%` },
+              {
+                attribute: "Foundational Behaviors",
+                weight: "10%",
+                percentScored: `${candidate.communication}%`,
+                attributeScore: `${(candidate.communication * 0.1).toFixed(2)}%`,
+              },
               { attribute: "Leadership Skills", weight: "4%", percentScored: "100.0%", attributeScore: "4.00%" },
-              { attribute: "Education & Experience", weight: "2%", percentScored: `${candidate.experience}%`, attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%` }
-            ]
+              {
+                attribute: "Education & Experience",
+                weight: "2%",
+                percentScored: `${candidate.experience}%`,
+                attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%`,
+              },
+            ],
           };
           // Also keep the categories for backward compatibility
           candidate.categories = categories;
         }
         return candidate;
       });
-      
+
       setCandidates(candidatesWithDetailedData);
     }
 
     // Load role and persona from localStorage
-    const jdData = localStorage.getItem('jdData');
+    const jdData = localStorage.getItem("jdData");
     if (jdData) {
       const parsedJD = JSON.parse(jdData);
-      setSelectedRole(parsedJD.role || 'RPA Developer');
+      setSelectedRole(parsedJD.role || "RPA Developer");
     } else {
-      setSelectedRole('RPA Developer');
+      setSelectedRole("RPA Developer");
     }
 
-    const personaData = localStorage.getItem('personaData');
+    const personaData = localStorage.getItem("personaData");
     if (personaData) {
       const parsedPersona = JSON.parse(personaData);
-      setSelectedPersona(parsedPersona.name || getDefaultPersonaForRole('RPA Developer'));
+      setSelectedPersona(parsedPersona.name || getDefaultPersonaForRole("RPA Developer"));
     } else {
-      setSelectedPersona(getDefaultPersonaForRole('RPA Developer'));
+      setSelectedPersona(getDefaultPersonaForRole("RPA Developer"));
     }
   }, []);
 
@@ -150,39 +167,39 @@ const Results = () => {
 
   const getPersonasForRole = (role: string) => {
     const rolePersonas: { [key: string]: string[] } = {
-      'RPA Developer': [
-        'Persona-RPA Developer-Admin user-2025-09-24 - 13:37',
-        'Senior RPA Developer Persona',
-        'Mid Level RPA Developer Persona',
-        'Junior RPA Developer Persona'
+      "RPA Developer": [
+        "Persona-RPA Developer-Admin user-2025-09-24 - 13:37",
+        "Senior RPA Developer Persona",
+        "Mid Level RPA Developer Persona",
+        "Junior RPA Developer Persona",
       ],
-      'Software Engineer': [
-        'Senior Software Engineer Persona',
-        'Full Stack Developer Persona',
-        'Backend Developer Persona',
-        'Frontend Developer Persona'
+      "Software Engineer": [
+        "Senior Software Engineer Persona",
+        "Full Stack Developer Persona",
+        "Backend Developer Persona",
+        "Frontend Developer Persona",
       ],
-      'QA Engineer': [
-        'Senior QA Engineer Persona',
-        'Automation QA Persona',
-        'Manual Testing Persona',
-        'Performance Testing Persona'
+      "QA Engineer": [
+        "Senior QA Engineer Persona",
+        "Automation QA Persona",
+        "Manual Testing Persona",
+        "Performance Testing Persona",
       ],
-      'Data Analyst': [
-        'Senior Data Analyst Persona',
-        'Business Intelligence Persona',
-        'Statistical Analysis Persona',
-        'Data Visualization Persona'
+      "Data Analyst": [
+        "Senior Data Analyst Persona",
+        "Business Intelligence Persona",
+        "Statistical Analysis Persona",
+        "Data Visualization Persona",
       ],
-      'Product Manager': [
-        'Senior Product Manager Persona',
-        'Technical Product Manager Persona',
-        'Growth Product Manager Persona',
-        'Strategy Product Manager Persona'
-      ]
+      "Product Manager": [
+        "Senior Product Manager Persona",
+        "Technical Product Manager Persona",
+        "Growth Product Manager Persona",
+        "Strategy Product Manager Persona",
+      ],
     };
-    
-    return rolePersonas[role] || ['Default Persona'];
+
+    return rolePersonas[role] || ["Default Persona"];
   };
 
   const getDefaultPersonaForRole = (role: string) => {
@@ -205,58 +222,59 @@ const Results = () => {
             weightage: 18,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25) + 1)),
-            notes: "Expected: stable suites POM BDD maintainable | Actual: stable suites POM BDD maintainable"
+            notes: "Expected: stable suites POM BDD maintainable | Actual: stable suites POM BDD maintainable",
           },
           {
             name: "Functional & Regression Testing (Web/Mobile)",
             weightage: 15,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25) + 1)),
-            notes: "Expected: end‑to‑end coverage disciplined regression | Actual: end‑to‑end coverage disciplined regression"
+            notes:
+              "Expected: end‑to‑end coverage disciplined regression | Actual: end‑to‑end coverage disciplined regression",
           },
           {
             name: "API Testing (Postman/RestAssured)",
             weightage: 12,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
-            notes: "Expected: schema contract auth negative cases | Actual: schema contract auth negative cases"
+            notes: "Expected: schema contract auth negative cases | Actual: schema contract auth negative cases",
           },
           {
             name: "Performance/Load (JMeter)",
             weightage: 10,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 30))),
-            notes: "Expected: basic plans KPIs trending | Actual: basic plans KPIs trending"
+            notes: "Expected: basic plans KPIs trending | Actual: basic plans KPIs trending",
           },
           {
             name: "Database/SQL Testing",
             weightage: 10,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 30))),
-            notes: "Expected: joins constraints CRUD integrity | Actual: joins constraints CRUD integrity"
+            notes: "Expected: joins constraints CRUD integrity | Actual: joins constraints CRUD integrity",
           },
           {
             name: "Test Strategy & Planning (Plans/Cases/Traceability)",
             weightage: 12,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
-            notes: "Expected: risk‑based plans RTM data | Actual: risk‑based plans RTM data"
+            notes: "Expected: risk‑based plans RTM data | Actual: risk‑based plans RTM data",
           },
           {
             name: "Defect Management & Reporting (Jira/Xray)",
             weightage: 13,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
-            notes: "Expected: triage RCA dashboards hygiene | Actual: triage RCA dashboards hygiene"
+            notes: "Expected: triage RCA dashboards hygiene | Actual: triage RCA dashboards hygiene",
           },
           {
             name: "CI/CD & Version Control (Jenkins/Git)",
             weightage: 10,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 35))),
-            notes: "Expected: trigger suites artifacts hygiene | Actual: trigger suites artifacts hygiene"
-          }
-        ]
+            notes: "Expected: trigger suites artifacts hygiene | Actual: trigger suites artifacts hygiene",
+          },
+        ],
       },
       {
         name: "Cognitive Demands",
@@ -270,37 +288,37 @@ const Results = () => {
             weightage: 10,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: SDLC STLC coverage types | Actual: SDLC STLC coverage types"
+            notes: "Expected: SDLC STLC coverage types | Actual: SDLC STLC coverage types",
           },
           {
             name: "Apply",
             weightage: 25,
             expectedLevel: 4,
             actualLevel: 4,
-            notes: "Expected: execute plans stable runs | Actual: execute plans stable runs"
+            notes: "Expected: execute plans stable runs | Actual: execute plans stable runs",
           },
           {
             name: "Analyze",
             weightage: 25,
             expectedLevel: 4,
             actualLevel: 4,
-            notes: "Expected: RCA logs data‑driven | Actual: RCA logs data‑driven"
+            notes: "Expected: RCA logs data‑driven | Actual: RCA logs data‑driven",
           },
           {
             name: "Evaluate",
             weightage: 25,
             expectedLevel: 4,
             actualLevel: 3,
-            notes: "Expected: risk trade‑offs approach | Actual: risk trade‑offs approach"
+            notes: "Expected: risk trade‑offs approach | Actual: risk trade‑offs approach",
           },
           {
             name: "Create",
             weightage: 15,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: utilities data improvements | Actual: utilities data improvements"
-          }
-        ]
+            notes: "Expected: utilities data improvements | Actual: utilities data improvements",
+          },
+        ],
       },
       {
         name: "Values",
@@ -314,36 +332,36 @@ const Results = () => {
             weightage: 30,
             expectedLevel: 4,
             actualLevel: 4,
-            notes: "Expected: release quality leakage down | Actual: release quality leakage down"
+            notes: "Expected: release quality leakage down | Actual: release quality leakage down",
           },
           {
             name: "Security / Conformity",
             weightage: 30,
             expectedLevel: 4,
             actualLevel: 3,
-            notes: "Expected: process audit trail standards | Actual: process audit trail standards"
+            notes: "Expected: process audit trail standards | Actual: process audit trail standards",
           },
           {
             name: "Self-direction / Stimulation",
             weightage: 25,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: learning tools experiments | Actual: learning tools experiments"
+            notes: "Expected: learning tools experiments | Actual: learning tools experiments",
           },
           {
             name: "Benevolence / Universalism",
             weightage: 15,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: user empathy team‑first | Actual: user empathy team‑first"
-          }
-        ]
+            notes: "Expected: user empathy team‑first | Actual: user empathy team‑first",
+          },
+        ],
       },
       {
         name: "Foundational Behaviors",
         weight: "10%",
         scored: candidate.communication,
-        attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%`,
+        attributeScore: `${(candidate.communication * 0.1).toFixed(2)}%`,
         percentScored: `${candidate.communication}%`,
         subAttributes: [
           {
@@ -351,30 +369,30 @@ const Results = () => {
             weightage: 35,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.communication / 25))),
-            notes: "Expected: concise risks clear bugs | Actual: concise risks clear bugs"
+            notes: "Expected: concise risks clear bugs | Actual: concise risks clear bugs",
           },
           {
             name: "Resilience / Stress Tolerance",
             weightage: 25,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.communication / 30))),
-            notes: "Expected: calm hotfix incidents | Actual: calm hotfix incidents"
+            notes: "Expected: calm hotfix incidents | Actual: calm hotfix incidents",
           },
           {
             name: "Decision‑Making under Uncertainty",
             weightage: 20,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.communication / 30))),
-            notes: "Expected: time‑box escalate wisely | Actual: time‑box escalate wisely"
+            notes: "Expected: time‑box escalate wisely | Actual: time‑box escalate wisely",
           },
           {
             name: "Attention to Detail & Documentation",
             weightage: 20,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.communication / 25))),
-            notes: "Expected: traceability crisp documentation | Actual: traceability crisp documentation"
-          }
-        ]
+            notes: "Expected: traceability crisp documentation | Actual: traceability crisp documentation",
+          },
+        ],
       },
       {
         name: "Leadership Skills",
@@ -388,23 +406,23 @@ const Results = () => {
             weightage: 50,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: review cases scripts coach | Actual: review cases scripts coach"
+            notes: "Expected: review cases scripts coach | Actual: review cases scripts coach",
           },
           {
             name: "Cross‑functional Influence",
             weightage: 30,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: align Dev PO BA | Actual: align Dev PO BA"
+            notes: "Expected: align Dev PO BA | Actual: align Dev PO BA",
           },
           {
             name: "Quality Advocacy / Process Improvement",
             weightage: 20,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: workflow improvements templates | Actual: workflow improvements templates"
-          }
-        ]
+            notes: "Expected: workflow improvements templates | Actual: workflow improvements templates",
+          },
+        ],
       },
       {
         name: "Education & Experience",
@@ -418,27 +436,27 @@ const Results = () => {
             weightage: 30,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.experience / 30))),
-            notes: "Expected: degree or equivalent proof | Actual: degree or equivalent proof"
+            notes: "Expected: degree or equivalent proof | Actual: degree or equivalent proof",
           },
           {
             name: "Experience (3–6 yrs QA)",
             weightage: 70,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.experience / 25))),
-            notes: "Expected: sustained Agile releases | Actual: sustained Agile releases"
-          }
-        ]
-      }
+            notes: "Expected: sustained Agile releases | Actual: sustained Agile releases",
+          },
+        ],
+      },
     ];
   };
 
   const getFitIcon = (category: string) => {
     switch (category) {
-      case 'perfect':
+      case "perfect":
         return <Trophy className="w-4 h-4 text-success" />;
-      case 'moderate':
+      case "moderate":
         return <TrendingUp className="w-4 h-4 text-warning" />;
-      case 'low':
+      case "low":
         return <TrendingDown className="w-4 h-4 text-danger" />;
       default:
         return <Users className="w-4 h-4 text-muted-foreground" />;
@@ -447,54 +465,54 @@ const Results = () => {
 
   const getFitBadgeVariant = (category: string) => {
     switch (category) {
-      case 'perfect':
-        return 'default';
-      case 'moderate':
-        return 'secondary';
-      case 'low':
-        return 'outline';
+      case "perfect":
+        return "default";
+      case "moderate":
+        return "secondary";
+      case "low":
+        return "outline";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
   const getFitColor = (category: string) => {
     switch (category) {
-      case 'perfect':
-        return 'text-success';
-      case 'moderate':
-        return 'text-warning';
-      case 'low':
-        return 'text-danger';
+      case "perfect":
+        return "text-success";
+      case "moderate":
+        return "text-warning";
+      case "low":
+        return "text-danger";
       default:
-        return 'text-muted-foreground';
+        return "text-muted-foreground";
     }
   };
 
   const filteredCandidates = candidates
-    .filter(candidate => filterCategory === 'all' || candidate.fitCategory === filterCategory)
+    .filter((candidate) => filterCategory === "all" || candidate.fitCategory === filterCategory)
     .sort((a, b) => b.overallScore - a.overallScore);
 
-  const perfectFitCount = candidates.filter(c => c.fitCategory === 'perfect').length;
-  const moderateFitCount = candidates.filter(c => c.fitCategory === 'moderate').length;
-  const lowFitCount = candidates.filter(c => c.fitCategory === 'low').length;
+  const perfectFitCount = candidates.filter((c) => c.fitCategory === "perfect").length;
+  const moderateFitCount = candidates.filter((c) => c.fitCategory === "moderate").length;
+  const lowFitCount = candidates.filter((c) => c.fitCategory === "low").length;
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 80) return 'text-orange-500';
-    return 'text-red-600';
+    if (score >= 90) return "text-green-600";
+    if (score >= 80) return "text-orange-500";
+    return "text-red-600";
   };
 
   const getScoreBadgeVariant = (score: number) => {
-    if (score >= 80) return 'default';
-    if (score >= 60) return 'secondary';
-    return 'destructive';
+    if (score >= 80) return "default";
+    if (score >= 60) return "secondary";
+    return "destructive";
   };
 
   const getProgressBarColor = (score: number) => {
-    if (score >= 80) return 'bg-green-600';
-    if (score >= 60) return 'bg-orange-600';
-    return 'bg-red-600';
+    if (score >= 80) return "bg-green-600";
+    if (score >= 60) return "bg-orange-600";
+    return "bg-red-600";
   };
 
   const getLevelIcon = (expected: number, actual: number) => {
@@ -514,7 +532,7 @@ const Results = () => {
             </Button>
           </DialogClose>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Header integrated into content */}
           <div className="space-y-2 pt-8">
@@ -575,16 +593,16 @@ const Results = () => {
                         <span className="font-semibold text-left">{category.name}</span>
                         <div className="flex items-center space-x-2">
                           <Badge variant="outline">Weight: {category.weight}</Badge>
-                           <Badge variant="outline" className="bg-transparent">
-                             <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
-                               {category.percentScored}
-                             </span>
-                           </Badge>
-                           <Badge variant="outline" className="bg-transparent">
-                             <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
-                               Score: {category.attributeScore}
-                             </span>
-                           </Badge>
+                          <Badge variant="outline" className="bg-transparent">
+                            <span className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
+                              {category.percentScored}
+                            </span>
+                          </Badge>
+                          <Badge variant="outline" className="bg-transparent">
+                            <span className={getScoreColor(parseFloat(category.attributeScore.replace("%", "")))}>
+                              Score: {category.attributeScore}
+                            </span>
+                          </Badge>
                         </div>
                       </div>
                     </AccordionTrigger>
@@ -605,16 +623,14 @@ const Results = () => {
                           <TableBody>
                             {category.subAttributes.map((subAttr, subIndex) => {
                               const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
-                              const subAttributeScore = (subScore * subAttr.weightage / 100).toFixed(1);
+                              const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
                               return (
                                 <TableRow key={subIndex}>
                                   <TableCell className="font-medium">{subAttr.name}</TableCell>
                                   <TableCell>{subAttr.weightage}%</TableCell>
                                   <TableCell>Level {subAttr.expectedLevel}</TableCell>
                                   <TableCell>Level {subAttr.actualLevel}</TableCell>
-                                  <TableCell className={getScoreColor(subScore)}>
-                                    {subScore.toFixed(1)}%
-                                  </TableCell>
+                                  <TableCell className={getScoreColor(subScore)}>{subScore.toFixed(1)}%</TableCell>
                                   <TableCell>{subAttributeScore}%</TableCell>
                                   <TableCell className="text-sm text-muted-foreground max-w-xs">
                                     {subAttr.notes}
@@ -629,7 +645,7 @@ const Results = () => {
                   </AccordionItem>
                 ))}
               </Accordion>
-              
+
               {/* Final Score Summary */}
               <div className="mt-4 p-4 rounded-lg border-2 bg-transparent">
                 <div className="flex items-center justify-between">
@@ -637,9 +653,7 @@ const Results = () => {
                   <div className="flex items-center space-x-2">
                     <Badge variant="outline">Weight: 100%</Badge>
                     <Badge variant="outline" className="text-lg px-3 py-1">
-                      <span className={getScoreColor(candidate.overallScore)}>
-                        {candidate.overallScore}%
-                      </span>
+                      <span className={getScoreColor(candidate.overallScore)}>{candidate.overallScore}%</span>
                     </Badge>
                   </div>
                 </div>
@@ -657,8 +671,7 @@ const Results = () => {
               <Star className="w-4 h-4 mr-2" />
               Shortlist
             </Button>
-        </div>
-
+          </div>
         </div>
       </div>
     </DialogContent>
@@ -668,8 +681,8 @@ const Results = () => {
     <Layout currentStep={4}>
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-bold text-foreground">Candidate Evaluation Results</h1>
-          
+          <h1 className="text-3xl font-bold text-foreground">Candidate Results</h1>
+
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-foreground">Role:</label>
@@ -705,7 +718,6 @@ const Results = () => {
           </div>
         </div>
 
-
         {/* Filter Tabs */}
         <Card className="shadow-card">
           <CardHeader>
@@ -734,7 +746,7 @@ const Results = () => {
                 <TabsTrigger value="moderate">Moderate Fit ({moderateFitCount})</TabsTrigger>
                 <TabsTrigger value="low">Low Fit ({lowFitCount})</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value={filterCategory} className="mt-6">
                 <Table>
                   <TableHeader>
@@ -750,7 +762,7 @@ const Results = () => {
                       <TableRow key={candidate.id}>
                         <TableCell>
                           <div>
-                            <button 
+                            <button
                               className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
                               onClick={() => {
                                 setSidebarCandidate(candidate);
@@ -764,47 +776,45 @@ const Results = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>{candidate.overallScore}%</span>
-                            <Progress value={candidate.overallScore} className={`w-16 h-2 [&>div]:${getProgressBarColor(candidate.overallScore)}`} />
+                            <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>
+                              {candidate.overallScore}%
+                            </span>
+                            <Progress
+                              value={candidate.overallScore}
+                              className={`w-16 h-2 [&>div]:${getProgressBarColor(candidate.overallScore)}`}
+                            />
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
                             <span className="text-sm">
-                              {new Date(candidate.applicationDate).toLocaleDateString()} {new Date(candidate.applicationDate).toLocaleTimeString()}
+                              {new Date(candidate.applicationDate).toLocaleDateString()}{" "}
+                              {new Date(candidate.applicationDate).toLocaleTimeString()}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedCandidate(candidate)}
-                              >
+                              <Button variant="outline" size="sm" onClick={() => setSelectedCandidate(candidate)}>
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Details
                               </Button>
                             </DialogTrigger>
-                            {selectedCandidate && (
-                              <CandidateDetailDialog candidate={selectedCandidate} />
-                            )}
+                            {selectedCandidate && <CandidateDetailDialog candidate={selectedCandidate} />}
                           </Dialog>
                         </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
-                
+
                 {filteredCandidates.length === 0 && (
                   <div className="text-center py-12">
                     <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-medium text-foreground">No candidates found</h3>
-                    <p className="text-sm text-muted-foreground">
-                      No candidates match the selected filter criteria.
-                    </p>
+                    <p className="text-sm text-muted-foreground">No candidates match the selected filter criteria.</p>
                   </div>
                 )}
               </TabsContent>
@@ -824,7 +834,10 @@ const Results = () => {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                       <span className="text-lg font-semibold text-muted-foreground">
-                        {sidebarCandidate.name.split(' ').map(n => n[0]).join('')}
+                        {sidebarCandidate.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-base">
@@ -835,11 +848,7 @@ const Results = () => {
                       <span className="text-muted-foreground">+91-9876543210</span>
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => setSidebarOpen(false)}
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
@@ -848,20 +857,20 @@ const Results = () => {
               {/* Tabs */}
               <Tabs defaultValue="evaluation" className="flex-1 flex flex-col">
                 <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
-                  <TabsTrigger 
-                    value="evaluation" 
+                  <TabsTrigger
+                    value="evaluation"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
                   >
                     Attribution Evaluation
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="overview" 
+                  <TabsTrigger
+                    value="overview"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
                   >
                     Overview
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="documents" 
+                  <TabsTrigger
+                    value="documents"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
                   >
                     Documents
@@ -879,12 +888,12 @@ const Results = () => {
                               <div className="flex items-center gap-3">
                                 <Badge variant="outline">Weight: {category.weight}</Badge>
                                 <Badge variant="outline" className="bg-transparent">
-                                  <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
+                                  <span className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
                                     {category.percentScored}
                                   </span>
                                 </Badge>
                                 <Badge variant="outline" className="bg-transparent">
-                                  <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
+                                  <span className={getScoreColor(parseFloat(category.attributeScore.replace("%", "")))}>
                                     Score: {category.attributeScore}
                                   </span>
                                 </Badge>
@@ -908,7 +917,7 @@ const Results = () => {
                                 <TableBody>
                                   {category.subAttributes.map((subAttr, subIndex) => {
                                     const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
-                                    const subAttributeScore = (subScore * subAttr.weightage / 100).toFixed(1);
+                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
                                     return (
                                       <TableRow key={subIndex}>
                                         <TableCell className="font-medium text-sm">{subAttr.name}</TableCell>
@@ -983,7 +992,9 @@ const Results = () => {
                         <div className="flex items-center space-x-2">
                           {getFitIcon(sidebarCandidate.fitCategory)}
                           <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
-                            {sidebarCandidate.fitCategory.charAt(0).toUpperCase() + sidebarCandidate.fitCategory.slice(1)} Fit
+                            {sidebarCandidate.fitCategory.charAt(0).toUpperCase() +
+                              sidebarCandidate.fitCategory.slice(1)}{" "}
+                            Fit
                           </Badge>
                         </div>
                         <div className="mt-3">
@@ -1011,7 +1022,7 @@ const Results = () => {
                             <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
                           </div>
                         </div>
-                        
+
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Experience</p>
                           <div className="flex items-center space-x-2">
@@ -1019,7 +1030,7 @@ const Results = () => {
                             <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
                           </div>
                         </div>
-                        
+
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Communication</p>
                           <div className="flex items-center space-x-2">
@@ -1027,7 +1038,7 @@ const Results = () => {
                             <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
                           </div>
                         </div>
-                        
+
                         <div>
                           <p className="text-xs text-muted-foreground mb-1">Certifications</p>
                           <div className="flex items-center space-x-2">
