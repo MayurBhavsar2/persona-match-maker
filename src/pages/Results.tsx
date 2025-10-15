@@ -717,7 +717,7 @@ const Results = () => {
             </div>
           </div>
 
-          <div className="flex justify-start mt-4">
+          <div className="flex justify-end mt-4 mb-4">
             <Button 
               variant="outline" 
               size="sm"
