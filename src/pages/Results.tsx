@@ -951,41 +951,39 @@ const Results = () => {
                   <div className="space-y-2">
                     {/* Role Information */}
                     <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">Role</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <p className="text-sm font-medium">{selectedRole}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Applied for this position</p>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-muted-foreground">Role:</span>
+                          <span className="text-sm font-semibold">{selectedRole}</span>
+                        </div>
                       </CardContent>
                     </Card>
 
                     {/* Persona Information */}
                     <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">Persona</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <p className="text-sm font-medium">{selectedPersona}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Evaluation based on this persona</p>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-muted-foreground">Persona:</span>
+                          <span className="text-sm font-semibold">{selectedPersona}</span>
+                        </div>
                       </CardContent>
                     </Card>
 
                     {/* Overall Fit */}
                     <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">Overall Fit</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <div className="flex items-center space-x-2">
-                          {getFitIcon(sidebarCandidate.fitCategory)}
-                          <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
-                            {sidebarCandidate.fitCategory.charAt(0).toUpperCase() +
-                              sidebarCandidate.fitCategory.slice(1)}{" "}
-                            Fit
-                          </Badge>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-muted-foreground">Overall Fit:</span>
+                          <div className="flex items-center space-x-2">
+                            {getFitIcon(sidebarCandidate.fitCategory)}
+                            <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
+                              {sidebarCandidate.fitCategory.charAt(0).toUpperCase() +
+                                sidebarCandidate.fitCategory.slice(1)}{" "}
+                              Fit
+                            </Badge>
+                          </div>
                         </div>
-                        <div className="mt-2">
+                        <div className="mt-3">
                           <p className="text-sm text-muted-foreground mb-1">Overall Score</p>
                           <div className="flex items-center space-x-2">
                             <span className={`text-2xl font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
@@ -1038,13 +1036,13 @@ const Results = () => {
                     </Card>
 
                     <Card>
-                      <CardHeader className="p-3">
-                        <CardTitle className="text-base">Application Details</CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-3 pt-0">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Calendar className="w-4 h-4 text-muted-foreground" />
-                          <span>Applied on {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}</span>
+                      <CardContent className="p-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-muted-foreground">Application Details:</span>
+                          <div className="flex items-center gap-2 text-sm font-semibold">
+                            <Calendar className="w-4 h-4 text-muted-foreground" />
+                            <span>{new Date(sidebarCandidate.applicationDate).toLocaleDateString()}</span>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
