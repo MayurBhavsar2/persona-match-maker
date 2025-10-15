@@ -955,16 +955,16 @@ const Results = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-[30%]">Role</TableHead>
-                          <TableHead className="w-[30%]">Persona</TableHead>
-                          <TableHead className="w-[20%] text-center">Overall Score</TableHead>
-                          <TableHead className="w-[20%] text-center">Application Date</TableHead>
+                          <TableHead className="w-[40%]">Persona</TableHead>
+                          <TableHead className="w-[15%] text-center">Overall Score</TableHead>
+                          <TableHead className="w-[15%] text-center">Date</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         <TableRow>
-                          <TableCell className="font-medium">{selectedRole}</TableCell>
-                          <TableCell className="font-medium">{selectedPersona}</TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="font-medium py-3">{selectedRole}</TableCell>
+                          <TableCell className="py-3">{selectedPersona}</TableCell>
+                          <TableCell className="text-center py-3">
                             <Button
                               variant="link"
                               className={`font-bold text-lg p-0 h-auto ${getScoreColor(sidebarCandidate.overallScore)}`}
@@ -973,7 +973,7 @@ const Results = () => {
                               {sidebarCandidate.overallScore}%
                             </Button>
                           </TableCell>
-                          <TableCell className="text-center">
+                          <TableCell className="text-center py-3">
                             {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
@@ -983,76 +983,41 @@ const Results = () => {
 
                   {/* Score Details Dialog */}
                   <Dialog open={showScoreDetails} onOpenChange={setShowScoreDetails}>
-                    <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                       <DialogHeader>
-                        <DialogTitle>Detailed Attribution Evaluation</DialogTitle>
+                        <DialogTitle>Attribution Evaluation Summary</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 mt-4">
-                        {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
-                          <Card key={index}>
-                            <CardHeader className="pb-3">
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-base">{category.name}</CardTitle>
-                                <div className="flex items-center gap-3">
-                                  <Badge variant="outline">Weight: {category.weight}</Badge>
-                                  <Badge variant="outline">Score: {category.attributeScore}</Badge>
-                                  <Badge variant="outline" className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
-                                    Scored: {category.percentScored}
-                                  </Badge>
-                                </div>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-[25%]">Sub-Attribute</TableHead>
-                                    <TableHead className="w-[10%] text-center">Weight (%)</TableHead>
-                                    <TableHead className="w-[10%] text-center">Score</TableHead>
-                                    <TableHead className="w-[10%] text-center">Scored</TableHead>
-                                    <TableHead className="w-[45%]">Notes</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {category.subAttributes.map((subAttr, subIndex) => {
-                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
-                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
-                                    return (
-                                      <TableRow key={subIndex}>
-                                        <TableCell className="font-medium">{subAttr.name}</TableCell>
-                                        <TableCell className="text-center">{subAttr.weightage}%</TableCell>
-                                        <TableCell className="text-center">{subAttributeScore}%</TableCell>
-                                        <TableCell className={`text-center ${getScoreColor(subScore)}`}>
-                                          {subScore.toFixed(1)}%
-                                        </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                          {subAttr.notes}
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        
-                        {/* Final Score Summary */}
-                        <Card className="border-2 bg-muted/20">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-lg">Final Overall Score</span>
-                              <div className="flex items-center gap-3">
-                                <Badge variant="outline">Weight: 100%</Badge>
-                                <Badge variant="outline" className="text-lg px-4 py-1">
-                                  <span className={getScoreColor(sidebarCandidate.overallScore)}>
-                                    {sidebarCandidate.overallScore}%
-                                  </span>
-                                </Badge>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                      <div className="mt-4">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[40%]">Attribute</TableHead>
+                              <TableHead className="w-[15%] text-center">Weight</TableHead>
+                              <TableHead className="w-[15%] text-center">Score</TableHead>
+                              <TableHead className="w-[15%] text-center">Scored</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">{category.name}</TableCell>
+                                <TableCell className="text-center">{category.weight}</TableCell>
+                                <TableCell className="text-center">{category.attributeScore}</TableCell>
+                                <TableCell className={`text-center font-semibold ${getScoreColor(parseFloat(category.percentScored.replace("%", "")))}`}>
+                                  {category.percentScored}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            <TableRow className="border-t-2 bg-muted/20">
+                              <TableCell className="font-bold">Overall Score</TableCell>
+                              <TableCell className="text-center font-bold">100%</TableCell>
+                              <TableCell className="text-center font-bold">{sidebarCandidate.overallScore}%</TableCell>
+                              <TableCell className={`text-center font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                                {sidebarCandidate.overallScore}%
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
                       </div>
                     </DialogContent>
                   </Dialog>
