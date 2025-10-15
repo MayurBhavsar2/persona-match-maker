@@ -949,113 +949,69 @@ const Results = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="overview" className="flex-1 p-6 mt-0 overflow-y-auto">
-                  <div className="rounded-md border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[30%]">Role</TableHead>
-                          <TableHead className="w-[30%]">Persona</TableHead>
-                          <TableHead className="w-[20%] text-center">Overall Score</TableHead>
-                          <TableHead className="w-[20%] text-center">Application Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">{selectedRole}</TableCell>
-                          <TableCell className="font-medium">{selectedPersona}</TableCell>
-                          <TableCell className="text-center">
-                            <Button
-                              variant="link"
-                              className={`font-bold text-lg p-0 h-auto ${getScoreColor(sidebarCandidate.overallScore)}`}
-                              onClick={() => setShowScoreDetails(true)}
-                            >
-                              {sidebarCandidate.overallScore}%
-                            </Button>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
-                          </TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {/* Score Details Dialog */}
-                  <Dialog open={showScoreDetails} onOpenChange={setShowScoreDetails}>
-                    <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Detailed Attribution Evaluation</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 mt-4">
-                        {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
-                          <Card key={index}>
-                            <CardHeader className="pb-3">
-                              <div className="flex items-center justify-between">
-                                <CardTitle className="text-base">{category.name}</CardTitle>
-                                <div className="flex items-center gap-3">
-                                  <Badge variant="outline">Weight: {category.weight}</Badge>
-                                  <Badge variant="outline">Score: {category.attributeScore}</Badge>
-                                  <Badge variant="outline" className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
-                                    Scored: {category.percentScored}
-                                  </Badge>
+                <TabsContent value="overview" className="flex-1 p-4 mt-0 overflow-y-auto">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {sidebarCandidate.detailedEvaluation.categories.map((category, index) => {
+                      const categoryScorePercent = parseFloat(category.percentScored.replace("%", ""));
+                      return (
+                        <Card key={index} className="bg-muted/30">
+                          <CardHeader className="pb-3 pt-4 px-4">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-sm font-semibold">{category.name}</CardTitle>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs font-semibold">
+                                  {category.weight}
+                                </Badge>
+                                <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
+                                  <span className="text-success text-xs">✓</span>
                                 </div>
                               </div>
-                            </CardHeader>
-                            <CardContent>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead className="w-[25%]">Sub-Attribute</TableHead>
-                                    <TableHead className="w-[10%] text-center">Weight (%)</TableHead>
-                                    <TableHead className="w-[10%] text-center">Score</TableHead>
-                                    <TableHead className="w-[10%] text-center">Scored</TableHead>
-                                    <TableHead className="w-[45%]">Notes</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {category.subAttributes.map((subAttr, subIndex) => {
-                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
-                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
-                                    return (
-                                      <TableRow key={subIndex}>
-                                        <TableCell className="font-medium">{subAttr.name}</TableCell>
-                                        <TableCell className="text-center">{subAttr.weightage}%</TableCell>
-                                        <TableCell className="text-center">{subAttributeScore}%</TableCell>
-                                        <TableCell className={`text-center ${getScoreColor(subScore)}`}>
-                                          {subScore.toFixed(1)}%
-                                        </TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
-                                          {subAttr.notes}
-                                        </TableCell>
-                                      </TableRow>
-                                    );
-                                  })}
-                                </TableBody>
-                              </Table>
-                            </CardContent>
-                          </Card>
-                        ))}
-                        
-                        {/* Final Score Summary */}
-                        <Card className="border-2 bg-muted/20">
-                          <CardContent className="p-4">
-                            <div className="flex items-center justify-between">
-                              <span className="font-semibold text-lg">Final Overall Score</span>
-                              <div className="flex items-center gap-3">
-                                <Badge variant="outline">Weight: 100%</Badge>
-                                <Badge variant="outline" className="text-lg px-4 py-1">
-                                  <span className={getScoreColor(sidebarCandidate.overallScore)}>
-                                    {sidebarCandidate.overallScore}%
-                                  </span>
-                                </Badge>
-                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="px-4 pb-4 pt-0 space-y-2">
+                            {category.subAttributes.map((subAttr, subIndex) => {
+                              const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                              const scored = ((subScore * subAttr.weightage) / 100).toFixed(1);
+                              const levelBadgeColor = subScore >= 80 ? 'bg-primary/10 text-primary' : 
+                                                      subScore >= 60 ? 'bg-warning/10 text-warning' : 
+                                                      'bg-destructive/10 text-destructive';
+                              return (
+                                <div key={subIndex} className="flex items-center justify-between text-sm">
+                                  <span className="text-muted-foreground flex-1">{subAttr.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium w-10 text-right">{subAttr.weightage}%</span>
+                                    <Badge variant="outline" className={`text-xs ${levelBadgeColor} w-12 justify-center`}>
+                                      {scored}%
+                                    </Badge>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            <div className="pt-2 mt-2 border-t flex items-center justify-between">
+                              <span className="text-sm font-medium text-muted-foreground">Skills Total:</span>
+                              <span className={`text-sm font-bold ${getScoreColor(categoryScorePercent)}`}>
+                                {category.percentScored}
+                              </span>
                             </div>
                           </CardContent>
                         </Card>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Overall Score Card */}
+                  <Card className="mt-4 border-2 bg-muted/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">Final Overall Score</span>
+                        <Badge variant="outline" className="text-base px-4 py-1">
+                          <span className={getScoreColor(sidebarCandidate.overallScore)}>
+                            {sidebarCandidate.overallScore}%
+                          </span>
+                        </Badge>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="documents" className="flex-1 p-6 mt-0 overflow-y-auto">
