@@ -1038,20 +1038,16 @@ const PersonaConfig = () => {
                     </div>
                     <div className="space-y-2">
                       {category.skills.map((skill, index) => (
-                        <div key={index} className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground truncate flex-1 mr-2">
-                              {skill.name}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono bg-muted px-1.5 py-0.5 rounded">
-                                {skill.weight}%
-                              </span>
-                              <span className="font-mono bg-primary/10 px-1.5 py-0.5 rounded text-primary">
-                                L{skill.requiredLevel}
-                              </span>
-                            </div>
-                          </div>
+                        <div key={index} className="grid grid-cols-[1fr,auto,auto] gap-2 items-center text-xs">
+                          <span className="text-muted-foreground truncate">
+                            {skill.name}
+                          </span>
+                          <span className="font-mono bg-muted px-1.5 py-0.5 rounded text-center w-12">
+                            {skill.weight}%
+                          </span>
+                          <span className="font-mono bg-primary/10 px-1.5 py-0.5 rounded text-primary text-center w-12">
+                            L{skill.requiredLevel}
+                          </span>
                         </div>
                       ))}
                     </div>
