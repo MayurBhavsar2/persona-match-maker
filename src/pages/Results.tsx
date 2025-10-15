@@ -819,7 +819,7 @@ const Results = () => {
           {sidebarCandidate && (
             <div className="flex flex-col h-full">
               {/* Candidate Header Info - Sticky */}
-              <div className="sticky top-0 z-10 border-b bg-background p-4">
+              <div className="sticky top-0 z-20 border-b bg-background p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
@@ -846,7 +846,7 @@ const Results = () => {
 
               {/* Tabs */}
               <Tabs defaultValue="evaluation" className="flex-1 flex flex-col">
-                <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
+                <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto sticky top-[76px] z-10 bg-background">
                   <TabsTrigger
                     value="evaluation"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
@@ -893,7 +893,7 @@ const Results = () => {
                           <AccordionContent>
                             <div className="pt-4">
                               <Table>
-                                <TableHeader>
+                                 <TableHeader>
                                   <TableRow>
                                     <TableHead>Sub-Attribute</TableHead>
                                     <TableHead>Weight (%)</TableHead>
@@ -912,8 +912,8 @@ const Results = () => {
                                       <TableRow key={subIndex}>
                                         <TableCell className="font-medium text-sm">{subAttr.name}</TableCell>
                                         <TableCell>{subAttr.weightage}%</TableCell>
-                                        <TableCell>Lvl {subAttr.expectedLevel}</TableCell>
-                                        <TableCell>Lvl {subAttr.actualLevel}</TableCell>
+                                        <TableCell>{subAttr.expectedLevel}</TableCell>
+                                        <TableCell>{subAttr.actualLevel}</TableCell>
                                         <TableCell className={getScoreColor(subScore)}>
                                           {subScore.toFixed(1)}%
                                         </TableCell>
@@ -954,17 +954,17 @@ const Results = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[30%]">Role</TableHead>
-                          <TableHead className="w-[40%]">Persona</TableHead>
-                          <TableHead className="w-[15%] text-center">Overall Score</TableHead>
-                          <TableHead className="w-[15%] text-center">Date</TableHead>
+                          <TableHead className="w-[28%] py-2">Role</TableHead>
+                          <TableHead className="w-[40%] py-2">Persona</TableHead>
+                          <TableHead className="w-[18%] text-center py-2">Overall Score</TableHead>
+                          <TableHead className="w-[14%] text-center py-2">Date</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         <TableRow>
-                          <TableCell className="font-medium py-3">{selectedRole}</TableCell>
-                          <TableCell className="py-3">{selectedPersona}</TableCell>
-                          <TableCell className="text-center py-3">
+                          <TableCell className="font-medium py-2">{selectedRole}</TableCell>
+                          <TableCell className="py-2">{selectedPersona}</TableCell>
+                          <TableCell className="text-center py-2">
                             <Button
                               variant="link"
                               className={`font-bold text-lg p-0 h-auto ${getScoreColor(sidebarCandidate.overallScore)}`}
@@ -973,7 +973,7 @@ const Results = () => {
                               {sidebarCandidate.overallScore}%
                             </Button>
                           </TableCell>
-                          <TableCell className="text-center py-3">
+                          <TableCell className="text-center py-2">
                             {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
@@ -983,44 +983,76 @@ const Results = () => {
 
                   {/* Score Details Dialog */}
                   <Dialog open={showScoreDetails} onOpenChange={setShowScoreDetails}>
-                    <DialogContent className="max-w-2xl max-h-[70vh] overflow-y-auto p-4">
-                      <DialogHeader className="pb-2">
-                        <DialogTitle className="text-lg">Attribution Evaluation Summary</DialogTitle>
-                        <DialogDescription className="text-sm">
-                          Breakdown of evaluation scores by attribute
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="mt-2">
-                        <Table>
-                          <TableHeader>
-                            <TableRow className="border-b">
-                              <TableHead className="w-[45%] py-2 px-2">Attribute</TableHead>
-                              <TableHead className="w-[15%] text-center py-2 px-1">Weight</TableHead>
-                              <TableHead className="w-[18%] text-center py-2 px-1">Score</TableHead>
-                              <TableHead className="w-[18%] text-center py-2 px-1">Scored</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
-                              <TableRow key={index}>
-                                <TableCell className="font-medium py-2 px-2 text-sm">{category.name}</TableCell>
-                                <TableCell className="text-center py-2 px-1 text-sm">{category.weight}</TableCell>
-                                <TableCell className="text-center py-2 px-1 text-sm">{category.attributeScore}</TableCell>
-                                <TableCell className={`text-center font-semibold py-2 px-1 text-sm ${getScoreColor(parseFloat(category.percentScored.replace("%", "")))}`}>
-                                  {category.percentScored}
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                            <TableRow className="border-t-2 bg-muted/20">
-                              <TableCell className="font-bold py-2 px-2 text-sm">Overall Score</TableCell>
-                              <TableCell className="text-center font-bold py-2 px-1 text-sm">100%</TableCell>
-                              <TableCell className="text-center font-bold py-2 px-1 text-sm">{sidebarCandidate.overallScore}%</TableCell>
-                              <TableCell className={`text-center font-bold py-2 px-1 text-sm ${getScoreColor(sidebarCandidate.overallScore)}`}>
-                                {sidebarCandidate.overallScore}%
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
+                    <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto p-6">
+                      <DialogDescription className="sr-only">
+                        Attribution evaluation breakdown by category
+                      </DialogDescription>
+                      <div className="space-y-4">
+                        {/* Grid layout similar to Persona Config Summary */}
+                        <div className="grid grid-cols-3 gap-4">
+                          {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
+                            <Card key={index} className="p-4">
+                              <div className="space-y-3">
+                                {/* Category Header */}
+                                <div className="flex items-start justify-between gap-2 pb-2 border-b">
+                                  <h3 className="font-semibold text-sm leading-tight">{category.name}</h3>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Badge variant="secondary" className="text-xs">{category.weight}</Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    </Badge>
+                                  </div>
+                                </div>
+                                
+                                {/* Sub-attributes */}
+                                <div className="space-y-2">
+                                  {category.subAttributes.map((subAttr, subIndex) => {
+                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
+                                    return (
+                                      <div key={subIndex} className="flex items-center justify-between gap-2 text-xs">
+                                        <span className="text-muted-foreground truncate flex-1" title={subAttr.name}>
+                                          {subAttr.name}
+                                        </span>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                          <span className="text-muted-foreground">{subAttr.weightage}%</span>
+                                          <Badge variant="outline" className="text-xs px-1 py-0">
+                                            L{subAttr.actualLevel}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
+                                {/* Category Total */}
+                                <div className="pt-2 border-t">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-medium">Category Total:</span>
+                                    <span className={`font-bold ${getScoreColor(parseFloat(category.percentScored.replace("%", "")))}`}>
+                                      {category.percentScored}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                        
+                        {/* Final Overall Score */}
+                        <div className="mt-4 p-4 rounded-lg border-2 bg-muted/20">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-base">Final Overall Score</span>
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className="text-sm">Weight: 100%</Badge>
+                              <Badge variant="outline" className="text-base px-3 py-1">
+                                <span className={`font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                                  {sidebarCandidate.overallScore}%
+                                </span>
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
