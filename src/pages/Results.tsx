@@ -952,7 +952,7 @@ const Results = () => {
                     {/* Role Information */}
                     <Card>
                       <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-muted-foreground">Role:</span>
                           <span className="text-sm font-semibold">{selectedRole}</span>
                         </div>
@@ -962,7 +962,7 @@ const Results = () => {
                     {/* Persona Information */}
                     <Card>
                       <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-muted-foreground">Persona:</span>
                           <span className="text-sm font-semibold">{selectedPersona}</span>
                         </div>
@@ -972,7 +972,7 @@ const Results = () => {
                     {/* Overall Fit */}
                     <Card>
                       <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-muted-foreground">Overall Fit:</span>
                           <div className="flex items-center space-x-2">
                             {getFitIcon(sidebarCandidate.fitCategory)}
@@ -1037,7 +1037,7 @@ const Results = () => {
 
                     <Card>
                       <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-muted-foreground">Application Details:</span>
                           <div className="flex items-center gap-2 text-sm font-semibold">
                             <Calendar className="w-4 h-4 text-muted-foreground" />
