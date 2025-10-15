@@ -74,12 +74,12 @@ interface Candidate {
 const Results = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [filterCategory, setFilterCategory] = useState<"all" | "perfect" | "moderate" | "low">("all");
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<Candidate | null>(null);
   const [showScoreDetails, setShowScoreDetails] = useState(false);
+  const [showAllCandidates, setShowAllCandidates] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("evaluatedCandidates");
@@ -492,12 +492,10 @@ const Results = () => {
   };
 
   const filteredCandidates = candidates
-    .filter((candidate) => filterCategory === "all" || candidate.fitCategory === filterCategory)
+    .filter((candidate) => showAllCandidates ? true : candidate.overallScore >= 90)
     .sort((a, b) => b.overallScore - a.overallScore);
 
-  const perfectFitCount = candidates.filter((c) => c.fitCategory === "perfect").length;
-  const moderateFitCount = candidates.filter((c) => c.fitCategory === "moderate").length;
-  const lowFitCount = candidates.filter((c) => c.fitCategory === "low").length;
+  const topCandidatesCount = candidates.filter((c) => c.overallScore >= 90).length;
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return "text-green-600";
@@ -720,95 +718,90 @@ const Results = () => {
           </div>
         </div>
 
-        {/* Filter Tabs */}
+        {/* Results Table */}
         <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div className="flex items-center space-x-2">
               <BarChart3 className="w-5 h-5 text-primary" />
-              <span>Candidate Results</span>
-            </CardTitle>
+              <span className="font-semibold">
+                {showAllCandidates ? `All Candidates (${candidates.length})` : `Top Candidates (${topCandidatesCount})`}
+              </span>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAllCandidates(!showAllCandidates)}
+            >
+              {showAllCandidates ? 'Show Top Performers (90%+)' : 'Show All Candidates'}
+            </Button>
           </CardHeader>
           <CardContent>
-            <Tabs value={filterCategory} onValueChange={(value) => setFilterCategory(value as any)}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">All ({candidates.length})</TabsTrigger>
-                <TabsTrigger value="perfect">Perfect Fit ({perfectFitCount})</TabsTrigger>
-                <TabsTrigger value="moderate">Moderate Fit ({moderateFitCount})</TabsTrigger>
-                <TabsTrigger value="low">Low Fit ({lowFitCount})</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value={filterCategory} className="mt-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Overall Score</TableHead>
-                      <TableHead>Application Date</TableHead>
-                      <TableHead>Actions</TableHead>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="py-2">Candidate</TableHead>
+                    <TableHead className="py-2">Overall Score</TableHead>
+                    <TableHead className="py-2">Application Date</TableHead>
+                    <TableHead className="py-2">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCandidates.map((candidate) => (
+                    <TableRow key={candidate.id}>
+                      <TableCell className="py-2">
+                        <div>
+                          <button
+                            className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
+                            onClick={() => {
+                              setSidebarCandidate(candidate);
+                              setSidebarOpen(true);
+                            }}
+                          >
+                            {candidate.name}
+                          </button>
+                          <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>
+                          {candidate.overallScore}%
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {new Date(candidate.applicationDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedCandidate(candidate)}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </DialogTrigger>
+                          {selectedCandidate && <CandidateDetailDialog candidate={selectedCandidate} />}
+                        </Dialog>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCandidates.map((candidate) => (
-                      <TableRow key={candidate.id}>
-                        <TableCell>
-                          <div>
-                            <button
-                              className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
-                              onClick={() => {
-                                setSidebarCandidate(candidate);
-                                setSidebarOpen(true);
-                              }}
-                            >
-                              {candidate.name}
-                            </button>
-                            <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>
-                              {candidate.overallScore}%
-                            </span>
-                            <Progress
-                              value={candidate.overallScore}
-                              className={`w-16 h-2 [&>div]:${getProgressBarColor(candidate.overallScore)}`}
-                            />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">
-                              {new Date(candidate.applicationDate).toLocaleDateString()}{" "}
-                              {new Date(candidate.applicationDate).toLocaleTimeString()}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" onClick={() => setSelectedCandidate(candidate)}>
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                            </DialogTrigger>
-                            {selectedCandidate && <CandidateDetailDialog candidate={selectedCandidate} />}
-                          </Dialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-                {filteredCandidates.length === 0 && (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground">No candidates found</h3>
-                    <p className="text-sm text-muted-foreground">No candidates match the selected filter criteria.</p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+            {filteredCandidates.length === 0 && (
+              <div className="text-center py-12">
+                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground">No candidates found</h3>
+                <p className="text-sm text-muted-foreground">
+                  {showAllCandidates ? 'No candidates available.' : 'No candidates with 90% or higher score.'}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -892,16 +885,16 @@ const Results = () => {
                           </AccordionTrigger>
                           <AccordionContent>
                             <div className="pt-4">
-                              <Table>
+                               <Table>
                                  <TableHeader>
                                   <TableRow>
-                                    <TableHead>Sub-Attribute</TableHead>
-                                    <TableHead>Weight (%)</TableHead>
-                                    <TableHead>Expected</TableHead>
-                                    <TableHead>Actual</TableHead>
-                                    <TableHead>Scored</TableHead>
-                                    <TableHead>Score</TableHead>
-                                    <TableHead>Notes</TableHead>
+                                    <TableHead className="py-1 px-2">Sub-Attribute</TableHead>
+                                    <TableHead className="py-1 px-2">Weight (%)</TableHead>
+                                    <TableHead className="py-1 px-2">Expected</TableHead>
+                                    <TableHead className="py-1 px-2">Actual</TableHead>
+                                    <TableHead className="py-1 px-2">Scored</TableHead>
+                                    <TableHead className="py-1 px-2">Score</TableHead>
+                                    <TableHead className="py-1 px-2">Notes</TableHead>
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -910,15 +903,15 @@ const Results = () => {
                                     const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
                                     return (
                                       <TableRow key={subIndex}>
-                                        <TableCell className="font-medium text-sm">{subAttr.name}</TableCell>
-                                        <TableCell>{subAttr.weightage}%</TableCell>
-                                        <TableCell>{subAttr.expectedLevel}</TableCell>
-                                        <TableCell>{subAttr.actualLevel}</TableCell>
-                                        <TableCell className={getScoreColor(subScore)}>
+                                        <TableCell className="font-medium text-sm py-1 px-2">{subAttr.name}</TableCell>
+                                        <TableCell className="py-1 px-2">{subAttr.weightage}%</TableCell>
+                                        <TableCell className="py-1 px-2">{subAttr.expectedLevel}</TableCell>
+                                        <TableCell className="py-1 px-2">{subAttr.actualLevel}</TableCell>
+                                        <TableCell className={`${getScoreColor(subScore)} py-1 px-2`}>
                                           {subScore.toFixed(1)}%
                                         </TableCell>
-                                        <TableCell>{subAttributeScore}%</TableCell>
-                                        <TableCell className="text-xs text-muted-foreground max-w-xs">
+                                        <TableCell className="py-1 px-2">{subAttributeScore}%</TableCell>
+                                        <TableCell className="text-xs text-muted-foreground max-w-xs py-1 px-2">
                                           {subAttr.notes}
                                         </TableCell>
                                       </TableRow>
@@ -954,17 +947,17 @@ const Results = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[28%] py-2">Role</TableHead>
-                          <TableHead className="w-[40%] py-2">Persona</TableHead>
-                          <TableHead className="w-[18%] text-center py-2">Overall Score</TableHead>
-                          <TableHead className="w-[14%] text-center py-2">Date</TableHead>
+                          <TableHead className="py-1 px-3">Role</TableHead>
+                          <TableHead className="py-1 px-3">Persona</TableHead>
+                          <TableHead className="text-center py-1 px-3">Overall Score</TableHead>
+                          <TableHead className="text-center py-1 px-3">Date</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         <TableRow>
-                          <TableCell className="font-medium py-2">{selectedRole}</TableCell>
-                          <TableCell className="py-2">{selectedPersona}</TableCell>
-                          <TableCell className="text-center py-2">
+                          <TableCell className="font-medium py-1 px-3">{selectedRole}</TableCell>
+                          <TableCell className="py-1 px-3">{selectedPersona}</TableCell>
+                          <TableCell className="text-center py-1 px-3">
                             <Button
                               variant="link"
                               className={`font-bold text-lg p-0 h-auto ${getScoreColor(sidebarCandidate.overallScore)}`}
@@ -973,7 +966,7 @@ const Results = () => {
                               {sidebarCandidate.overallScore}%
                             </Button>
                           </TableCell>
-                          <TableCell className="text-center py-2">
+                          <TableCell className="text-center py-1 px-3">
                             {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
                           </TableCell>
                         </TableRow>
@@ -997,7 +990,7 @@ const Results = () => {
                                 <div className="flex items-start justify-between gap-2 pb-2 border-b">
                                   <h3 className="font-semibold text-sm leading-tight">{category.name}</h3>
                                   <div className="flex items-center gap-2 flex-shrink-0">
-                                    <Badge variant="secondary" className="text-xs">{category.weight}</Badge>
+                                    <Badge variant="outline" className="text-xs">{category.weight}</Badge>
                                     <Badge variant="outline" className="text-xs">
                                       <CheckCircle2 className="w-3 h-3 mr-1" />
                                     </Badge>
