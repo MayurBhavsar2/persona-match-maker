@@ -11,7 +11,8 @@ interface UploadedFile {
   id: string;
   name: string;
   size: number;
-  status: 'uploaded' | 'processing' | 'completed' | 'error';
+  status: 'uploaded' | 'processing' | 'completed' |'duplicate'| 'error';
+  file?:File;
 }
 
 const CandidateUpload = () => {
@@ -21,23 +22,91 @@ const CandidateUpload = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
 
-  const handleFileUpload = (uploadedFiles: FileList | null) => {
-    if (!uploadedFiles) return;
+  // Get role and persona from localStorage
+  const selectedJD = localStorage.getItem('selectedJD');
+  const personaData = localStorage.getItem('personaData');
+  const roleName = selectedJD ? JSON.parse(selectedJD).role : 'N/A';
+  const personaName = personaData ? JSON.parse(personaData).personaName : 'N/A';
 
-    const newFiles: UploadedFile[] = Array.from(uploadedFiles).map(file => ({
-      id: Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      size: file.size,
-      status: 'uploaded'
-    }));
+  const handleFileUpload = async (uploadedFiles: FileList | null) => {
+  if (!uploadedFiles) return;
 
-    setFiles(prev => [...prev, ...newFiles]);
-    
-    toast({
-      title: "Files uploaded",
-      description: `${newFiles.length} CV(s) uploaded successfully.`,
+  setIsProcessing(true); // optional: show loading spinner
+
+  const filesArray: UploadedFile[] = Array.from(uploadedFiles).map(file => ({
+    id: Math.random().toString(36).substr(2, 9),
+    name: file.name,
+    size: file.size,
+    status: 'processing', // mark as processing while API call happens
+    file
+  }));
+
+  // Update state immediately so user sees files
+  setFiles(prev => [...prev, ...filesArray]);
+
+  try {
+    const formData = new FormData();
+    Array.from(uploadedFiles).forEach(file => formData.append("files", file));
+
+    const response = await fetch(`/api/v1/candidate/upload`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
-  };
+
+    const result = await response.json();
+
+    if (!response.ok) throw new Error(result.message || "Upload failed");
+
+    // Update statuses based on API response
+    const updatedFiles = filesArray.map(file => {
+      const fileResult = result.find((r: any) => r.file_name === file.name);
+      let newStatus: UploadedFile['status'];
+
+      switch (fileResult?.status) {
+        case 'success':
+          newStatus = 'completed';
+          break;
+        case 'duplicate':
+          newStatus = 'duplicate';
+          break;
+        default:
+          newStatus = 'error';
+      }
+
+      return { ...file, status: newStatus };
+    });
+
+    // Merge updated files with previous state
+    setFiles(prev => [
+      ...prev.filter(f => !filesArray.some(nf => nf.id === f.id)),
+      ...updatedFiles
+    ]);
+
+    // Optionally: toast for duplicates
+    const hasDuplicates = updatedFiles.some(f => f.status === 'duplicate');
+    if (hasDuplicates) {
+      toast({
+        title: "Duplicate CVs found",
+        description: "Some CVs are duplicates and already exist in the system.",
+        variant: "destructive",
+      });
+    }
+
+  } catch (error: any) {
+    console.error("Upload Error:", error);
+    toast({
+      title: "Upload failed",
+      description: error.message || "Something went wrong.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -81,117 +150,114 @@ const CandidateUpload = () => {
       return;
     }
 
-    setIsProcessing(true);
+    //setIsProcessing(true);
     
-    try {
-      // Process each file through your backend API
-      const processedCandidates = [];
-      
-      for (let i = 0; i < files.length; i++) {
-        setFiles(prev => prev.map((file, index) => 
-          index === i ? { ...file, status: 'processing' } : file
-        ));
-        
-        // TODO: Replace with your actual candidate evaluation API endpoint
-        const formData = new FormData();
-        
-        // Create a File object from the uploaded file data
-        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-        const actualFile = fileInput?.files?.[i];
-        
-        if (actualFile) {
-          formData.append('candidateCV', actualFile);
-          formData.append('jobDescriptionData', localStorage.getItem('selectedJD') || '');
-          formData.append('personaData', localStorage.getItem('personaData') || '');
-        }
+    //setIsProcessing(true);
+    setTimeout(() => {
+          navigate("/results");
+        }, 1500);
 
-        try {
-          const response = await fetch('YOUR_API_ENDPOINT_FOR_CANDIDATE_EVALUATION', {
-            method: 'POST',
-            body: formData,
-            headers: {
-              // Add any required headers (authorization, etc.)
-              // 'Authorization': 'Bearer YOUR_API_KEY',
-            }
-          });
+      // try {
+      //   const formData = new FormData();
+      //   files.forEach((file) => formData.append("files", file.file));
 
-          if (!response.ok) {
-            throw new Error(`Evaluation failed for ${files[i].name}`);
-          }
+      //   const response = await fetch("/api/v1/candidate/upload", {
+      //     method: "POST",
+      //     body: formData,
+      //     headers: {
+      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
+      //     },
+      //   });
 
-          const evaluationResult = await response.json();
-          
-          // Process the API response and create candidate object
-          processedCandidates.push({
-            id: files[i].id,
-            name: evaluationResult.candidateName || `Candidate ${i + 1}`,
-            fileName: files[i].name,
-            overallScore: evaluationResult.overallScore || Math.floor(Math.random() * 40) + 60,
-            fitCategory: evaluationResult.fitCategory || (i % 3 === 0 ? 'perfect' : i % 3 === 1 ? 'moderate' : 'low'),
-            technicalSkills: evaluationResult.technicalSkills || Math.floor(Math.random() * 30) + 70,
-            experience: evaluationResult.experience || Math.floor(Math.random() * 25) + 75,
-            communication: evaluationResult.communication || Math.floor(Math.random() * 35) + 65,
-            certifications: evaluationResult.certifications || Math.floor(Math.random() * 40) + 60,
-            applicationDate: new Date().toISOString(),
-            // Include full API response for detailed analysis
-            evaluationData: evaluationResult
-          });
-          
-        } catch (apiError) {
-          console.error(`API Error for ${files[i].name}:`, apiError);
-          
-          // Fallback: Generate mock data if API fails
-          const candidateNames = [
-            'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
-            'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
-          ];
-          
-          processedCandidates.push({
-            id: files[i].id,
-            name: candidateNames[i % candidateNames.length],
-            fileName: files[i].name,
-            overallScore: Math.floor(Math.random() * 40) + 60,
-            fitCategory: i % 3 === 0 ? 'perfect' : i % 3 === 1 ? 'moderate' : 'low',
-            technicalSkills: Math.floor(Math.random() * 30) + 70,
-            experience: Math.floor(Math.random() * 25) + 75,
-            communication: Math.floor(Math.random() * 35) + 65,
-            certifications: Math.floor(Math.random() * 40) + 60,
-            applicationDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-          });
-        }
-        
-        setFiles(prev => prev.map((file, index) => 
-          index === i ? { ...file, status: 'completed' } : file
-        ));
-      }
+      //   const result = await response.json();
+
+      //   if (!response.ok) {
+      //     throw new Error(result.message || "Upload failed");
+      //   }
+
+      //   // Update file statuses based on API result
+      //   const updatedFiles = files.map(file => {
+      //     const fileResult = result.find((r: any) => r.file_name === file.name);
+      //     if (!fileResult) return file;
+
+      //     let newStatus: UploadedFile['status'];
+
+      //   switch (fileResult.status) {
+      //     case 'success':
+      //       newStatus = 'completed';
+      //       break;
+      //     case 'duplicate':
+      //       newStatus = 'duplicate';
+      //       break;
+      //     case 'error':
+      //       newStatus = 'error';
+      //       break;
+      //     default:
+      //       newStatus = 'error';
+      //   }
+
+      //   return { ...file, status: newStatus };
+      // });
+
+      //   setFiles(updatedFiles);
+
+      //   const hasDuplicates = result.some((r: any) => r.status === "duplicate");
+      //   if (hasDuplicates) {
+      //     toast({
+      //       title: "Duplicate CVs found",
+      //       description: "Some CVs already exist in the system. Please remove duplicates and retry.",
+      //       variant: "destructive",
+      //     });
+      //     setIsProcessing(false);
+      //     return; // 🚫 stop navigation
+      //   }
+
+      //   // ✅ proceed only if all successful
+      //   localStorage.setItem(
+      //     "evaluatedCandidates",
+      //     JSON.stringify({ candidates: result, timestamp: Date.now() })
+      //   );
+
+      //   toast({
+      //     title: "Evaluation completed",
+      //     description: `${result.length} candidates have been evaluated successfully.`,
+      //   });
+
+      //   setTimeout(() => {
+      //     navigate("/results");
+      //   }, 1500);
+
+      // } catch (error: any) {
+      //   console.error("Evaluation Error:", error);
+      //   toast({
+      //     title: "Evaluation failed",
+      //     description: error.message || "Something went wrong.",
+      //     variant: "destructive",
+      //   });
+      // } finally {
+      //   setIsProcessing(false);
+      // }
+
+
 
       // Store the evaluation results
-      localStorage.setItem('evaluatedCandidates', JSON.stringify({
-        candidates: processedCandidates,
-        timestamp: Date.now()
-      }));
+      // localStorage.setItem('evaluatedCandidates', JSON.stringify({
+      //   candidates: processedCandidates,
+      //   timestamp: Date.now()
 
-      setIsProcessing(false);
       
-      toast({
-        title: "Evaluation completed",
-        description: `${files.length} candidates have been evaluated successfully.`,
-      });
-
-      setTimeout(() => {
-        navigate('/results');
-      }, 1500);
-
-    } catch (error) {
-      console.error('Evaluation Error:', error);
-      setIsProcessing(false);
       
-      toast({
-        title: "Evaluation failed",
-        description: "There was an error evaluating the candidates. Please try again.",
-        variant: "destructive",
-      });
-    }
+
+    // } catch (error) {
+    //   console.error('Evaluation Error:', error);
+    //   setIsProcessing(false);
+      
+    //   toast({
+    //     title: "Evaluation failed",
+    //     description: "There was an error evaluating the candidates. Please try again.",
+    //     variant: "destructive",
+    //   });
+    // }
   };
 
   const getStatusIcon = (status: UploadedFile['status']) => {
@@ -202,8 +268,12 @@ const CandidateUpload = () => {
         return <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />;
       case 'completed':
         return <CheckCircle className="w-4 h-4 text-success" />;
+      case 'duplicate':
+       // return <X className="w-4 h-4 text-warning" />;
       case 'error':
-        return <X className="w-4 h-4 text-danger" />;
+       // return <X className="w-4 h-4 text-danger" />;
+       case 'error':
+       // return <X className="w-4 h-4 text-danger" />;
       default:
         return <FileText className="w-4 h-4 text-muted-foreground" />;
     }
@@ -216,26 +286,38 @@ const CandidateUpload = () => {
     <Layout currentStep={3}>
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Upload Candidate CVs</h1>
-          <p className="text-lg text-muted-foreground">
+          <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-bold text-foreground">Upload Candidate CVs</h1>
+            <div className="flex items-center gap-3 text-sm">
+              <span className="px-3 py-1 bg-muted text-foreground rounded-md font-medium">
+                Role: {roleName}
+              </span>
+              <span className="px-3 py-1 bg-muted text-foreground rounded-md font-medium">
+                Persona: {personaName}
+              </span>
+            </div>
+          </div>
+          {/* <p className="text-base text-muted-foreground">
             Upload candidate resumes to evaluate them against your configured persona
-          </p>
+          </p> */}
+        </div>
         </div>
 
         {/* Upload Area */}
         <Card className="shadow-card">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Upload className="w-5 h-5 text-primary" />
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2 text-lg">
+              <Upload className="w-4 h-4 text-primary" />
               <span>CV Upload</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Upload PDF, DOC, DOCX files. Multiple files supported.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div
-              className={`border-2 border-dashed rounded-lg p-12 text-center transition-all ${
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
                 dragActive 
                   ? 'border-primary bg-primary/5' 
                   : 'border-border hover:border-primary hover:bg-muted/50'
@@ -254,15 +336,15 @@ const CandidateUpload = () => {
                 onChange={(e) => handleFileUpload(e.target.files)}
               />
               <label htmlFor="cv-upload" className="cursor-pointer">
-                <div className="flex flex-col items-center space-y-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-primary" />
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-medium text-foreground">
+                  <div className="space-y-1">
+                    <h3 className="text-base font-medium text-foreground">
                       Drop files here or click to upload
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Supports PDF, DOC, DOCX files up to 10MB each
                     </p>
                   </div>
@@ -309,16 +391,30 @@ const CandidateUpload = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        file.status === 'completed' ? 'bg-success/20 text-success' :
-                        file.status === 'processing' ? 'bg-primary/20 text-primary' :
-                        file.status === 'error' ? 'bg-danger/20 text-danger' :
-                        'bg-muted-foreground/20 text-muted-foreground'
-                      }`}>
-                        {file.status === 'uploaded' ? 'Ready' :
-                         file.status === 'processing' ? 'Processing' :
-                         file.status === 'completed' ? 'Completed' : 'Error'}
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          file.status === 'completed'
+                            ? 'bg-success/20 text-success'
+                            : file.status === 'processing'
+                            ? 'bg-primary/20 text-primary'
+                            : file.status === 'duplicate'
+                            ? 'bg-yellow-200 text-yellow-800'  // 🟡 duplicate style
+                            : file.status === 'error'
+                            ? 'bg-danger/20 text-danger'
+                            : 'bg-muted-foreground/20 text-muted-foreground'
+                        }`}
+                      >
+                        {file.status === 'uploaded'
+                          ? 'Ready'
+                          : file.status === 'processing'
+                          ? 'Processing'
+                          : file.status === 'completed'
+                          ? 'Completed'
+                          : file.status === 'duplicate'
+                          ? 'Duplicate'
+                          : 'Error'}
                       </span>
+
                       {!isProcessing && file.status !== 'processing' && (
                         <Button
                           variant="ghost"
@@ -330,6 +426,7 @@ const CandidateUpload = () => {
                         </Button>
                       )}
                     </div>
+
                   </div>
                 ))}
               </div>

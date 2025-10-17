@@ -1,4 +1,5 @@
 import { useState,useEffect } from "react";
+import { mockGenerateAIEnhancedJD } from "@/mocks/mockAiRefine";
 import { useNavigate,useParams } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -18,6 +19,32 @@ const JDComparison = () => {
   
   const [originalJD, setOriginalJD] = useState<string>("Loading Original JD.....");
   const [aiGeneratedJD, setAiGeneratedJD] = useState<string>(`Loading AI Enhanced JD.....`);
+
+  // const generatePersonaFromJD = async (jdId: string) => {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/v1/persona/generate-from-jd/${jdId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (!response.ok) throw new Error("Failed to generate persona from JD");
+
+  //     const data = await response.json();
+  //     console.log("Persona generated successfully:", data);
+  //     localStorage.setItem("generatedPersona", JSON.stringify(data));
+  //     navigate(`/persona-config/${data.job_description_id}`);
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Error generating persona:", error);
+  //   }
+  // };
+
     
                   //     `Position: RPA Developer
 
@@ -125,12 +152,18 @@ const JDComparison = () => {
     fetchOriginalJD();
   }, [jdId]);
 
-  const generateAIEnhancedJD = async (jdData: any) => {
-    try {
-      
+const USE_MOCK_API = true;
+
+const generateAIEnhancedJD = async (jdData: any) => {
+  try {
+    let data;
+
+    if (USE_MOCK_API) {
+      data = await mockGenerateAIEnhancedJD(jdData);
+    } else {
       const payload = {
-        role: jdData.role ||"",
-        company_id: "", // empty for now
+        role: jdData.role || "",
+        company_id: "",
         methodology: "direct",
         min_similarity: 0.5,
       };
@@ -146,91 +179,95 @@ const JDComparison = () => {
 
       if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
 
-      const data = await response.json();
-      const cleanedRefinedText = (data.refined_text ||"⚠️ No AI-enhanced JD returned").replace(/\*/g,"");
-      setAiGeneratedJD(cleanedRefinedText);
-
-      await fetchHighlights();
-
-    } catch (error) {
-      console.error("Error generating AI Enhanced JD:", error);
-      setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
+      data = await response.json();
     }
-  };
+      // console.log("Mock/Real API Response:", data);
 
-  const fetchHighlights = async () => {
-  try {
-    const response = await fetch(`/api/v1/jd/${jdId}/diff?format=table`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    if (!response.ok) throw new Error("Failed to fetch highlights");
-    const data = await response.json();
+    const cleanedRefinedText = (data || "⚠️ No AI-enhanced JD returned").replace(/\*/g, " ");
+    setAiGeneratedJD(cleanedRefinedText);
 
-    // Render the diff_html directly
-    setAiGeneratedJD(data.diff_html || "⚠️ No highlights returned");
   } catch (error) {
-    console.error("Error fetching highlights:", error);
+    console.error("Error generating AI Enhanced JD:", error);
+    setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
   }
 };
+
+
+
+//   const fetchHighlights = async () => {
+//   try {
+//     const response = await fetch(`/api/v1/jd/${jdId}/diff?format=table`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${localStorage.getItem("token")}`,
+//       },
+//     });
+//     if (!response.ok) throw new Error("Failed to fetch highlights");
+//     const data = await response.json();
+
+//     // Render the diff_html directly
+//     setAiGeneratedJD(data.diff_html || "⚠️ No highlights returned");
+//   } catch (error) {
+//     console.error("Error fetching highlights:", error);
+//   }
+// };
+const handleSelect = async (version: "original" | "ai") => {
+  try {
+    // If user is editing, save the changes first
+    if (isEditing[version]) {
+      const updatedText = version === "original" ? originalJD : aiGeneratedJD;
+
+      const response = await fetch(`/api/v1/jd/${jdId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          selectedVersion: version,
+          selected_text: updatedText,
+          selected_edited: true
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save edits");
+
+      await response.json();
+
+      // Turn off editing mode
+      toggleEdit(version);
+    }
+
+    // Now select the version
+    await handleSelectVersion(version);
+  } catch (error) {
+    console.error("Error saving edits before selecting version:", error);
+  }
+};
+
+
 
   const handleSelectVersion = async (version: "original" | "ai") => {
     setSelectedVersion(version);
     
     const finalJD = version === "original" ? originalJD : aiGeneratedJD;
     
-    try {
-      // TODO: Replace with your actual API endpoint for JD version selection
-      const response = await fetch(`/api/v1/jd/${jdId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          // Add any required headers (authorization, etc.)
-          // 'Authorization': 'Bearer YOUR_API_KEY',
-        },
-        body: JSON.stringify({
-          selectedVersion: version,
-          jobDescription: finalJD,
-          timestamp: Date.now()
-        })
-      });
+    // Store selection locally
+  localStorage.setItem('selectedJD', JSON.stringify({
+    jdId,
+    version,
+    content: finalJD,
+    timestamp: Date.now()
+  }));
 
-      if (!response.ok) {
-        throw new Error('JD selection API call failed');
-      }
+  toast({
+    title: "Version selected",
+    description: `Proceeding to persona configuration with ${version === "original" ? "Original" : "AI Enhanced"} job description...`,
+  });
 
-      const result = await response.json();
-      
-      // Store both local data and API response
-      localStorage.setItem('selectedJD', JSON.stringify({
-        version: version,
-        content: finalJD,
-        apiData: result,
-        timestamp: Date.now()
-      }));
-
-    } catch (error) {
-      console.error('API Error:', error);
-      // Fallback: Store data locally
-      localStorage.setItem('selectedJD', JSON.stringify({
-        version: version,
-        content: finalJD,
-        timestamp: Date.now()
-      }));
-    }
-
-    toast({
-      title: "Version selected",
-      description: `Proceeding to persona configuration with ${version === "original" ? "Original" : "AI Enhanced"} job description...`,
-    });
-
-    // Navigate directly to persona config
-    navigate('/persona-config');
-  };
+  navigate(`/persona-config/${jdId}`);
+};
 
   const handleProceed = () => {
     if (!selectedVersion) {
@@ -244,6 +281,7 @@ const JDComparison = () => {
 
     const finalJD = selectedVersion === "original" ? originalJD : aiGeneratedJD;
     localStorage.setItem('selectedJD', JSON.stringify({
+      jdId,
       version: selectedVersion,
       content: finalJD,
       timestamp: Date.now()
@@ -254,12 +292,60 @@ const JDComparison = () => {
       description: "Proceeding to persona configuration...",
     });
 
-    navigate('/persona-config');
+    navigate(`/persona-config/${jdId}`);
   };
 
-  const toggleEdit = (version: "original" | "ai") => {
-    setIsEditing(prev => ({ ...prev, [version]: !prev[version] }));
-  };
+  const toggleEdit = async (version: "original" | "ai") => {
+  if (isEditing[version]) {
+    // User clicked "Save Changes" -> Call PATCH API
+    const updatedText = version === "original" ? originalJD : aiGeneratedJD;
+    try {
+      const response = await fetch(`/api/v1/jd/${jdId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          selected_version: version,
+          selected_text: updatedText,
+          selected_edited: true
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to save changes');
+
+      const result = await response.json();
+
+      toast({
+        title: "Changes saved",
+        description: `${version === "original" ? "Original JD" : "AI JD"} updated successfully.`,
+      });
+
+      // Optionally update localStorage if needed
+      localStorage.setItem('selectedJD', JSON.stringify({
+        jdId,
+        version,
+        content: updatedText,
+        apiData: result,
+        timestamp: Date.now()
+      }));
+
+    } catch (error) {
+      console.error("Error saving JD:", error);
+      toast({
+        title: "Save failed",
+        description: "Could not save changes. Please try again.",
+        variant: "destructive"
+      });
+       return;
+    }
+  }
+
+  // Toggle edit mode
+  setIsEditing(prev => ({ ...prev, [version]: !prev[version] }));
+};
+
 
   return (
     <Layout currentStep={1}>
@@ -319,17 +405,12 @@ const JDComparison = () => {
                 
                 <div className="flex items-center space-x-2">
                         <Checkbox
-                          id="originalJD"
-                          checked={selectedVersion === "original"}
-                          onCheckedChange={(checked) => {
-                            if (checked) handleSelectVersion("original");
-                          }}
-                          className={`w-5 h-5 rounded border ${
-                            selectedVersion === "original"
-                              ? 'bg-success border-success hover:bg-success/90'
-                              : 'bg-muted border-border hover:bg-muted/80'
-                          }`}
-                        />
+  id="originalJD"
+  checked={selectedVersion === "original"}
+  onCheckedChange={(checked) => {
+    if (checked) handleSelect("original");
+  }}
+/>
                         <label
                           htmlFor="originalJD"
                           className={`text-sm font-medium leading-none ${
@@ -376,10 +457,10 @@ const JDComparison = () => {
                   className="font-mono text-sm"
                 />
               ) : (
-                <div
-                    className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto prose"
-                    dangerouslySetInnerHTML={{ __html: aiGeneratedJD }}
-                  ></div>
+                <div className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <pre className="whitespace-pre-wrap text-sm font-sans">{aiGeneratedJD}</pre>
+                </div>
+
 
               )}
               
@@ -395,17 +476,12 @@ const JDComparison = () => {
                 
                 <div className="flex items-center space-x-2">
                       <Checkbox
-                        id="aiJD"
-                        checked={selectedVersion === "ai"}
-                        onCheckedChange={(checked) => {
-                          if (checked) handleSelectVersion("ai");
-                        }}
-                        className={`w-5 h-5 rounded border ${
-                          selectedVersion === "ai"
-                            ? 'bg-success border-success hover:bg-success/90'
-                            : 'bg-muted border-border hover:bg-muted/80'
-                        }`}
-                      />
+  id="aiJD"
+  checked={selectedVersion === "ai"}
+  onCheckedChange={(checked) => {
+    if (checked) handleSelect("ai");
+  }}
+/>
                       <label
                         htmlFor="aiJD"
                         className={`text-sm font-medium leading-none ${

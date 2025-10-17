@@ -1,0 +1,330 @@
+{
+  "pipeline_stage_reached": 3,
+  "stage1": {
+    "stage": 1,
+    "method": "embedding_similarity",
+    "score": 64.98,
+    "threshold": 60.0,
+    "decision": "PASS_TO_STAGE2",
+    "reason": "Semantic match sufficient (65.0% \u2265 60.0%)",
+    "next_stage": "lightweight_screening"
+  },
+  "stage2": {
+    "stage": 2,
+    "method": "lightweight_llm",
+    "model": "gpt-4o-mini",
+    "relevance_score": 85,
+    "min_threshold": 70.0,
+    "decision": "PASS_TO_STAGE3",
+    "reason": "Strong match (85% \u2265 80.0%)",
+    "next_stage": "detailed_scoring",
+    "quick_assessment": "The candidate has a strong background in data engineering with relevant technical skills and experience in analytics. They possess a solid foundation in data tools and cloud platforms, aligning well with the requirements outlined.",
+    "skills": [
+      "dbt",
+      "Apache Airflow",
+      "Looker",
+      "Python",
+      "SQL",
+      "Snowflake",
+      "PostgreSQL",
+      "BigQuery",
+      "Google Cloud Platform",
+      "Amazon Web Services",
+      "data modeling",
+      "stakeholder collaboration",
+      "analytics enablement",
+      "data quality"
+    ],
+    "roles_detected": [
+      "Senior Data Engineer",
+      "Analytics Engineer",
+      "Data Architect",
+      "Data Analyst",
+      "Cloud Data Engineer",
+      "Business Intelligence Engineer"
+    ],
+    "key_matches": [
+      "Strong experience with data engineering tools like dbt and Airflow",
+      "Proficient in programming languages such as Python and SQL",
+      "Experience with cloud platforms including Google Cloud and AWS"
+    ],
+    "key_gaps": [
+      "Limited mention of cognitive skills like design thinking and attention to detail",
+      "No explicit leadership or mentoring experience highlighted",
+      "Lacks specific certifications or advanced qualifications beyond the listed Google Cloud certification"
+    ]
+  },
+  "stage3": {
+    "overall_score": 56.55,
+    "categories": [
+      {
+        "subcategories": [
+          {
+            "name": "Data Engineering Tools",
+            "weight": 35,
+            "expected_level": 5,
+            "actual_level": 3,
+            "base_score": 55,
+            "missing_count": 1,
+            "scored_percentage": 45,
+            "notes": "The CV mentions 'dbt' and 'Apache Airflow', but does not mention 'Spark'. Evidence: 'Data Tools: dbt, Apache Airflow, Looker'. Missing 'Spark' results in a penalty. The level is assessed as 3 due to the absence of one required tool."
+          },
+          {
+            "name": "Programming Languages",
+            "weight": 35,
+            "expected_level": 5,
+            "actual_level": 2,
+            "base_score": 50,
+            "missing_count": 2,
+            "scored_percentage": 30,
+            "notes": "The CV mentions 'Python' and 'SQL', but does not mention 'Java' or 'Scala'. Evidence: 'Languages: Python, SQL'. Missing two required languages results in a significant penalty. The level is assessed as 2 due to the absence of two required languages."
+          },
+          {
+            "name": "Databases",
+            "weight": 20,
+            "expected_level": 4,
+            "actual_level": 3,
+            "base_score": 70,
+            "missing_count": 1,
+            "scored_percentage": 60,
+            "notes": "The CV mentions 'Snowflake' and 'PostgreSQL', but does not mention 'MongoDB'. Evidence: 'Databases: Snowflake, PostgreSQL, BigQuery'. Missing 'MongoDB' results in a penalty. The level is assessed as 3 due to the absence of one required database."
+          },
+          {
+            "name": "Cloud Platforms",
+            "weight": 10,
+            "expected_level": 3,
+            "actual_level": 3,
+            "base_score": 85,
+            "missing_count": 1,
+            "scored_percentage": 75,
+            "notes": "The CV mentions 'Google Cloud Platform' and 'Amazon Web Services', but does not mention 'Azure'. Evidence: 'Cloud: Google Cloud Platform (primary), Amazon Web Services (secondary)'. Missing 'Azure' results in a penalty. The level is assessed as 3 due to the presence of two out of three required platforms."
+          }
+        ],
+        "name": "Technical Skills",
+        "weight": 39,
+        "category_score_percentage": 45.75,
+        "category_contribution": 17.84
+      },
+      {
+        "subcategories": [
+          {
+            "name": "Problem Solving",
+            "weight": 40,
+            "expected_level": 4,
+            "actual_level": 3,
+            "base_score": 70,
+            "missing_count": 1,
+            "scored_percentage": 60,
+            "notes": "The CV provides evidence for 'Performance optimization' with 'Reduced data freshness SLA from 8 hours to under 1 hour' and 'Root cause analysis' through 'Built automated data validation checks for 20+ mission-critical tables.' However, there is no explicit mention of 'Debug complex distributed systems.' Thus, the actual level is 3. The base score is set at 70% due to the strong evidence provided for the two items. One required item is missing, resulting in a penalty of 10%."
+          },
+          {
+            "name": "Design Thinking",
+            "weight": 10,
+            "expected_level": 3,
+            "actual_level": 2,
+            "base_score": 65,
+            "missing_count": 1,
+            "scored_percentage": 55,
+            "notes": "The CV shows evidence of 'Innovative data solution design' with 'Re-architected Postgres warehouse into Snowflake for scalability and governance.' However, there is no specific mention of 'Creative problem-solving.' The actual level is assessed as 2 due to the lack of evidence for one of the required items. The base score is set at 65% due to the moderate evidence quality. One missing item results in a 10% penalty."
+          },
+          {
+            "name": "Attention to Detail",
+            "weight": 50,
+            "expected_level": 5,
+            "actual_level": 4,
+            "base_score": 80,
+            "missing_count": 1,
+            "scored_percentage": 70,
+            "notes": "The CV provides evidence for 'Ensure data quality and integrity' with 'Built automated data validation checks for 20+ mission-critical tables.' However, there is no explicit mention of 'Detail-oriented data modeling.' The actual level is 4 due to the strong evidence for one item but missing the other. The base score is set at 80% due to the strong evidence provided. One missing item results in a 10% penalty."
+          }
+        ],
+        "name": "Cognitive Demands",
+        "weight": 14,
+        "category_score_percentage": 64.5,
+        "category_contribution": 9.03
+      },
+      {
+        "subcategories": [
+          {
+            "name": "Creativity & Self-Direction",
+            "weight": 30,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 1,
+            "scored_percentage": 75,
+            "notes": "The CV mentions 'Migrated core reporting pipelines from manual SQL scripts to dbt and Airflow orchestration', which indicates innovative data solutions. However, there is no explicit mention of 'Autonomous project management'. Thus, one required item is missing."
+          },
+          {
+            "name": "Achievement",
+            "weight": 25,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 1,
+            "scored_percentage": 75,
+            "notes": "The CV states 'Reduced data freshness SLA from 8 hours to under 1 hour', showing drive for measurable results. However, there is no evidence of 'Exceed quarterly targets'. Therefore, one required item is missing."
+          },
+          {
+            "name": "Benevolence",
+            "weight": 25,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 0,
+            "scored_percentage": 85,
+            "notes": "The CV highlights 'Partnered with product managers and analysts to shape event tracking and schema design', which demonstrates cross-functional teamwork and collaborative project execution. Both required items are present."
+          },
+          {
+            "name": "Conformity",
+            "weight": 20,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 1,
+            "scored_percentage": 75,
+            "notes": "The CV mentions 'Re-architected Postgres warehouse into Snowflake for scalability and governance', which implies compliance with data governance. However, there is no mention of 'Adherence to data security protocols'. One required item is missing."
+          }
+        ],
+        "name": "Values (Schwartz)",
+        "weight": 13,
+        "category_score_percentage": 77.5,
+        "category_contribution": 10.08
+      },
+      {
+        "subcategories": [
+          {
+            "name": "Collaboration",
+            "weight": 35,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 1,
+            "scored_percentage": 75,
+            "notes": "The CV mentions 'Partnered with product managers and analysts to shape event tracking and schema design,' which demonstrates cross-functional teamwork. However, there is no evidence of leading technical discussions. Thus, one required item is missing, resulting in a penalty. The evidence provided is strong and specific, supporting a base score in the upper range."
+          },
+          {
+            "name": "Adaptability",
+            "weight": 25,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 2,
+            "scored_percentage": 65,
+            "notes": "The CV does not provide specific evidence of adapting to changing data requirements or handling stress in fast-paced environments. As both required items are missing, the base score is penalized by 20%. Without evidence, the actual level remains at 1."
+          },
+          {
+            "name": "Ownership",
+            "weight": 40,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 85,
+            "missing_count": 1,
+            "scored_percentage": 75,
+            "notes": "The CV shows accountability for data pipeline performance through 'Migrated core reporting pipelines from manual SQL scripts to dbt and Airflow orchestration,' indicating ownership. However, there is no mention of autonomous decision-making. One required item is missing, leading to a penalty. The evidence is strong and specific, justifying a higher base score."
+          }
+        ],
+        "name": "Foundational Behaviors",
+        "weight": 12,
+        "category_score_percentage": 72.5,
+        "category_contribution": 8.7
+      },
+      {
+        "subcategories": [
+          {
+            "name": "Mentoring & Peer Review",
+            "weight": 30,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 60,
+            "missing_count": 2,
+            "scored_percentage": 40,
+            "notes": "The CV does not provide any evidence of mentoring junior data engineers or conducting peer reviews. The experience described focuses on technical tasks and collaboration with product managers and analysts, but lacks mention of mentoring or peer review activities. Therefore, the actual level is assessed as 1, with a base score of 60% for being one level below expected. With both required items missing, a penalty of 20% is applied, resulting in a final score of 40%."
+          },
+          {
+            "name": "Decision Making",
+            "weight": 35,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 60,
+            "missing_count": 2,
+            "scored_percentage": 40,
+            "notes": "The CV mentions 'partnered with product managers and analysts to shape event tracking and schema design,' which implies some level of stakeholder collaboration. However, there is no explicit mention of influencing data strategy or stakeholder management. The actual level is assessed as 1 due to the lack of clear evidence for the required items. The base score is 60% for being one level below expected, and with both required items missing, a penalty of 20% is applied, resulting in a final score of 40%."
+          },
+          {
+            "name": "Strategic Vision",
+            "weight": 35,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 60,
+            "missing_count": 2,
+            "scored_percentage": 40,
+            "notes": "The CV does not provide evidence of long-term technical roadmap planning or aligning initiatives with business goals. The focus is on technical achievements and collaboration, without mention of strategic vision activities. The actual level is assessed as 1, with a base score of 60% for being one level below expected. With both required items missing, a penalty of 20% is applied, resulting in a final score of 40%."
+          }
+        ],
+        "name": "Leadership Skills",
+        "weight": 16,
+        "category_score_percentage": 40.0,
+        "category_contribution": 6.4
+      },
+      {
+        "subcategories": [
+          {
+            "name": "Academic Qualification",
+            "weight": 40,
+            "expected_level": 1,
+            "actual_level": 1,
+            "base_score": 60,
+            "missing_count": 1,
+            "scored_percentage": 50,
+            "notes": "The CV lists an M.S. in Data Science from New York University, which is relevant but not a direct match for the preferred Master's in Data Engineering. The B.S. in Information Systems from the University of Michigan does not semantically match the required Bachelor's in Computer Science. Therefore, one required item is missing. The base score is set at 60% due to the partial match with the M.S. degree, and a penalty of 10% is applied for the missing Bachelor's degree."
+          },
+          {
+            "name": "Years of Experience",
+            "weight": 40,
+            "expected_level": 1,
+            "actual_level": 3,
+            "base_score": 95,
+            "missing_count": 0,
+            "scored_percentage": 95,
+            "notes": "The CV indicates 8 years of experience in data engineering roles, which exceeds the minimum requirement of 3 years. This is supported by specific roles at Spotify and BuzzFeed. The evidence is strong and detailed, with achievements and responsibilities clearly outlined. Therefore, the actual level is assessed at 3, and the base score is set at 95% with no penalties."
+          },
+          {
+            "name": "Certifications & Portfolio",
+            "weight": 20,
+            "expected_level": 1,
+            "actual_level": 2,
+            "base_score": 85,
+            "missing_count": 0,
+            "scored_percentage": 85,
+            "notes": "The CV includes a Google Cloud Professional Data Engineer certification, which is relevant and adds value. The GitHub portfolio is mentioned with a link provided, fulfilling the requirement for a strong portfolio. Both required items are present, and the evidence quality is strong, leading to an actual level of 2 and a base score of 85% with no penalties."
+          }
+        ],
+        "name": "Education and Experience",
+        "weight": 6,
+        "category_score_percentage": 75.0,
+        "category_contribution": 4.5
+      }
+    ],
+    "strengths": [
+      "Data Modeling: Priya has demonstrated strong data modeling skills by migrating core reporting pipelines and re-architecting data warehouses.",
+      "Stakeholder Collaboration: She has partnered effectively with product managers and analysts, showcasing her ability to collaborate across teams.",
+      "Analytics Enablement: Priya has a proven track record in enabling analytics through developing dashboards and semantic layers.",
+      "Data Quality: She has built automated data validation checks, ensuring high data quality and reliability."
+    ],
+    "gaps": [
+      "Technical Skills: The score of 45.8% indicates a need for improvement in technical skills, particularly in areas not covered by her current expertise.",
+      "Leadership Skills: With a score of 40.0%, there is a significant gap in leadership capabilities, which might be critical for a senior role.",
+      "Cognitive Demands: While relatively strong, there is room for improvement in cognitive demands to better handle complex problem-solving and decision-making."
+    ],
+    "recommendation": "MODERATE_FIT",
+    "reasoning": "Priya Desai has a solid foundation in data engineering with strong skills in data modeling and stakeholder collaboration. However, the overall score of 56.55% reflects significant gaps, particularly in technical and leadership skills, which are critical for a Senior Data Engineer role. While she has potential, addressing these gaps is necessary to fully meet the persona requirements."
+  },
+  "final_decision": "MODERATE_FIT",
+  "final_score": 56.55,
+  "score_progression": {
+    "embedding": 64.98,
+    "lightweight_llm": 85,
+    "detailed_llm": 56.55
+  }
+}

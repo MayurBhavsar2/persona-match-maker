@@ -1,26 +1,21 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription
-} from "@/components/ui/sheet";
-import { 
-  Trophy, 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import {
+  Trophy,
+  TrendingUp,
+  TrendingDown,
+  Users,
   Calendar,
   Eye,
   Download,
@@ -33,7 +28,7 @@ import {
   X,
   Mail,
   Phone,
-  MapPin
+  MapPin,
 } from "lucide-react";
 
 interface SubAttribute {
@@ -58,7 +53,7 @@ interface Candidate {
   name: string;
   fileName: string;
   overallScore: number;
-  fitCategory: 'perfect' | 'moderate' | 'low';
+  fitCategory: "perfect" | "moderate" | "low";
   technicalSkills: number;
   experience: number;
   communication: number;
@@ -79,69 +74,26 @@ interface Candidate {
 const Results = () => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
-  const [filterCategory, setFilterCategory] = useState<'all' | 'perfect' | 'moderate' | 'low'>('all');
-  const [selectedRole, setSelectedRole] = useState<string>('');
-  const [selectedPersona, setSelectedPersona] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<Candidate | null>(null);
+  const [showScoreDetails, setShowScoreDetails] = useState(false);
+  const [showAllCandidates, setShowAllCandidates] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('evaluatedCandidates');
-    if (stored) {
-      const data = JSON.parse(stored);
+   const fetchCandidates = async (page: number, size: number) => {
+    setLoading(true);
+    setError("");
       
-      // Realistic candidate names to replace "Candidate X" format
-      const candidateNames = [
-        'Mayur Bhavsar', 'Priya Sharma', 'Rajesh Kumar', 'Anita Patel', 'Vikram Singh',
-        'Sneha Gupta', 'Arjun Mehta', 'Kavya Iyer', 'Rohit Joshi', 'Deepika Rao'
-      ];
-      
-      // Generate detailed evaluation data if not present and fix candidate names
-      const candidatesWithDetailedData = data.candidates.map((candidate: any, index: number) => {
-        // Fix candidate name if it's in "Candidate X" format
-        if (candidate.name.startsWith('Candidate ')) {
-          candidate.name = candidateNames[index % candidateNames.length];
-        }
-        
-        if (!candidate.detailedEvaluation) {
-          const categories = generateDetailedEvaluation(candidate);
-          candidate.detailedEvaluation = {
-            categories: categories,
-            summary: [
-              { attribute: "Technical Skills", weight: "54%", percentScored: `${candidate.technicalSkills}%`, attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%` },
-              { attribute: "Cognitive Demands", weight: "24%", percentScored: "93.8%", attributeScore: "22.50%" },
-              { attribute: "Values", weight: "6%", percentScored: "92.5%", attributeScore: "5.55%" },
-              { attribute: "Foundational Behaviors", weight: "10%", percentScored: `${candidate.communication}%`, attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%` },
-              { attribute: "Leadership Skills", weight: "4%", percentScored: "100.0%", attributeScore: "4.00%" },
-              { attribute: "Education & Experience", weight: "2%", percentScored: `${candidate.experience}%`, attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%` }
-            ]
-          };
-          // Also keep the categories for backward compatibility
-          candidate.categories = categories;
-        }
-        return candidate;
-      });
-      
-      setCandidates(candidatesWithDetailedData);
-    }
+  };
+useEffect(() => {
+    fetchCandidates(page, pageSize);
+  }, [page, pageSize]);
 
-    // Load role and persona from localStorage
-    const jdData = localStorage.getItem('jdData');
-    if (jdData) {
-      const parsedJD = JSON.parse(jdData);
-      setSelectedRole(parsedJD.role || 'RPA Developer');
-    } else {
-      setSelectedRole('RPA Developer');
-    }
-
-    const personaData = localStorage.getItem('personaData');
-    if (personaData) {
-      const parsedPersona = JSON.parse(personaData);
-      setSelectedPersona(parsedPersona.name || getDefaultPersonaForRole('RPA Developer'));
-    } else {
-      setSelectedPersona(getDefaultPersonaForRole('RPA Developer'));
-    }
-  }, []);
 
   // Update persona when role changes
   useEffect(() => {
@@ -150,39 +102,39 @@ const Results = () => {
 
   const getPersonasForRole = (role: string) => {
     const rolePersonas: { [key: string]: string[] } = {
-      'RPA Developer': [
-        'Persona-RPA Developer-Admin user-2025-09-24 - 13:37',
-        'Senior RPA Developer Persona',
-        'Mid Level RPA Developer Persona',
-        'Junior RPA Developer Persona'
+      "RPA Developer": [
+        "Persona-RPA Developer-Admin user-2025-09-24 - 13:37",
+        "Senior RPA Developer Persona",
+        "Mid Level RPA Developer Persona",
+        "Junior RPA Developer Persona",
       ],
-      'Software Engineer': [
-        'Senior Software Engineer Persona',
-        'Full Stack Developer Persona',
-        'Backend Developer Persona',
-        'Frontend Developer Persona'
+      "Software Engineer": [
+        "Senior Software Engineer Persona",
+        "Full Stack Developer Persona",
+        "Backend Developer Persona",
+        "Frontend Developer Persona",
       ],
-      'QA Engineer': [
-        'Senior QA Engineer Persona',
-        'Automation QA Persona',
-        'Manual Testing Persona',
-        'Performance Testing Persona'
+      "QA Engineer": [
+        "Senior QA Engineer Persona",
+        "Automation QA Persona",
+        "Manual Testing Persona",
+        "Performance Testing Persona",
       ],
-      'Data Analyst': [
-        'Senior Data Analyst Persona',
-        'Business Intelligence Persona',
-        'Statistical Analysis Persona',
-        'Data Visualization Persona'
+      "Data Analyst": [
+        "Senior Data Analyst Persona",
+        "Business Intelligence Persona",
+        "Statistical Analysis Persona",
+        "Data Visualization Persona",
       ],
-      'Product Manager': [
-        'Senior Product Manager Persona',
-        'Technical Product Manager Persona',
-        'Growth Product Manager Persona',
-        'Strategy Product Manager Persona'
-      ]
+      "Product Manager": [
+        "Senior Product Manager Persona",
+        "Technical Product Manager Persona",
+        "Growth Product Manager Persona",
+        "Strategy Product Manager Persona",
+      ],
     };
-    
-    return rolePersonas[role] || ['Default Persona'];
+
+    return rolePersonas[role] || ["Default Persona"];
   };
 
   const getDefaultPersonaForRole = (role: string) => {
@@ -205,58 +157,59 @@ const Results = () => {
             weightage: 18,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25) + 1)),
-            notes: "Expected: stable suites POM BDD maintainable | Actual: stable suites POM BDD maintainable"
+            notes: "Expected: stable suites POM BDD maintainable | Actual: stable suites POM BDD maintainable",
           },
           {
             name: "Functional & Regression Testing (Web/Mobile)",
             weightage: 15,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25) + 1)),
-            notes: "Expected: end‑to‑end coverage disciplined regression | Actual: end‑to‑end coverage disciplined regression"
+            notes:
+              "Expected: end‑to‑end coverage disciplined regression | Actual: end‑to‑end coverage disciplined regression",
           },
           {
             name: "API Testing (Postman/RestAssured)",
             weightage: 12,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
-            notes: "Expected: schema contract auth negative cases | Actual: schema contract auth negative cases"
+            notes: "Expected: schema contract auth negative cases | Actual: schema contract auth negative cases",
           },
           {
             name: "Performance/Load (JMeter)",
             weightage: 10,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 30))),
-            notes: "Expected: basic plans KPIs trending | Actual: basic plans KPIs trending"
+            notes: "Expected: basic plans KPIs trending | Actual: basic plans KPIs trending",
           },
           {
             name: "Database/SQL Testing",
             weightage: 10,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 30))),
-            notes: "Expected: joins constraints CRUD integrity | Actual: joins constraints CRUD integrity"
+            notes: "Expected: joins constraints CRUD integrity | Actual: joins constraints CRUD integrity",
           },
           {
             name: "Test Strategy & Planning (Plans/Cases/Traceability)",
             weightage: 12,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
-            notes: "Expected: risk‑based plans RTM data | Actual: risk‑based plans RTM data"
+            notes: "Expected: risk‑based plans RTM data | Actual: risk‑based plans RTM data",
           },
           {
             name: "Defect Management & Reporting (Jira/Xray)",
             weightage: 13,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.technicalSkills / 25))),
-            notes: "Expected: triage RCA dashboards hygiene | Actual: triage RCA dashboards hygiene"
+            notes: "Expected: triage RCA dashboards hygiene | Actual: triage RCA dashboards hygiene",
           },
           {
             name: "CI/CD & Version Control (Jenkins/Git)",
             weightage: 10,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.technicalSkills / 35))),
-            notes: "Expected: trigger suites artifacts hygiene | Actual: trigger suites artifacts hygiene"
-          }
-        ]
+            notes: "Expected: trigger suites artifacts hygiene | Actual: trigger suites artifacts hygiene",
+          },
+        ],
       },
       {
         name: "Cognitive Demands",
@@ -270,37 +223,37 @@ const Results = () => {
             weightage: 10,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: SDLC STLC coverage types | Actual: SDLC STLC coverage types"
+            notes: "Expected: SDLC STLC coverage types | Actual: SDLC STLC coverage types",
           },
           {
             name: "Apply",
             weightage: 25,
             expectedLevel: 4,
             actualLevel: 4,
-            notes: "Expected: execute plans stable runs | Actual: execute plans stable runs"
+            notes: "Expected: execute plans stable runs | Actual: execute plans stable runs",
           },
           {
             name: "Analyze",
             weightage: 25,
             expectedLevel: 4,
             actualLevel: 4,
-            notes: "Expected: RCA logs data‑driven | Actual: RCA logs data‑driven"
+            notes: "Expected: RCA logs data‑driven | Actual: RCA logs data‑driven",
           },
           {
             name: "Evaluate",
             weightage: 25,
             expectedLevel: 4,
             actualLevel: 3,
-            notes: "Expected: risk trade‑offs approach | Actual: risk trade‑offs approach"
+            notes: "Expected: risk trade‑offs approach | Actual: risk trade‑offs approach",
           },
           {
             name: "Create",
             weightage: 15,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: utilities data improvements | Actual: utilities data improvements"
-          }
-        ]
+            notes: "Expected: utilities data improvements | Actual: utilities data improvements",
+          },
+        ],
       },
       {
         name: "Values",
@@ -314,36 +267,36 @@ const Results = () => {
             weightage: 30,
             expectedLevel: 4,
             actualLevel: 4,
-            notes: "Expected: release quality leakage down | Actual: release quality leakage down"
+            notes: "Expected: release quality leakage down | Actual: release quality leakage down",
           },
           {
             name: "Security / Conformity",
             weightage: 30,
             expectedLevel: 4,
             actualLevel: 3,
-            notes: "Expected: process audit trail standards | Actual: process audit trail standards"
+            notes: "Expected: process audit trail standards | Actual: process audit trail standards",
           },
           {
             name: "Self-direction / Stimulation",
             weightage: 25,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: learning tools experiments | Actual: learning tools experiments"
+            notes: "Expected: learning tools experiments | Actual: learning tools experiments",
           },
           {
             name: "Benevolence / Universalism",
             weightage: 15,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: user empathy team‑first | Actual: user empathy team‑first"
-          }
-        ]
+            notes: "Expected: user empathy team‑first | Actual: user empathy team‑first",
+          },
+        ],
       },
       {
         name: "Foundational Behaviors",
         weight: "10%",
         scored: candidate.communication,
-        attributeScore: `${(candidate.communication * 0.10).toFixed(2)}%`,
+        attributeScore: `${(candidate.communication * 0.1).toFixed(2)}%`,
         percentScored: `${candidate.communication}%`,
         subAttributes: [
           {
@@ -351,30 +304,30 @@ const Results = () => {
             weightage: 35,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.communication / 25))),
-            notes: "Expected: concise risks clear bugs | Actual: concise risks clear bugs"
+            notes: "Expected: concise risks clear bugs | Actual: concise risks clear bugs",
           },
           {
             name: "Resilience / Stress Tolerance",
             weightage: 25,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.communication / 30))),
-            notes: "Expected: calm hotfix incidents | Actual: calm hotfix incidents"
+            notes: "Expected: calm hotfix incidents | Actual: calm hotfix incidents",
           },
           {
             name: "Decision‑Making under Uncertainty",
             weightage: 20,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.communication / 30))),
-            notes: "Expected: time‑box escalate wisely | Actual: time‑box escalate wisely"
+            notes: "Expected: time‑box escalate wisely | Actual: time‑box escalate wisely",
           },
           {
             name: "Attention to Detail & Documentation",
             weightage: 20,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.communication / 25))),
-            notes: "Expected: traceability crisp documentation | Actual: traceability crisp documentation"
-          }
-        ]
+            notes: "Expected: traceability crisp documentation | Actual: traceability crisp documentation",
+          },
+        ],
       },
       {
         name: "Leadership Skills",
@@ -388,23 +341,23 @@ const Results = () => {
             weightage: 50,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: review cases scripts coach | Actual: review cases scripts coach"
+            notes: "Expected: review cases scripts coach | Actual: review cases scripts coach",
           },
           {
             name: "Cross‑functional Influence",
             weightage: 30,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: align Dev PO BA | Actual: align Dev PO BA"
+            notes: "Expected: align Dev PO BA | Actual: align Dev PO BA",
           },
           {
             name: "Quality Advocacy / Process Improvement",
             weightage: 20,
             expectedLevel: 3,
             actualLevel: 3,
-            notes: "Expected: workflow improvements templates | Actual: workflow improvements templates"
-          }
-        ]
+            notes: "Expected: workflow improvements templates | Actual: workflow improvements templates",
+          },
+        ],
       },
       {
         name: "Education & Experience",
@@ -418,27 +371,27 @@ const Results = () => {
             weightage: 30,
             expectedLevel: 3,
             actualLevel: Math.max(1, Math.min(3, Math.floor(candidate.experience / 30))),
-            notes: "Expected: degree or equivalent proof | Actual: degree or equivalent proof"
+            notes: "Expected: degree or equivalent proof | Actual: degree or equivalent proof",
           },
           {
             name: "Experience (3–6 yrs QA)",
             weightage: 70,
             expectedLevel: 4,
             actualLevel: Math.max(1, Math.min(4, Math.floor(candidate.experience / 25))),
-            notes: "Expected: sustained Agile releases | Actual: sustained Agile releases"
-          }
-        ]
-      }
+            notes: "Expected: sustained Agile releases | Actual: sustained Agile releases",
+          },
+        ],
+      },
     ];
   };
 
   const getFitIcon = (category: string) => {
     switch (category) {
-      case 'perfect':
+      case "perfect":
         return <Trophy className="w-4 h-4 text-success" />;
-      case 'moderate':
+      case "moderate":
         return <TrendingUp className="w-4 h-4 text-warning" />;
-      case 'low':
+      case "low":
         return <TrendingDown className="w-4 h-4 text-danger" />;
       default:
         return <Users className="w-4 h-4 text-muted-foreground" />;
@@ -447,54 +400,52 @@ const Results = () => {
 
   const getFitBadgeVariant = (category: string) => {
     switch (category) {
-      case 'perfect':
-        return 'default';
-      case 'moderate':
-        return 'secondary';
-      case 'low':
-        return 'outline';
+      case "perfect":
+        return "default";
+      case "moderate":
+        return "secondary";
+      case "low":
+        return "outline";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
   const getFitColor = (category: string) => {
     switch (category) {
-      case 'perfect':
-        return 'text-success';
-      case 'moderate':
-        return 'text-warning';
-      case 'low':
-        return 'text-danger';
+      case "perfect":
+        return "text-success";
+      case "moderate":
+        return "text-warning";
+      case "low":
+        return "text-danger";
       default:
-        return 'text-muted-foreground';
+        return "text-muted-foreground";
     }
   };
 
   const filteredCandidates = candidates
-    .filter(candidate => filterCategory === 'all' || candidate.fitCategory === filterCategory)
+    .filter((candidate) => showAllCandidates ? true : candidate.overallScore >= 90)
     .sort((a, b) => b.overallScore - a.overallScore);
 
-  const perfectFitCount = candidates.filter(c => c.fitCategory === 'perfect').length;
-  const moderateFitCount = candidates.filter(c => c.fitCategory === 'moderate').length;
-  const lowFitCount = candidates.filter(c => c.fitCategory === 'low').length;
+  const topCandidatesCount = candidates.filter((c) => c.overallScore >= 90).length;
 
   const getScoreColor = (score: number) => {
-    if (score >= 90) return 'text-green-600';
-    if (score >= 80) return 'text-orange-500';
-    return 'text-red-600';
+    if (score >= 90) return "text-green-600";
+    if (score >= 80) return "text-orange-500";
+    return "text-red-600";
   };
 
   const getScoreBadgeVariant = (score: number) => {
-    if (score >= 80) return 'default';
-    if (score >= 60) return 'secondary';
-    return 'destructive';
+    if (score >= 80) return "default";
+    if (score >= 60) return "secondary";
+    return "destructive";
   };
 
   const getProgressBarColor = (score: number) => {
-    if (score >= 80) return 'bg-green-600';
-    if (score >= 60) return 'bg-orange-600';
-    return 'bg-red-600';
+    if (score >= 80) return "bg-green-600";
+    if (score >= 60) return "bg-orange-600";
+    return "bg-red-600";
   };
 
   const getLevelIcon = (expected: number, actual: number) => {
@@ -514,7 +465,7 @@ const Results = () => {
             </Button>
           </DialogClose>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Header integrated into content */}
           <div className="space-y-2 pt-8">
@@ -575,16 +526,16 @@ const Results = () => {
                         <span className="font-semibold text-left">{category.name}</span>
                         <div className="flex items-center space-x-2">
                           <Badge variant="outline">Weight: {category.weight}</Badge>
-                           <Badge variant="outline" className="bg-transparent">
-                             <span className={getScoreColor(parseFloat(category.percentScored.replace('%', '')))}>
-                               {category.percentScored}
-                             </span>
-                           </Badge>
-                           <Badge variant="outline" className="bg-transparent">
-                             <span className={getScoreColor(parseFloat(category.attributeScore.replace('%', '')))}>
-                               Score: {category.attributeScore}
-                             </span>
-                           </Badge>
+                          <Badge variant="outline" className="bg-transparent">
+                            <span className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
+                              {category.percentScored}
+                            </span>
+                          </Badge>
+                          <Badge variant="outline" className="bg-transparent">
+                            <span className={getScoreColor(parseFloat(category.attributeScore.replace("%", "")))}>
+                              Score: {category.attributeScore}
+                            </span>
+                          </Badge>
                         </div>
                       </div>
                     </AccordionTrigger>
@@ -605,16 +556,14 @@ const Results = () => {
                           <TableBody>
                             {category.subAttributes.map((subAttr, subIndex) => {
                               const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
-                              const subAttributeScore = (subScore * subAttr.weightage / 100).toFixed(1);
+                              const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
                               return (
                                 <TableRow key={subIndex}>
                                   <TableCell className="font-medium">{subAttr.name}</TableCell>
                                   <TableCell>{subAttr.weightage}%</TableCell>
                                   <TableCell>Level {subAttr.expectedLevel}</TableCell>
                                   <TableCell>Level {subAttr.actualLevel}</TableCell>
-                                  <TableCell className={getScoreColor(subScore)}>
-                                    {subScore.toFixed(1)}%
-                                  </TableCell>
+                                  <TableCell className={getScoreColor(subScore)}>{subScore.toFixed(1)}%</TableCell>
                                   <TableCell>{subAttributeScore}%</TableCell>
                                   <TableCell className="text-sm text-muted-foreground max-w-xs">
                                     {subAttr.notes}
@@ -629,7 +578,7 @@ const Results = () => {
                   </AccordionItem>
                 ))}
               </Accordion>
-              
+
               {/* Final Score Summary */}
               <div className="mt-4 p-4 rounded-lg border-2 bg-transparent">
                 <div className="flex items-center justify-between">
@@ -637,9 +586,7 @@ const Results = () => {
                   <div className="flex items-center space-x-2">
                     <Badge variant="outline">Weight: 100%</Badge>
                     <Badge variant="outline" className="text-lg px-3 py-1">
-                      <span className={getScoreColor(candidate.overallScore)}>
-                        {candidate.overallScore}%
-                      </span>
+                      <span className={getScoreColor(candidate.overallScore)}>{candidate.overallScore}%</span>
                     </Badge>
                   </div>
                 </div>
@@ -657,8 +604,7 @@ const Results = () => {
               <Star className="w-4 h-4 mr-2" />
               Shortlist
             </Button>
-        </div>
-
+          </div>
         </div>
       </div>
     </DialogContent>
@@ -667,23 +613,14 @@ const Results = () => {
   return (
     <Layout currentStep={4}>
       <div className="max-w-7xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Candidate Evaluation Results</h1>
-          <p className="text-lg text-muted-foreground">
-            Review and analyze candidate matches based on your configured persona
-          </p>
-        </div>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-bold text-foreground">Candidate Results</h1>
 
-        {/* Role and Persona Selection */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="text-lg">Role</CardTitle>
-              <CardDescription>Select the role for evaluation</CardDescription>
-            </CardHeader>
-            <CardContent>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">Role:</label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
-                <SelectTrigger className="w-full bg-background border-border">
+                <SelectTrigger className="w-[250px] bg-background border-border">
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
@@ -694,17 +631,12 @@ const Results = () => {
                   <SelectItem value="Product Manager">Product Manager</SelectItem>
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
 
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="text-lg">Persona</CardTitle>
-              <CardDescription>Select the evaluation persona</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">Persona:</label>
               <Select value={selectedPersona} onValueChange={setSelectedPersona}>
-                <SelectTrigger className="w-full bg-background border-border">
+                <SelectTrigger className="w-[350px] bg-background border-border">
                   <SelectValue placeholder="Select a persona" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
@@ -715,238 +647,346 @@ const Results = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          <div className="flex justify-end mt-4 mb-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAllCandidates(!showAllCandidates)}
+            >
+              {showAllCandidates ? 'Perfect Fit' : 'All'}
+            </Button>
+          </div>
         </div>
 
-
-        {/* Filter Tabs */}
+        {/* Results Table */}
         <Card className="shadow-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <span>Candidate Results</span>
-              </CardTitle>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={filterCategory} onValueChange={(value) => setFilterCategory(value as any)}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="all">All ({candidates.length})</TabsTrigger>
-                <TabsTrigger value="perfect">Perfect Fit ({perfectFitCount})</TabsTrigger>
-                <TabsTrigger value="moderate">Moderate Fit ({moderateFitCount})</TabsTrigger>
-                <TabsTrigger value="low">Low Fit ({lowFitCount})</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value={filterCategory} className="mt-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Candidate</TableHead>
-                      <TableHead>Overall Score</TableHead>
-                      <TableHead>Application Date</TableHead>
-                      <TableHead>Actions</TableHead>
+          <CardContent className="p-0">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="py-2 px-3">Candidate</TableHead>
+                    <TableHead className="py-2 px-3">Overall Score</TableHead>
+                    <TableHead className="py-2 px-3">Application Date</TableHead>
+                    <TableHead className="py-2 px-3">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCandidates.map((candidate) => (
+                    <TableRow key={candidate.id}>
+                      <TableCell className="py-2 px-3">
+                        <div>
+                          <button
+                            className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
+                            onClick={() => {
+                              setSidebarCandidate(candidate);
+                              setSidebarOpen(true);
+                            }}
+                          >
+                            {candidate.name}
+                          </button>
+                          <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 px-3">
+                        <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>
+                          {candidate.overallScore}%
+                        </span>
+                      </TableCell>
+                      <TableCell className="py-2 px-3">
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm">
+                            {new Date(candidate.applicationDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 px-3">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" onClick={() => setSelectedCandidate(candidate)}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </DialogTrigger>
+                          {selectedCandidate && <CandidateDetailDialog candidate={selectedCandidate} />}
+                        </Dialog>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCandidates.map((candidate) => (
-                      <TableRow key={candidate.id}>
-                        <TableCell>
-                          <div>
-                            <button 
-                              className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
-                              onClick={() => {
-                                setSidebarCandidate(candidate);
-                                setSidebarOpen(true);
-                              }}
-                            >
-                              {candidate.name}
-                            </button>
-                            <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>{candidate.overallScore}%</span>
-                            <Progress value={candidate.overallScore} className={`w-16 h-2 [&>div]:${getProgressBarColor(candidate.overallScore)}`} />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-1">
-                            <Calendar className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm">
-                              {new Date(candidate.applicationDate).toLocaleDateString()} {new Date(candidate.applicationDate).toLocaleTimeString()}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => setSelectedCandidate(candidate)}
-                              >
-                                <Eye className="w-4 h-4 mr-2" />
-                                View Details
-                              </Button>
-                            </DialogTrigger>
-                            {selectedCandidate && (
-                              <CandidateDetailDialog candidate={selectedCandidate} />
-                            )}
-                          </Dialog>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                
-                {filteredCandidates.length === 0 && (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-foreground">No candidates found</h3>
-                    <p className="text-sm text-muted-foreground">
-                      No candidates match the selected filter criteria.
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {filteredCandidates.length === 0 && (
+              <div className="text-center py-12">
+                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-foreground">No candidates found</h3>
+                <p className="text-sm text-muted-foreground">
+                  {showAllCandidates ? 'No candidates available.' : 'No candidates with 90% or higher score.'}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
       {/* Candidate Details Sheet */}
       <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="right" className="w-96 overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>Candidate Details</SheetTitle>
-            <SheetDescription>
-              {sidebarCandidate?.name} - Complete Profile Information
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="space-y-6 mt-6">
-            {sidebarCandidate && (
-              <>
-                {/* Basic Contact Details */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{sidebarCandidate.name}</CardTitle>
-                    <CardDescription>Contact Information</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <Mail className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">candidate@example.com</span>
+        <SheetContent side="right" className="w-[calc(100vw-220px)] max-w-full overflow-y-auto p-0">
+          {sidebarCandidate && (
+            <div className="flex flex-col h-full">
+              {/* Candidate Header Info - Sticky */}
+              <div className="sticky top-0 z-20 border-b bg-background p-4 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
+                      <span className="text-lg font-semibold text-muted-foreground">
+                        {sidebarCandidate.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">+1 (555) 123-4567</span>
+                    <div className="flex items-center gap-2 text-base">
+                      <span className="font-semibold text-foreground">{sidebarCandidate.name}</span>
+                      <span className="text-muted-foreground">|</span>
+                      <span className="text-muted-foreground">candidate@example.com</span>
+                      <span className="text-muted-foreground">|</span>
+                      <span className="text-muted-foreground">+91-9876543210</span>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">San Francisco, CA</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+              </div>
 
-                {/* Role Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Role</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm font-medium">{selectedRole}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Applied for this position</p>
-                  </CardContent>
-                </Card>
+              {/* Tabs */}
+              <Tabs defaultValue="evaluation" className="flex-1 flex flex-col">
+                <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto sticky top-[76px] z-10 bg-background">
+                  <TabsTrigger
+                    value="evaluation"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  >
+                    Attribution Evaluation
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="overview"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  >
+                    Summary
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="documents"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-6 py-3"
+                  >
+                    Documents
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Persona Information */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Persona</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm font-medium">{selectedPersona}</p>
-                    <p className="text-xs text-muted-foreground mt-1">Evaluation based on this persona</p>
-                  </CardContent>
-                </Card>
+                <TabsContent value="evaluation" className="flex-1 p-6 mt-0 overflow-y-auto">
+                  <div className="space-y-4">
+                    <Accordion type="multiple" className="w-full space-y-3">
+                      {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
+                        <AccordionItem key={index} value={`category-${index}`} className="border rounded-lg px-4">
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center justify-between w-full mr-4">
+                              <span className="font-semibold text-left">{category.name}</span>
+                              <div className="flex items-center gap-3">
+                                <Badge variant="outline">Weight: {category.weight}</Badge>
+                                <Badge variant="outline" className="bg-transparent">
+                                  <span className={getScoreColor(parseFloat(category.percentScored.replace("%", "")))}>
+                                    {category.percentScored}
+                                  </span>
+                                </Badge>
+                                <Badge variant="outline" className="bg-transparent">
+                                  <span className={getScoreColor(parseFloat(category.attributeScore.replace("%", "")))}>
+                                    Score: {category.attributeScore}
+                                  </span>
+                                </Badge>
+                              </div>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent>
+                            <div className="pt-4">
+                               <Table>
+                                 <TableHeader>
+                                  <TableRow>
+                                    <TableHead className="py-1 px-2">Sub-Attribute</TableHead>
+                                    <TableHead className="py-1 px-2">Weight (%)</TableHead>
+                                    <TableHead className="py-1 px-2">Expected</TableHead>
+                                    <TableHead className="py-1 px-2">Actual</TableHead>
+                                    <TableHead className="py-1 px-2">Scored</TableHead>
+                                    <TableHead className="py-1 px-2">Score</TableHead>
+                                    <TableHead className="py-1 px-2">Notes</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {category.subAttributes.map((subAttr, subIndex) => {
+                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
+                                    return (
+                                      <TableRow key={subIndex}>
+                                        <TableCell className="font-medium text-sm py-1 px-2">{subAttr.name}</TableCell>
+                                        <TableCell className="py-1 px-2">{subAttr.weightage}%</TableCell>
+                                        <TableCell className="py-1 px-2">{subAttr.expectedLevel}</TableCell>
+                                        <TableCell className="py-1 px-2">{subAttr.actualLevel}</TableCell>
+                                        <TableCell className={`${getScoreColor(subScore)} py-1 px-2`}>
+                                          {subScore.toFixed(1)}%
+                                        </TableCell>
+                                        <TableCell className="py-1 px-2">{subAttributeScore}%</TableCell>
+                                        <TableCell className="text-xs text-muted-foreground max-w-xs py-1 px-2">
+                                          {subAttr.notes}
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
 
-                {/* Summary */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Summary</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-2">Overall Score</p>
-                      <div className="flex items-center space-x-2">
-                        <span className={`font-bold text-lg ${getScoreColor(sidebarCandidate.overallScore)}`}>
-                          {sidebarCandidate.overallScore}%
-                        </span>
-                        <Badge variant={getFitBadgeVariant(sidebarCandidate.fitCategory)}>
-                          {sidebarCandidate.fitCategory} fit
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Technical Skills</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.technicalSkills} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.technicalSkills}%</span>
+                    {/* Final Score Summary */}
+                    <div className="mt-6 p-4 rounded-lg border-2 bg-muted/20">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-lg">Final Overall Score</span>
+                        <div className="flex items-center gap-3">
+                          <Badge variant="outline">Weight: 100%</Badge>
+                          <Badge variant="outline" className="text-lg px-4 py-1">
+                            <span className={getScoreColor(sidebarCandidate.overallScore)}>
+                              {sidebarCandidate.overallScore}%
+                            </span>
+                          </Badge>
                         </div>
                       </div>
-                      
-                      <div>
-                        <p className="text-xs text-muted-foreground">Experience</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.experience} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.experience}%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="text-xs text-muted-foreground">Communication</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.communication} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.communication}%</span>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <p className="text-xs text-muted-foreground">Certifications</p>
-                        <div className="flex items-center space-x-2">
-                          <Progress value={sidebarCandidate.certifications} className="flex-1 h-2" />
-                          <span className="text-sm font-medium">{sidebarCandidate.certifications}%</span>
-                        </div>
-                      </div>
                     </div>
+                  </div>
+                </TabsContent>
 
-                    <div>
-                      <p className="text-xs text-muted-foreground">Application Date</p>
-                      <p className="text-sm font-medium">
-                        {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </div>
+                <TabsContent value="overview" className="flex-1 p-6 mt-0 overflow-y-auto">
+                  <div className="rounded-md border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="py-1 px-3">Role</TableHead>
+                          <TableHead className="py-1 px-3">Persona</TableHead>
+                          <TableHead className="text-center py-1 px-3">Overall Score</TableHead>
+                          <TableHead className="text-center py-1 px-3">Date</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell className="font-medium py-1 px-3">{selectedRole}</TableCell>
+                          <TableCell className="py-1 px-3">{selectedPersona}</TableCell>
+                          <TableCell className="text-center py-1 px-3">
+                            <Button
+                              variant="link"
+                              className={`font-bold text-lg p-0 h-auto ${getScoreColor(sidebarCandidate.overallScore)}`}
+                              onClick={() => setShowScoreDetails(true)}
+                            >
+                              {sidebarCandidate.overallScore}%
+                            </Button>
+                          </TableCell>
+                          <TableCell className="text-center py-1 px-3">
+                            {new Date(sidebarCandidate.applicationDate).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Score Details Dialog */}
+                  <Dialog open={showScoreDetails} onOpenChange={setShowScoreDetails}>
+                    <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto p-6">
+                      <DialogDescription className="sr-only">
+                        Attribution evaluation breakdown by category
+                      </DialogDescription>
+                      <div className="space-y-4">
+                        {/* Grid layout similar to Persona Config Summary */}
+                        <div className="grid grid-cols-3 gap-4">
+                          {sidebarCandidate.detailedEvaluation.categories.map((category, index) => (
+                            <Card key={index} className="p-4">
+                              <div className="space-y-3">
+                                {/* Category Header */}
+                                <div className="flex items-start justify-between gap-2 pb-2 border-b">
+                                  <h3 className="font-semibold text-sm leading-tight">{category.name}</h3>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <Badge variant="outline" className="text-xs">{category.weight}</Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      <CheckCircle2 className="w-3 h-3 mr-1" />
+                                    </Badge>
+                                  </div>
+                                </div>
+                                
+                                {/* Sub-attributes */}
+                                <div className="space-y-2">
+                                  {category.subAttributes.map((subAttr, subIndex) => {
+                                    const subScore = (subAttr.actualLevel / subAttr.expectedLevel) * 100;
+                                    const subAttributeScore = ((subScore * subAttr.weightage) / 100).toFixed(1);
+                                    return (
+                                      <div key={subIndex} className="flex items-center justify-between gap-2 text-xs">
+                                        <span className="text-muted-foreground truncate flex-1" title={subAttr.name}>
+                                          {subAttr.name}
+                                        </span>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                          <span className="text-muted-foreground">{subAttr.weightage}%</span>
+                                          <Badge variant="outline" className="text-xs px-1 py-0">
+                                            L{subAttr.actualLevel}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                
+                                {/* Category Total */}
+                                <div className="pt-2 border-t">
+                                  <div className="flex items-center justify-between text-xs">
+                                    <span className="font-medium">Category Total:</span>
+                                    <span className={`font-bold ${getScoreColor(parseFloat(category.percentScored.replace("%", "")))}`}>
+                                      {category.percentScored}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                        
+                        {/* Final Overall Score */}
+                        <div className="mt-4 p-4 rounded-lg border-2 bg-muted/20">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-base">Final Overall Score</span>
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className="text-sm">Weight: 100%</Badge>
+                              <Badge variant="outline" className="text-base px-3 py-1">
+                                <span className={`font-bold ${getScoreColor(sidebarCandidate.overallScore)}`}>
+                                  {sidebarCandidate.overallScore}%
+                                </span>
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </TabsContent>
+
+                <TabsContent value="documents" className="flex-1 p-6 mt-0 overflow-y-auto">
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">No documents uploaded yet</p>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
         </SheetContent>
       </Sheet>
     </Layout>

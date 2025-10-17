@@ -24,18 +24,8 @@ const JDUpload = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [predefinedRoles, setPredefinedRoles] = useState<string[]>([
-    // "Software Engineer - RPA",
-    // "RPA Developer",
-    // "Business Analyst",
-    // "Project Manager",
-    // "Data Scientist",
-    // "Full Stack Developer",
-    // "DevOps Engineer",
-    // "Product Manager",
-    // "UX/UI Designer",
-    // "Quality Assurance Engineer",
-  ]);
+  const [predefinedRoles, setPredefinedRoles] = useState<{ id: string; name: string }[]>([]);
+
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
   const [activeOnly, setActiveOnly] = useState(false);
@@ -61,10 +51,14 @@ const JDUpload = () => {
       if (!response.ok) throw new Error(`Failed to fetch roles: ${response.status}`);
 
       const data = await response.json();
-
+    
       // Assuming roles come from data.results
-      const roles = data.job_roles ? data.job_roles.map((r: any) => r.name) : data.map((r: any) => r.name);
-      setPredefinedRoles(roles);
+      const roles = data.job_roles
+          ? data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
+          : data.map((r: any) => ({ id: r.id, name: r.name }));
+
+setPredefinedRoles(roles);
+
     } catch (error) {
       console.error("Error fetching roles:", error);
       toast({
@@ -107,7 +101,7 @@ const handleSaveRole = async () => {
 
   setIsSaving(true);
   try {
-    const response = await fetch("/api/v1/job-role/", {
+    const response = await fetch(`/api/v1/job-role/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -237,7 +231,7 @@ const handleSaveRole = async () => {
         formData.append('title',role);
         formData.append('notes', instructions || "");
 
-        const response = await fetch('/api/v1/jd/upload-document', {
+        const response = await fetch(`/api/v1/jd/upload-document`, {
           method: 'POST',
           body: formData,
           headers: {
@@ -273,7 +267,7 @@ const handleSaveRole = async () => {
 
       } else if (inputMethod === "text" && jdText.trim()) {
         // TODO: Replace with your actual text processing API endpoint
-        const response = await fetch('/api/v1/jd/', {
+        const response = await fetch(`/api/v1/jd/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -385,8 +379,8 @@ const handleSaveRole = async () => {
                     </SelectTrigger>
                     <SelectContent>
                       {predefinedRoles.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {role}
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

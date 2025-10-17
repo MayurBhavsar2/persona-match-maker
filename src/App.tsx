@@ -34,6 +34,7 @@ const App = () => (
           <Route path="/jd-comparison" element={<JDComparison />} />
           <Route path="/jd-comparison/:jdId" element={<JDComparison />}/>
           <Route path="/persona-config" element={<PersonaConfig />} />
+          <Route path="/persona-config/:jdId" element={<PersonaConfig />} />
           <Route path="/candidate-upload" element={<CandidateUpload />} />
           <Route path="/results" element={<Results />} />
           <Route path="/configuration" element={<Configuration />} />
