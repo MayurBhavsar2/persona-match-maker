@@ -122,7 +122,7 @@ const JDComparison = () => {
         // if backend requires token
         
         //const { jdId } = useParams<{ jdId: string }>();
-        const response = await fetch(`/api/v1/jd/${jdId}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -168,7 +168,7 @@ const generateAIEnhancedJD = async (jdData: any) => {
         min_similarity: 0.5,
       };
 
-      const response = await fetch(`/api/v1/jd/${jdId}/refine/ai`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}/refine/ai`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -218,7 +218,7 @@ const handleSelect = async (version: "original" | "ai") => {
     if (isEditing[version]) {
       const updatedText = version === "original" ? originalJD : aiGeneratedJD;
 
-      const response = await fetch(`/api/v1/jd/${jdId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -300,7 +300,7 @@ const handleSelect = async (version: "original" | "ai") => {
     // User clicked "Save Changes" -> Call PATCH API
     const updatedText = version === "original" ? originalJD : aiGeneratedJD;
     try {
-      const response = await fetch(`/api/v1/jd/${jdId}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

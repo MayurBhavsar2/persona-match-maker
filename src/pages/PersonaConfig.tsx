@@ -302,6 +302,7 @@ const PersonaConfig = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [deleteConfirm, setDeleteConfirm] = useState<{ cat: string; position: number } | null>(null);
   const [personaName, setPersonaName] = useState("");
+  const [roleName, setRoleName] = useState("");
   const [activeTab, setActiveTab] = useState("distribution");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [validationError, setValidationError] = useState(null);
@@ -314,6 +315,13 @@ const PersonaConfig = () => {
   // ---------- INITIALIZE STATE ----------
    useEffect(() => {
     const selectedJD = localStorage.getItem("selectedJD");
+     const storedJD = localStorage.getItem("jdData");
+
+     if (storedJD) {
+    const parsed = JSON.parse(storedJD);
+    setRoleName(parsed.role || "Unknown Role");
+  }
+
 
     if (!selectedJD) {
       alert("Please select a JD version first.");
@@ -333,7 +341,7 @@ const PersonaConfig = () => {
           if (USE_MOCK_API) {
             data = await mockFetchPersona(jdId);
           } else {
-            const response = await fetch(`/api/v1/persona/generate-from-jd/${jdId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/generate-from-jd/${jdId}`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -346,6 +354,8 @@ const PersonaConfig = () => {
 
             data = await response.json();
           }
+
+          console.log(data)
 
           setCategories(data.categories || []);
           setPersonaName(data.name || "");
@@ -437,19 +447,22 @@ const PersonaConfig = () => {
 
   const handleSavePersona = () => setShowSaveDialog(true);
   const confirmSavePersona = async () => {
+  
+  const selectedRoleData = localStorage.getItem("jdData"); // or use your state if stored there
+  const role = selectedRoleData ? JSON.parse(selectedRoleData) : null;
+  
   const payload = {
     job_description_id: localStorage.getItem("selectedJD") 
       ? JSON.parse(localStorage.getItem("selectedJD")!).jdId 
       : "",
-    name: personaName,
-    
+    name: personaName, // use role name instead of personaName
     categories
   };
 
   try {
     setLoading(true);
 
-    const response = await fetch(`/api/v1/persona/`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -464,13 +477,33 @@ const PersonaConfig = () => {
 
     const data = await response.json();
     console.log("Persona saved successfully:", data);
-    alert("Persona saved successfully!");
+
+    localStorage.setItem(
+      "savedPersona",
+      JSON.stringify({
+        id: data.id,
+        name: data.name,
+      })
+    );
+    
+    toast({
+      title: "Persona Saved",
+      description: `${role?.name || "Persona"} saved successfully!`,
+      variant: "default", // or "success" if your toast supports it
+    });
+
     setShowSaveDialog(false);
     navigate('/candidate-upload');
 
   } catch (error) {
     console.error(error);
-    alert("Error saving persona. Please try again.");
+
+    toast({
+      title: "Error",
+      description: "Failed to save persona. Please try again.",
+      variant: "destructive",
+    });
+
   } finally {
     setLoading(false);
   }
@@ -538,7 +571,7 @@ const PersonaConfig = () => {
           </p> */}
           <div className="flex items-center justify-center space-x-2 text-sm">
             <span className="text-muted-foreground">Role:</span>
-            <span className="font-medium text-primary">{personaName}</span>
+            <span className="font-medium text-primary">{roleName}</span>
           </div>
         </div>
 
@@ -912,7 +945,7 @@ const PersonaConfig = () => {
               <DialogTitle>Confirm Save Persona</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <Input placeholder="Enter persona name" value={personaName} onChange={(e) => setPersonaName(e.target.value)} />
+              <Input placeholder="Enter persona name" value={roleName} onChange={(e) => setPersonaName(e.target.value)} />
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" onClick={() => setShowSaveDialog(false)}>Cancel</Button>
                 <Button onClick={confirmSavePersona}>Confirm Save</Button>

@@ -24,9 +24,10 @@ const CandidateUpload = () => {
 
   // Get role and persona from localStorage
   const selectedJD = localStorage.getItem('selectedJD');
-  const personaData = localStorage.getItem('personaData');
-  const roleName = selectedJD ? JSON.parse(selectedJD).role : 'N/A';
-  const personaName = personaData ? JSON.parse(personaData).personaName : 'N/A';
+  const role = localStorage.getItem('jdData');
+  const personaData = localStorage.getItem('savedPersona');
+  const roleName = role ? JSON.parse(role).role : 'N/A';
+  const personaName = personaData ? JSON.parse(personaData).name : 'N/A';
 
   const handleFileUpload = async (uploadedFiles: FileList | null) => {
   if (!uploadedFiles) return;
@@ -48,7 +49,7 @@ const CandidateUpload = () => {
     const formData = new FormData();
     Array.from(uploadedFiles).forEach(file => formData.append("files", file));
 
-    const response = await fetch(`/api/v1/candidate/upload`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/candidate/upload`, {
       method: "POST",
       body: formData,
       headers: {
