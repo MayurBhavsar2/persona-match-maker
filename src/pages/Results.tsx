@@ -31,49 +31,51 @@ import {
   MapPin,
 } from "lucide-react";
 
-interface SubAttribute {
-  name: string;
-  weightage: number;
-  expectedLevel: number;
-  actualLevel: number;
-  notes: string;
-}
+// interface SubAttribute {
+//   name: string;
+//   weightage: number;
+//   expectedLevel: number;
+//   actualLevel: number;
+//   notes: string;
+// }
 
-interface Category {
-  name: string;
-  weight: string;
-  scored: number;
-  attributeScore: string;
-  percentScored: string;
-  subAttributes: SubAttribute[];
-}
+// interface Category {
+//   name: string;
+//   weight: string;
+//   scored: number;
+//   attributeScore: string;
+//   percentScored: string;
+//   subAttributes: SubAttribute[];
+// }
 
-interface Candidate {
-  id: string;
-  name: string;
-  fileName: string;
-  overallScore: number;
-  fitCategory: "perfect" | "moderate" | "low";
-  technicalSkills: number;
-  experience: number;
-  communication: number;
-  certifications: number;
-  applicationDate: string;
-  categories: Category[];
-  detailedEvaluation: {
-    categories: Category[];
-    summary: Array<{
-      attribute: string;
-      weight: string;
-      percentScored: string;
-      attributeScore: string;
-    }>;
-  };
-}
+// interface Candidate {
+//   id: string;
+//   name: string;
+//   fileName: string;
+//   overallScore: number;
+//   fitCategory: "perfect" | "moderate" | "low";
+//   technicalSkills: number;
+//   experience: number;
+//   communication: number;
+//   certifications: number;
+//   applicationDate: string;
+//   categories: Category[];
+//   detailedEvaluation: {
+//     categories: Category[];
+//     summary: Array<{
+//       attribute: string;
+//       weight: string;
+//       percentScored: string;
+//       attributeScore: string;
+//     }>;
+//   };
+// }
 
 const Results = () => {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [selectedCandidate, setSelectedCandidate] = useState<any | null>(null);
+  const [roles, setRoles] = useState<any[]>([]);
+  const [personas, setPersonas] = useState<any[]>([]);
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -81,68 +83,78 @@ const Results = () => {
   const [error, setError] = useState<string>("");
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCandidate, setSidebarCandidate] = useState<Candidate | null>(null);
+  const [sidebarCandidate, setSidebarCandidate] = useState<any | null>(null);
   const [showScoreDetails, setShowScoreDetails] = useState(false);
   const [showAllCandidates, setShowAllCandidates] = useState(false);
 
-   const fetchCandidates = async (page: number, size: number) => {
-    setLoading(true);
-    setError("");
-      
-  };
-useEffect(() => {
-    fetchCandidates(page, pageSize);
-  }, [page, pageSize]);
+  const fetchPersonas = async () => {
+  try {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/`, {
+      method:"GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
 
+    if (!response.ok) throw new Error("Failed to fetch personas");
+    const data = await response.json();
+
+    const personaList = data; // Assuming the API returns an array like the one you shared
+    setPersonas(personaList);
+
+    // Extract unique roles
+    const uniqueRoles = Array.from(new Set(personaList.map((p: any) => p.role_name)))
+      .map((roleName) => {
+        return { name: roleName, id: roleName }; // If role has no separate ID, use name as id
+      });
+
+    setRoles(uniqueRoles);
+
+  } catch (error) {
+    console.error("Error fetching personas:", error);
+  }
+};
+
+// Function to get data from localStorage
+  const fetchCandidatesFromLocalStorage = () => {
+    const storedData = localStorage.getItem("evaluatedCandidates"); // assuming you stored it as JSON
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        // If you have multiple candidates, ensure it's an array
+        setCandidates(parsedData.candidates || []);
+        console.log(parsedData)
+      } catch (error) {
+        console.error("Error parsing candidate data from localStorage:", error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchCandidatesFromLocalStorage();
+  }, []);
 
   // Update persona when role changes
-  useEffect(() => {
-    setSelectedPersona(getDefaultPersonaForRole(selectedRole));
-  }, [selectedRole]);
+ useEffect(() => {
+  fetchPersonas();
+}, []);
 
-  const getPersonasForRole = (role: string) => {
-    const rolePersonas: { [key: string]: string[] } = {
-      "RPA Developer": [
-        "Persona-RPA Developer-Admin user-2025-09-24 - 13:37",
-        "Senior RPA Developer Persona",
-        "Mid Level RPA Developer Persona",
-        "Junior RPA Developer Persona",
-      ],
-      "Software Engineer": [
-        "Senior Software Engineer Persona",
-        "Full Stack Developer Persona",
-        "Backend Developer Persona",
-        "Frontend Developer Persona",
-      ],
-      "QA Engineer": [
-        "Senior QA Engineer Persona",
-        "Automation QA Persona",
-        "Manual Testing Persona",
-        "Performance Testing Persona",
-      ],
-      "Data Analyst": [
-        "Senior Data Analyst Persona",
-        "Business Intelligence Persona",
-        "Statistical Analysis Persona",
-        "Data Visualization Persona",
-      ],
-      "Product Manager": [
-        "Senior Product Manager Persona",
-        "Technical Product Manager Persona",
-        "Growth Product Manager Persona",
-        "Strategy Product Manager Persona",
-      ],
-    };
 
-    return rolePersonas[role] || ["Default Persona"];
-  };
+ const getPersonasForRole = (roleName: string) => {
+  if (!roleName) return []; // no role selected
+  return personas
+    .filter((p) => p.role_name === roleName)
+    .map((p) => p.name); // return only persona names
+};
+
 
   const getDefaultPersonaForRole = (role: string) => {
     const personas = getPersonasForRole(role);
     return personas[0];
   };
 
-  const generateDetailedEvaluation = (candidate: any): Category[] => {
+  const generateDetailedEvaluation = (candidate: any): any[] => {
     // Generate realistic evaluation data based on the candidate's scores
     return [
       {
@@ -454,7 +466,7 @@ useEffect(() => {
     return <XCircle className="w-4 h-4 text-danger" />;
   };
 
-  const CandidateDetailDialog = ({ candidate }: { candidate: Candidate }) => (
+  const CandidateDetailDialog = ({ candidate }) => (
     <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 overflow-hidden">
       <div className="fixed inset-0 bg-background z-50 flex flex-col">
         {/* Close button */}
@@ -624,12 +636,12 @@ useEffect(() => {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
-                  <SelectItem value="RPA Developer">RPA Developer</SelectItem>
-                  <SelectItem value="Software Engineer">Software Engineer</SelectItem>
-                  <SelectItem value="QA Engineer">QA Engineer</SelectItem>
-                  <SelectItem value="Data Analyst">Data Analyst</SelectItem>
-                  <SelectItem value="Product Manager">Product Manager</SelectItem>
-                </SelectContent>
+                    {roles.map((role) => (
+                      <SelectItem key={role.id} value={role.name}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -640,12 +652,12 @@ useEffect(() => {
                   <SelectValue placeholder="Select a persona" />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border z-50">
-                  {getPersonasForRole(selectedRole).map((persona) => (
-                    <SelectItem key={persona} value={persona}>
-                      {persona}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    {getPersonasForRole(selectedRole).map((personaName) => (
+                      <SelectItem key={personaName} value={personaName}>
+                        {personaName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
           </div>
@@ -676,7 +688,7 @@ useEffect(() => {
                 </TableHeader>
                 <TableBody>
                   {filteredCandidates.map((candidate) => (
-                    <TableRow key={candidate.id}>
+                    <TableRow key={candidate.score_id}>
                       <TableCell className="py-2 px-3">
                         <div>
                           <button
@@ -686,21 +698,24 @@ useEffect(() => {
                               setSidebarOpen(true);
                             }}
                           >
-                            {candidate.name}
+                            {/* Show candidate_name if exists, otherwise show candidate_id */}
+                              {candidate.candidate_name ? candidate.candidate_name : `Candidate ID: ${candidate.candidate_id}`}
+                            {/* {candidate.name} */}
                           </button>
-                          <p className="text-sm text-muted-foreground">{candidate.fileName}</p>
+                          <p className="text-sm text-muted-foreground">{candidate.file_name}</p>
                         </div>
                       </TableCell>
                       <TableCell className="py-2 px-3">
-                        <span className={`font-medium ${getScoreColor(candidate.overallScore)}`}>
-                          {candidate.overallScore}%
+                        <span className={`font-medium ${getScoreColor(candidate.final_score)}`}>
+                          {candidate.final_score}%
                         </span>
                       </TableCell>
                       <TableCell className="py-2 px-3">
                         <div className="flex items-center space-x-1">
                           <Calendar className="w-4 h-4 text-muted-foreground" />
                           <span className="text-sm">
-                            {new Date(candidate.applicationDate).toLocaleDateString()}
+                            {/* {new Date(candidate.applicationDate).toLocaleDateString()} */}
+                            N/A
                           </span>
                         </div>
                       </TableCell>
@@ -745,14 +760,14 @@ useEffect(() => {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                       <span className="text-lg font-semibold text-muted-foreground">
-                        {sidebarCandidate.name
+                        {sidebarCandidate.candidate_id
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-base">
-                      <span className="font-semibold text-foreground">{sidebarCandidate.name}</span>
+                      <span className="font-semibold text-foreground">{sidebarCandidate.candidate_id}</span>
                       <span className="text-muted-foreground">|</span>
                       <span className="text-muted-foreground">candidate@example.com</span>
                       <span className="text-muted-foreground">|</span>

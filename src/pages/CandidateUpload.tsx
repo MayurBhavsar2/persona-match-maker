@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { mockScoreCandidate } from "@/mocks/mockAICandidateEvaluate";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,6 +61,14 @@ const CandidateUpload = () => {
     const result = await response.json();
 
     if (!response.ok) throw new Error(result.message || "Upload failed");
+
+    const candidateCvInfo = result.map((r: any) => ({
+    candidate_id: r.candidate_id,
+    cv_id: r.cv_id,
+    file_name: r.file_name,
+    cv_text: r.cv_text,
+    }));
+    localStorage.setItem("candidateCvInfo", JSON.stringify(candidateCvInfo));
 
     // Update statuses based on API response
     const updatedFiles = filesArray.map(file => {
@@ -141,125 +150,98 @@ const CandidateUpload = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const USE_MOCK_API = true; // toggle mock/real API
+
   const handleEvaluate = async () => {
-    if (files.length === 0) {
-      toast({
-        title: "No files to evaluate",
-        description: "Please upload candidate CVs before proceeding.",
-        variant: "destructive",
-      });
-      return;
+  const candidateCvInfoStr = localStorage.getItem("candidateCvInfo");
+  const personaDataStr = localStorage.getItem("savedPersona");
+
+  if (!candidateCvInfoStr || !personaDataStr) {
+    toast({
+      title: "Evaluation failed",
+      description: "Missing candidate or persona information.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const candidateCvInfo = JSON.parse(candidateCvInfoStr);
+  const personaData = JSON.parse(personaDataStr);
+  const persona_id = personaData.id;
+
+  if (candidateCvInfo.length === 0) {
+    toast({
+      title: "No candidates to evaluate",
+      description: "Please upload candidate CVs before proceeding.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setIsProcessing(true);
+
+  try {
+    const results: any[] = [];
+
+    for (const candidate of candidateCvInfo) {
+      const { candidate_id, cv_id } = candidate;
+
+      let data;
+      if (USE_MOCK_API) {
+        const { mockScoreCandidate } = await import("@/mocks/mockAICandidateEvaluate");
+        data = await mockScoreCandidate(candidate_id, persona_id, cv_id, false);
+      } else {
+        const url = `${import.meta.env.VITE_API_URL}/api/v1/candidate/score-with-ai?candidate_id=${candidate_id}&persona_id=${persona_id}&cv_id=${cv_id}&force_rescore=false`;
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        data = await response.json();
+
+        if (!response.ok) {
+          toast({
+            title: `Evaluation failed for ${candidate.file_name}`,
+            description: data.message || "Something went wrong.",
+            variant: "destructive",
+          });
+          continue;
+        }
+      }
+
+      results.push(data);
     }
 
-    //setIsProcessing(true);
-    
-    //setIsProcessing(true);
+    localStorage.setItem("evaluatedCandidates", JSON.stringify({
+      candidates: results,
+      timestamp: Date.now()
+    }));
+
+    toast({
+      title: "Evaluation completed",
+      description: `${results.length} candidates have been evaluated successfully.`,
+    });
+
     setTimeout(() => {
-          navigate("/results");
-        }, 1500);
+      navigate("/results");
+    }, 1500);
 
-      // try {
-      //   const formData = new FormData();
-      //   files.forEach((file) => formData.append("files", file.file));
+  } catch (error: any) {
+    console.error("Evaluation Error:", error);
+    toast({
+      title: "Evaluation failed",
+      description: error.message || "Something went wrong.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
-      //   const response = await fetch("/api/v1/candidate/upload", {
-      //     method: "POST",
-      //     body: formData,
-      //     headers: {
-      //       Authorization: `Bearer ${localStorage.getItem("token")}`,
-      //     },
-      //   });
-
-      //   const result = await response.json();
-
-      //   if (!response.ok) {
-      //     throw new Error(result.message || "Upload failed");
-      //   }
-
-      //   // Update file statuses based on API result
-      //   const updatedFiles = files.map(file => {
-      //     const fileResult = result.find((r: any) => r.file_name === file.name);
-      //     if (!fileResult) return file;
-
-      //     let newStatus: UploadedFile['status'];
-
-      //   switch (fileResult.status) {
-      //     case 'success':
-      //       newStatus = 'completed';
-      //       break;
-      //     case 'duplicate':
-      //       newStatus = 'duplicate';
-      //       break;
-      //     case 'error':
-      //       newStatus = 'error';
-      //       break;
-      //     default:
-      //       newStatus = 'error';
-      //   }
-
-      //   return { ...file, status: newStatus };
-      // });
-
-      //   setFiles(updatedFiles);
-
-      //   const hasDuplicates = result.some((r: any) => r.status === "duplicate");
-      //   if (hasDuplicates) {
-      //     toast({
-      //       title: "Duplicate CVs found",
-      //       description: "Some CVs already exist in the system. Please remove duplicates and retry.",
-      //       variant: "destructive",
-      //     });
-      //     setIsProcessing(false);
-      //     return; // 🚫 stop navigation
-      //   }
-
-      //   // ✅ proceed only if all successful
-      //   localStorage.setItem(
-      //     "evaluatedCandidates",
-      //     JSON.stringify({ candidates: result, timestamp: Date.now() })
-      //   );
-
-      //   toast({
-      //     title: "Evaluation completed",
-      //     description: `${result.length} candidates have been evaluated successfully.`,
-      //   });
-
-      //   setTimeout(() => {
-      //     navigate("/results");
-      //   }, 1500);
-
-      // } catch (error: any) {
-      //   console.error("Evaluation Error:", error);
-      //   toast({
-      //     title: "Evaluation failed",
-      //     description: error.message || "Something went wrong.",
-      //     variant: "destructive",
-      //   });
-      // } finally {
-      //   setIsProcessing(false);
-      // }
-
-
-
-      // Store the evaluation results
-      // localStorage.setItem('evaluatedCandidates', JSON.stringify({
-      //   candidates: processedCandidates,
-      //   timestamp: Date.now()
-
-      
-      
-
-    // } catch (error) {
-    //   console.error('Evaluation Error:', error);
-    //   setIsProcessing(false);
-      
-    //   toast({
-    //     title: "Evaluation failed",
-    //     description: "There was an error evaluating the candidates. Please try again.",
-    //     variant: "destructive",
-    //   });
-    // }
-  };
 
   const getStatusIcon = (status: UploadedFile['status']) => {
     switch (status) {

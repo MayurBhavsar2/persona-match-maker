@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,9 @@ import { Eye, EyeOff, ArrowLeft, UserPlus, Shield, CheckCircle } from "lucide-re
 const Register = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(100);
+  const [roles, setRoles] = useState<any[]>([]);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
@@ -84,6 +87,47 @@ const Register = () => {
       });
     }
   };
+  
+  useEffect(() => {
+  const fetchRoles = async () => {
+    try {
+      const queryParams = new URLSearchParams({ skip: skip.toString(), limit: limit.toString() });
+      const url = `${import.meta.env.VITE_API_URL}/api/v1/role/?${queryParams.toString()}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      console.log("Roles API Response:", data);
+      // ✅ Safely handle the API response
+      const roleList = data.roles || data;
+      setRoles(roleList);
+      
+      // ✅ Store role ID and name in localStorage
+      if (Array.isArray(roleList)) {
+        const simplifiedRoles = roleList.map((role: any) => ({
+          id: role.id,
+          name: role.name,
+        }));
+
+        localStorage.setItem("dashboardRoles", JSON.stringify(simplifiedRoles));
+        console.log("Roles stored in localStorage:", simplifiedRoles);
+      }
+
+      
+
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      toast({
+        title: "Failed to load roles",
+        description: "Please check if the backend server is running.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  fetchRoles();
+}, [skip, limit]); // <-- re-fetch roles when skip or limit changes
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -93,9 +137,11 @@ const Register = () => {
   };
 
   const handleRoleChange = (value: string) => {
+    const selectedRole = roles.find((r) => r.name === value);
     setFormData({
       ...formData,
       role: value,
+      role_id:selectedRole ? selectedRole.id : "",
     });
   };
 
@@ -208,10 +254,16 @@ const Register = () => {
                       <SelectValue placeholder="Select your role" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border shadow-lg">
-                      <SelectItem value="recruiter">Recruiter</SelectItem>
-                      <SelectItem value="hiring-manager">Hiring Manager</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
+                        {roles.length > 0 ? (
+                          roles.map((role) => (
+                            <SelectItem key={role.id} value={role.name}>
+                              {role.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <p className="text-muted-foreground text-sm p-2">Loading roles...</p>
+                        )}
+                      </SelectContent>
                   </Select>
                 </div>
               </div>

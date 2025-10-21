@@ -483,6 +483,7 @@ const PersonaConfig = () => {
       JSON.stringify({
         id: data.id,
         name: data.name,
+        apiData:data,
       })
     );
     
