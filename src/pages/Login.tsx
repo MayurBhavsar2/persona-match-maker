@@ -44,7 +44,7 @@ const Login = () => {
           title: "Login Successful",
           description: "Welcome back to your HR platform!",
         });
-        navigate("/");
+        navigate("/dashboard");
       } else {
         throw new Error('Login failed');
       }

@@ -68,8 +68,18 @@ setPredefinedRoles(roles);
       });
     }
   };
+  const token = localStorage.getItem("token")
 
-  fetchRoles();
+  if(token) {
+    fetchRoles();
+  } else {
+    toast({
+      title: "You're not logged in.",
+      description: "Please login to continue.",
+    })
+    navigate("/login")
+  }
+  
 }, [page, size, activeOnly]); // refetch if any param changes
 
 
