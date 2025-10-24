@@ -904,46 +904,46 @@ const PersonaConfig = () => {
                                     }}
                                     className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 font-medium"
                                   />
-                                </TableCell>
-                                <TableCell className="text-center py-2">
-                                  <div className="flex items-center justify-center space-x-1">
-                                    <Input
-                                      type="number"
-                                      value={skill.weight}
-                                      onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
-                                      className="w-16 h-8 text-center"
-                                      min="0"
-                                      max="100"
-                                    />
-                                    <span className="text-xs text-muted-foreground">%</span>
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-center py-2">
-                                  <Select 
-                                    value={skill.requiredLevel.toString()} 
-                                    onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
-                                  >
-                                    <SelectTrigger className="w-32 h-8">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="1">1 - Basic</SelectItem>
-                                      <SelectItem value="2">2 - Working</SelectItem>
-                                      <SelectItem value="3">3 - Proficient</SelectItem>
-                                      <SelectItem value="4">4 - Advanced</SelectItem>
-                                      <SelectItem value="5">5 - Expert</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </TableCell>
-                                <TableCell className="py-2">
-                                  <Textarea
-                                    value={skill.notes}
-                                    onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                                    className="min-h-[60px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0 font-semibold"
-                                    placeholder="React, Node.js, TypeScript..."
-                                  />
-                                </TableCell>
-                                <TableCell className="text-center py-2">
+                                 </TableCell>
+                                 <TableCell className="text-center py-1">
+                                   <div className="flex items-center justify-center space-x-1">
+                                     <Input
+                                       type="number"
+                                       value={skill.weight}
+                                       onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
+                                       className="w-16 h-8 text-center"
+                                       min="0"
+                                       max="100"
+                                     />
+                                     <span className="text-xs text-muted-foreground">%</span>
+                                   </div>
+                                 </TableCell>
+                                 <TableCell className="text-center py-1">
+                                   <Select 
+                                     value={skill.requiredLevel.toString()} 
+                                     onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
+                                   >
+                                     <SelectTrigger className="w-32 h-8">
+                                       <SelectValue />
+                                     </SelectTrigger>
+                                     <SelectContent>
+                                       <SelectItem value="1">1 - Basic</SelectItem>
+                                       <SelectItem value="2">2 - Working</SelectItem>
+                                       <SelectItem value="3">3 - Proficient</SelectItem>
+                                       <SelectItem value="4">4 - Advanced</SelectItem>
+                                       <SelectItem value="5">5 - Expert</SelectItem>
+                                     </SelectContent>
+                                   </Select>
+                                 </TableCell>
+                                 <TableCell className="py-1">
+                                   <Textarea
+                                     value={skill.notes}
+                                     onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
+                                     className="min-h-[60px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0 font-semibold"
+                                     placeholder="React, Node.js, TypeScript..."
+                                   />
+                                 </TableCell>
+                                 <TableCell className="text-center py-1">
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -958,7 +958,7 @@ const PersonaConfig = () => {
                           </TableBody>
                         </Table>
                       </div>
-                      <div className="flex justify-between items-center pt-1">
+                      <div className="flex justify-between items-center">
                         <div className="flex items-center gap-3">
                           <Button
                             variant="outline"
@@ -971,7 +971,7 @@ const PersonaConfig = () => {
                           </Button>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center pt-1">
+                      <div className="flex justify-between items-center">
                         <span className="text-sm text-muted-foreground">
                           <span className="font-bold">Skills total:</span> <span className={`font-mono font-bold text-base ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
                         </span>
@@ -982,7 +982,7 @@ const PersonaConfig = () => {
                       </div>
                       
                       {/* Custom Addition for this category */}
-                      <div className="mt-2 pt-2 border-t">
+                      <div className="mt-1 pt-1 border-t">
                         <Label htmlFor={`custom-${category.id}`} className="text-xs font-medium text-muted-foreground">
                           Custom Addition
                         </Label>
