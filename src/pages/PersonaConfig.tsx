@@ -839,7 +839,7 @@ const PersonaConfig = () => {
           </Card>
 
           {/* Categories */}
-          <Accordion type="multiple" className="space-y-3">
+          <Accordion type="multiple" className="space-y-1">
           {categories.map((category) => {
             const skillTotal = getCategorySkillTotal(category.id);
             const isSkillTotalValid = skillTotal === 100;
@@ -847,7 +847,7 @@ const PersonaConfig = () => {
             return (
               <AccordionItem key={category.id} value={category.id} className="border-0">
                 <Card className="shadow-card overflow-hidden">
-                  <AccordionTrigger className="pl-4 pr-6 py-3 hover:no-underline">
+                  <AccordionTrigger className="px-3 py-2 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-4">
                         <h3 className="text-lg font-semibold text-foreground w-[220px] text-left">{category.name}</h3>
@@ -873,22 +873,22 @@ const PersonaConfig = () => {
                     </div>
                   </AccordionTrigger>
                    <AccordionContent>
-                    <CardContent className="pt-0 pb-4 space-y-4">
+                    <CardContent className="pt-0 pb-2 space-y-2">
                       <div className="rounded-md border">
                         <Table>
                           <TableHeader>
-                            <TableRow>
-                              <TableHead className="w-[25%]">Skill Name</TableHead>
-                              <TableHead className="w-[15%] text-center">Weight (%)</TableHead>
-                              <TableHead className="w-[15%] text-center">Required Level</TableHead>
-                              <TableHead className="w-[40%]">Skills & Technologies</TableHead>
-                              <TableHead className="w-[5%]"></TableHead>
+                            <TableRow className="hover:bg-transparent">
+                              <TableHead className="w-[25%] py-2">Skill Name</TableHead>
+                              <TableHead className="w-[15%] text-center py-2">Weight (%)</TableHead>
+                              <TableHead className="w-[15%] text-center py-2">Required Level</TableHead>
+                              <TableHead className="w-[40%] py-2">Skills & Technologies</TableHead>
+                              <TableHead className="w-[5%] py-2"></TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {category.skills.map((skill, index) => (
-                              <TableRow key={index}>
-                                <TableCell>
+                              <TableRow key={index} className="hover:bg-muted/50">
+                                <TableCell className="py-2">
                                   <Input
                                     value={skill.name}
                                     onChange={(e) => {
@@ -905,7 +905,7 @@ const PersonaConfig = () => {
                                     className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 font-medium"
                                   />
                                 </TableCell>
-                                <TableCell className="text-center">
+                                <TableCell className="text-center py-2">
                                   <div className="flex items-center justify-center space-x-1">
                                     <Input
                                       type="number"
@@ -918,7 +918,7 @@ const PersonaConfig = () => {
                                     <span className="text-xs text-muted-foreground">%</span>
                                   </div>
                                 </TableCell>
-                                <TableCell className="text-center">
+                                <TableCell className="text-center py-2">
                                   <Select 
                                     value={skill.requiredLevel.toString()} 
                                     onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
@@ -935,7 +935,7 @@ const PersonaConfig = () => {
                                     </SelectContent>
                                   </Select>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="py-2">
                                   <Textarea
                                     value={skill.notes}
                                     onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
@@ -943,7 +943,7 @@ const PersonaConfig = () => {
                                     placeholder="React, Node.js, TypeScript..."
                                   />
                                 </TableCell>
-                                <TableCell className="text-center">
+                                <TableCell className="text-center py-2">
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -958,7 +958,7 @@ const PersonaConfig = () => {
                           </TableBody>
                         </Table>
                       </div>
-                      <div className="flex justify-between items-center pt-2">
+                      <div className="flex justify-between items-center pt-1">
                         <div className="flex items-center gap-3">
                           <Button
                             variant="outline"
@@ -971,7 +971,7 @@ const PersonaConfig = () => {
                           </Button>
                         </div>
                       </div>
-                      <div className="flex justify-between items-center pt-2">
+                      <div className="flex justify-between items-center pt-1">
                         <span className="text-sm text-muted-foreground">
                           <span className="font-bold">Skills total:</span> <span className={`font-mono font-bold text-base ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
                         </span>
@@ -982,7 +982,7 @@ const PersonaConfig = () => {
                       </div>
                       
                       {/* Custom Addition for this category */}
-                      <div className="mt-4 pt-3 border-t">
+                      <div className="mt-2 pt-2 border-t">
                         <Label htmlFor={`custom-${category.id}`} className="text-xs font-medium text-muted-foreground">
                           Custom Addition
                         </Label>
