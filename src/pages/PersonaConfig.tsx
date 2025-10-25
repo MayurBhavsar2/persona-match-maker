@@ -852,7 +852,7 @@ const PersonaConfig = () => {
                    <AccordionTrigger className="px-3 py-2 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
                       <h3 className="text-base font-medium text-foreground w-[220px] text-left">{category.name}</h3>
-                      <div className="flex items-center justify-center flex-1">
+                      <div className="flex items-center justify-center flex-1 mr-32">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex items-center space-x-1">
@@ -943,9 +943,9 @@ const PersonaConfig = () => {
                             </TableRow>
                           </TableHeader>
                            <TableBody>
-                            {category.skills.map((skill, index) => (
+                             {category.skills.map((skill, index) => (
                               <TableRow key={index} className="hover:bg-muted/30 border-b">
-                                <TableCell className="py-1 align-middle">
+                                <TableCell className="py-0.5 align-middle">
                                   <Input
                                     value={skill.name}
                                     onChange={(e) => {
@@ -962,7 +962,7 @@ const PersonaConfig = () => {
                                     className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 text-sm"
                                   />
                                  </TableCell>
-                                 <TableCell className="text-center py-1 align-middle">
+                                 <TableCell className="text-center py-0.5 align-middle">
                                    <Input
                                      type="number"
                                      value={skill.weight}
@@ -972,7 +972,7 @@ const PersonaConfig = () => {
                                      max="100"
                                    />
                                  </TableCell>
-                                 <TableCell className="text-center py-1 align-middle">
+                                 <TableCell className="text-center py-0.5 align-middle">
                                    <Select 
                                      value={skill.requiredLevel.toString()} 
                                      onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
@@ -989,15 +989,15 @@ const PersonaConfig = () => {
                                      </SelectContent>
                                    </Select>
                                  </TableCell>
-                                 <TableCell className="py-1 align-middle">
+                                 <TableCell className="py-0.5 align-middle">
                                    <Textarea
                                      value={skill.notes}
                                      onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                                     className="min-h-[50px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0 text-sm"
+                                     className="min-h-[50px] resize-none border-0 p-0 my-1 bg-transparent focus-visible:ring-0 text-sm flex items-center"
                                      placeholder="React, Node.js, TypeScript..."
                                    />
                                  </TableCell>
-                                 <TableCell className="text-center py-1 align-middle">
+                                 <TableCell className="text-center py-0.5 align-middle">
                                   <Button
                                     variant="ghost"
                                     size="sm"
