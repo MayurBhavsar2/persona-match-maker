@@ -944,8 +944,8 @@ const PersonaConfig = () => {
                           </TableHeader>
                            <TableBody>
                              {category.skills.map((skill, index) => (
-                              <TableRow key={index} className="hover:bg-muted/30 border-b">
-                                <TableCell className="py-0.5 align-middle">
+                              <TableRow key={index} className="hover:bg-muted/30 border-b h-8">
+                                <TableCell className="p-0 align-middle">
                                   <Input
                                     value={skill.name}
                                     onChange={(e) => {
@@ -959,25 +959,25 @@ const PersonaConfig = () => {
                                       });
                                       setCategories(updatedCategories);
                                     }}
-                                    className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 text-sm"
+                                    className="border-0 p-1 h-8 bg-transparent focus-visible:ring-0 text-sm"
                                   />
                                  </TableCell>
-                                 <TableCell className="text-center py-0.5 align-middle">
+                                 <TableCell className="text-center p-0 align-middle">
                                    <Input
                                      type="number"
                                      value={skill.weight}
                                      onChange={(e) => updateSkillWeight(category.id, index, parseInt(e.target.value) || 0)}
-                                     className="w-12 h-7 text-center text-sm border-muted"
+                                     className="w-12 h-8 text-center text-sm border-muted"
                                      min="0"
                                      max="100"
                                    />
                                  </TableCell>
-                                 <TableCell className="text-center py-0.5 align-middle">
+                                 <TableCell className="text-center p-0 align-middle">
                                    <Select 
                                      value={skill.requiredLevel.toString()} 
                                      onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
                                    >
-                                     <SelectTrigger className="w-24 h-7 text-sm border-muted">
+                                     <SelectTrigger className="w-24 h-8 text-sm border-muted">
                                        <SelectValue />
                                      </SelectTrigger>
                                      <SelectContent>
@@ -989,20 +989,20 @@ const PersonaConfig = () => {
                                      </SelectContent>
                                    </Select>
                                  </TableCell>
-                                 <TableCell className="py-0.5 align-middle">
+                                 <TableCell className="p-0 align-middle">
                                    <Textarea
                                      value={skill.notes}
                                      onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
-                                     className="min-h-[50px] resize-none border-0 p-0 my-1 bg-transparent focus-visible:ring-0 text-sm flex items-center"
+                                     className="min-h-[32px] h-8 resize-none border-0 p-1 bg-transparent focus-visible:ring-0 text-sm flex items-center"
                                      placeholder="React, Node.js, TypeScript..."
                                    />
                                  </TableCell>
-                                 <TableCell className="text-center py-0.5 align-middle">
+                                 <TableCell className="text-center p-0 align-middle">
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setDeleteConfirm({ categoryId: category.id, skillIndex: index })}
-                                    className="h-7 w-7 p-0 hover:text-destructive"
+                                    className="h-8 w-8 p-0 hover:text-destructive"
                                   >
                                     <Minus className="h-3 w-3" />
                                   </Button>
