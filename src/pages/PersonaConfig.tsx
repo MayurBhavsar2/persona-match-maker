@@ -13,8 +13,9 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus, Minus } from "lucide-react";
+import { ArrowRight, Save, AlertCircle, CheckCircle2, Lightbulb, TrendingUp, Target, Plus, Minus, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SkillCategory {
   id: string;
@@ -763,15 +764,15 @@ const PersonaConfig = () => {
   return (
     <Layout currentStep={2}>
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
+        <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
+            <span className="text-muted-foreground">|</span>
+            <span className="text-xl font-bold text-primary">{selectedRole}</span>
+          </div>
           <p className="text-lg text-muted-foreground">
             Define the weightage for different skills and attributes to create your ideal candidate profile
           </p>
-          <div className="flex items-center justify-center space-x-2 text-sm">
-            <span className="text-muted-foreground">Role:</span>
-            <span className="font-medium text-primary">{selectedRole}</span>
-          </div>
         </div>
 
         {/* Sticky Navigation Tabs */}
@@ -839,7 +840,8 @@ const PersonaConfig = () => {
           </Card>
 
           {/* Categories */}
-          <Accordion type="multiple" className="space-y-1">
+          <TooltipProvider>
+          <Accordion type="multiple" className="space-y-0.5">
           {categories.map((category) => {
             const skillTotal = getCategorySkillTotal(category.id);
             const isSkillTotalValid = skillTotal === 100;
@@ -847,21 +849,28 @@ const PersonaConfig = () => {
             return (
               <AccordionItem key={category.id} value={category.id} className="border-0">
                 <Card className="shadow-card overflow-hidden">
-                  <AccordionTrigger className="px-3 py-2 hover:no-underline">
+                   <AccordionTrigger className="px-3 py-2 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
                       <div className="flex items-center gap-4">
                         <h3 className="text-base font-medium text-foreground w-[220px] text-left">{category.name}</h3>
-                        <div className="flex items-center space-x-1">
-                          <Input
-                            type="number"
-                            value={category.weight}
-                            onChange={(e) => updateCategoryWeight(category.id, parseInt(e.target.value) || 0)}
-                            className="w-14 h-7 text-center font-mono text-sm border-muted"
-                            min="0"
-                            max="100"
-                          />
-                          <span className="text-sm text-muted-foreground">%</span>
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center space-x-1">
+                              <Input
+                                type="number"
+                                value={category.weight}
+                                onChange={(e) => updateCategoryWeight(category.id, parseInt(e.target.value) || 0)}
+                                className="w-14 h-7 text-center font-mono text-sm border-muted"
+                                min="0"
+                                max="100"
+                              />
+                              <span className="text-sm text-muted-foreground">%</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Category weight percentage (all categories must total 100%)</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </div>
                       <div className="flex items-center space-x-3">
                         {isSkillTotalValid ? (
@@ -871,24 +880,72 @@ const PersonaConfig = () => {
                         )}
                       </div>
                     </div>
-                  </AccordionTrigger>
-                   <AccordionContent>
-                    <CardContent className="pt-0 pb-2 space-y-2">
+                   </AccordionTrigger>
+                    <AccordionContent>
+                    <CardContent className="pt-0 pb-1 space-y-1">
                       <div>
-                        <Table>
+                         <Table>
                           <TableHeader>
                             <TableRow className="hover:bg-transparent border-b">
-                              <TableHead className="w-[25%] py-2 text-xs font-medium">Skill Name</TableHead>
-                              <TableHead className="w-[15%] text-center py-2 text-xs font-medium">Weight</TableHead>
-                              <TableHead className="w-[15%] text-center py-2 text-xs font-medium">Level</TableHead>
-                              <TableHead className="w-[40%] py-2 text-xs font-medium">Skills & Technologies</TableHead>
+                              <TableHead className="w-[25%] py-2 text-xs font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-help">
+                                      Skill Name
+                                      <Info className="h-3 w-3" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Name of the specific skill or competency</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[15%] text-center py-2 text-xs font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center justify-center gap-1 cursor-help">
+                                      Weight
+                                      <Info className="h-3 w-3" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Percentage weight of this skill within the category</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[15%] text-center py-2 text-xs font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center justify-center gap-1 cursor-help">
+                                      Level
+                                      <Info className="h-3 w-3" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Required proficiency level (1-5)</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[40%] py-2 text-xs font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-help">
+                                      Skills & Technologies
+                                      <Info className="h-3 w-3" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Specific technologies, tools, or skills required</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
                               <TableHead className="w-[5%] py-2"></TableHead>
                             </TableRow>
                           </TableHeader>
-                          <TableBody>
+                           <TableBody>
                             {category.skills.map((skill, index) => (
                               <TableRow key={index} className="hover:bg-muted/30 border-b">
-                                <TableCell className="py-1">
+                                <TableCell className="py-1 align-middle">
                                   <Input
                                     value={skill.name}
                                     onChange={(e) => {
@@ -905,7 +962,7 @@ const PersonaConfig = () => {
                                     className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 text-sm"
                                   />
                                  </TableCell>
-                                 <TableCell className="text-center py-1">
+                                 <TableCell className="text-center py-1 align-middle">
                                    <Input
                                      type="number"
                                      value={skill.weight}
@@ -915,7 +972,7 @@ const PersonaConfig = () => {
                                      max="100"
                                    />
                                  </TableCell>
-                                 <TableCell className="text-center py-1">
+                                 <TableCell className="text-center py-1 align-middle">
                                    <Select 
                                      value={skill.requiredLevel.toString()} 
                                      onValueChange={(value) => updateSkillLevel(category.id, index, parseInt(value))}
@@ -932,7 +989,7 @@ const PersonaConfig = () => {
                                      </SelectContent>
                                    </Select>
                                  </TableCell>
-                                 <TableCell className="py-1">
+                                 <TableCell className="py-1 align-middle">
                                    <Textarea
                                      value={skill.notes}
                                      onChange={(e) => updateSkillNotes(category.id, index, e.target.value)}
@@ -940,7 +997,7 @@ const PersonaConfig = () => {
                                      placeholder="React, Node.js, TypeScript..."
                                    />
                                  </TableCell>
-                                 <TableCell className="text-center py-1">
+                                 <TableCell className="text-center py-1 align-middle">
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -988,6 +1045,7 @@ const PersonaConfig = () => {
             );
           })}
         </Accordion>
+        </TooltipProvider>
         </div>
 
         {/* Summary Section */}
