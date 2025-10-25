@@ -841,18 +841,18 @@ const PersonaConfig = () => {
 
           {/* Categories */}
           <TooltipProvider>
-          <Accordion type="multiple" className="space-y-0.5">
+          <Accordion type="multiple" className="space-y-0">
           {categories.map((category) => {
             const skillTotal = getCategorySkillTotal(category.id);
             const isSkillTotalValid = skillTotal === 100;
             
             return (
               <AccordionItem key={category.id} value={category.id} className="border-0">
-                <Card className="shadow-card overflow-hidden">
+                <Card className="shadow-card overflow-hidden rounded-none first:rounded-t-lg last:rounded-b-lg border-b-0 last:border-b">
                    <AccordionTrigger className="px-3 py-2 hover:no-underline">
                     <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-4">
-                        <h3 className="text-base font-medium text-foreground w-[220px] text-left">{category.name}</h3>
+                      <h3 className="text-base font-medium text-foreground w-[220px] text-left">{category.name}</h3>
+                      <div className="flex items-center justify-center flex-1">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex items-center space-x-1">
