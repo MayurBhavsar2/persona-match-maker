@@ -240,18 +240,18 @@ const CandidateUpload = () => {
 
         {/* Upload Area */}
         <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center space-x-2 text-lg">
+          <CardHeader className="pb-2 pt-4">
+            <CardTitle className="flex items-center space-x-2 text-base">
               <Upload className="w-4 h-4 text-primary" />
               <span>CV Upload</span>
             </CardTitle>
-            <CardDescription className="text-sm">
+            <CardDescription className="text-xs">
               Upload PDF, DOC, DOCX files. Multiple files supported.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-4">
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition-all ${
                 dragActive 
                   ? 'border-primary bg-primary/5' 
                   : 'border-border hover:border-primary hover:bg-muted/50'
@@ -270,16 +270,16 @@ const CandidateUpload = () => {
                 onChange={(e) => handleFileUpload(e.target.files)}
               />
               <label htmlFor="cv-upload" className="cursor-pointer">
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Upload className="w-6 h-6 text-primary" />
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="text-base font-medium text-foreground">
+                  <div className="space-y-0.5">
+                    <h3 className="text-sm font-medium text-foreground">
                       Drop files here or click to upload
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Supports PDF, DOC, DOCX files up to 10MB each
+                      Supports PDF, DOC, DOCX up to 10MB
                     </p>
                   </div>
                 </div>
@@ -291,41 +291,41 @@ const CandidateUpload = () => {
         {/* File List */}
         {files.length > 0 && (
           <Card className="shadow-card">
-            <CardHeader>
+            <CardHeader className="pb-2 pt-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-primary" />
+                <CardTitle className="flex items-center space-x-2 text-base">
+                  <Users className="w-4 h-4 text-primary" />
                   <span>Uploaded CVs ({files.length})</span>
                 </CardTitle>
                 {isProcessing && (
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">Processing...</span>
-                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-muted-foreground">Processing...</span>
+                    <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </div>
               {isProcessing && (
-                <div className="space-y-2">
-                  <Progress value={processingProgress} className="h-2" />
+                <div className="space-y-1 mt-2">
+                  <Progress value={processingProgress} className="h-1.5" />
                   <p className="text-xs text-muted-foreground">
                     {completedFiles} of {files.length} files processed
                   </p>
                 </div>
               )}
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pb-4">
+              <div className="space-y-1 max-h-[240px] overflow-y-auto">
                 {files.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div className="flex items-center space-x-3">
+                  <div key={file.id} className="flex items-center justify-between p-2 bg-muted rounded hover:bg-muted/80 transition-colors">
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
                       {getStatusIcon(file.status)}
-                      <div>
-                        <p className="font-medium text-foreground">{file.name}</p>
-                        <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <p className="font-medium text-sm text-foreground truncate">{file.name}</p>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">({formatFileSize(file.size)})</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-xs px-2 py-1 rounded-full ${
+                    <div className="flex items-center space-x-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${
                         file.status === 'completed' ? 'bg-success/20 text-success' :
                         file.status === 'processing' ? 'bg-primary/20 text-primary' :
                         file.status === 'error' ? 'bg-danger/20 text-danger' :
@@ -340,9 +340,9 @@ const CandidateUpload = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(file.id)}
-                          className="h-8 w-8 p-0"
+                          className="h-6 w-6 p-0"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3" />
                         </Button>
                       )}
                     </div>
