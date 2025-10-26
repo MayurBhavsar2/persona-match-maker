@@ -290,7 +290,7 @@ const CandidateUpload = () => {
 
         {/* File List */}
         {files.length > 0 && (
-          <Card className="shadow-card -mt-4">
+          <Card className="shadow-card -mt-6">
             <CardHeader className="pb-2 pt-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2 text-base">
