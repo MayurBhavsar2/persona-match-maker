@@ -220,7 +220,7 @@ const CandidateUpload = () => {
 
   return (
     <Layout currentStep={3}>
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-3">
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-bold text-foreground">Upload Candidate CVs</h1>
@@ -290,7 +290,7 @@ const CandidateUpload = () => {
 
         {/* File List */}
         {files.length > 0 && (
-          <Card className="shadow-card -mt-8">
+          <Card className="shadow-card">
             <CardHeader className="pb-2 pt-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center space-x-2 text-base">
