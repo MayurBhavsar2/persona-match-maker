@@ -12,7 +12,7 @@ interface UploadedFile {
   id: string;
   name: string;
   size: number;
-  status: 'uploaded' | 'processing' | 'completed' |'duplicate'| 'error';
+  status: 'uploaded' | 'processing' | 'Ready' |'duplicate'| 'error';
   file?:File;
 }
 
@@ -71,39 +71,55 @@ const CandidateUpload = () => {
     localStorage.setItem("candidateCvInfo", JSON.stringify(candidateCvInfo));
 
     // Update statuses based on API response
-    const updatedFiles = filesArray.map(file => {
-      const fileResult = result.find((r: any) => r.file_name === file.name);
-      let newStatus: UploadedFile['status'];
+    // const updatedFiles = filesArray.map(file => {
+    //   const fileResult = result.find((r: any) => r.file_name === file.name);
+    //   let newStatus: UploadedFile['status'];
 
-      switch (fileResult?.status) {
-        case 'success':
-          newStatus = 'completed';
-          break;
-        case 'duplicate':
-          newStatus = 'duplicate';
-          break;
-        default:
-          newStatus = 'error';
-      }
+    //   switch (fileResult?.status) {
+    //     case 'success':
+    //       newStatus = 'Ready';
+    //       break;
+    //     case 'duplicate':
+    //       newStatus = 'duplicate';
+    //       break;
+    //     default:
+    //       newStatus = 'error';
+    //   }
 
-      return { ...file, status: newStatus };
-    });
+    //   return { ...file, status: newStatus };
+    // });
 
     // Merge updated files with previous state
+    
+      // ✅ Handle status mapping: success OR duplicate → Ready, else → error
+   
+    const updatedFiles = filesArray.map(file => {
+        const fileResult = result.find((r: any) => r.file_name === file.name);
+
+        let newStatus: UploadedFile["status"] = "error"; // default to error
+
+        if (fileResult?.status === "success" || fileResult?.status === "duplicate") {
+          newStatus = "Ready";
+        }
+
+        return { ...file, status: newStatus };
+      });
+    
+    
     setFiles(prev => [
       ...prev.filter(f => !filesArray.some(nf => nf.id === f.id)),
       ...updatedFiles
     ]);
 
     // Optionally: toast for duplicates
-    const hasDuplicates = updatedFiles.some(f => f.status === 'duplicate');
-    if (hasDuplicates) {
-      toast({
-        title: "Duplicate CVs found",
-        description: "Some CVs are duplicates and already exist in the system.",
-        variant: "destructive",
-      });
-    }
+    // const hasDuplicates = updatedFiles.some(f => f.status === 'duplicate');
+    // if (hasDuplicates) {
+    //   toast({
+    //     title: "Duplicate CVs found",
+    //     description: "Some CVs are duplicates and already exist in the system.",
+    //     variant: "destructive",
+    //   });
+    // }
 
   } catch (error: any) {
     console.error("Upload Error:", error);
@@ -249,7 +265,7 @@ const CandidateUpload = () => {
         return <FileText className="w-4 h-4 text-muted-foreground" />;
       case 'processing':
         return <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />;
-      case 'completed':
+      case 'Ready':
         return <CheckCircle className="w-4 h-4 text-success" />;
       case 'duplicate':
        // return <X className="w-4 h-4 text-warning" />;
@@ -262,12 +278,12 @@ const CandidateUpload = () => {
     }
   };
 
-  const completedFiles = files.filter(file => file.status === 'completed').length;
+  const completedFiles = files.filter(file => file.status === 'Ready').length;
   const processingProgress = files.length > 0 ? (completedFiles / files.length) * 100 : 0;
 
   return (
     <Layout currentStep={3}>
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-3">
         <div className="text-center space-y-4">
           <div className="space-y-4">
           <div className="flex items-center gap-4">
@@ -289,18 +305,19 @@ const CandidateUpload = () => {
 
         {/* Upload Area */}
         <Card className="shadow-card">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center space-x-2 text-lg">
-              <Upload className="w-4 h-4 text-primary" />
+          <CardHeader className="pb-2 pt-4">
+            <CardTitle className="flex items-center h-4 space-x-2 text-base">
+              <Upload className="w-3 h-4 text-primary" />
               <span>CV Upload</span>
             </CardTitle>
-            <CardDescription className="text-sm">
+            {/* <CardDescription className="text-sm">
               Upload PDF, DOC, DOCX files. Multiple files supported.
-            </CardDescription>
+            </CardDescription> */}
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-4">
+            {/* <div className="flex justify-center"> */}
             <div
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition-all ${
                 dragActive 
                   ? 'border-primary bg-primary/5' 
                   : 'border-border hover:border-primary hover:bg-muted/50'
@@ -319,69 +336,70 @@ const CandidateUpload = () => {
                 onChange={(e) => handleFileUpload(e.target.files)}
               />
               <label htmlFor="cv-upload" className="cursor-pointer">
-                <div className="flex flex-col items-center space-y-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                    <Upload className="w-6 h-6 text-primary" />
+                <div className="flex flex-col items-center space-y-2">
+                  <div className="w-10 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-primary" />
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="text-base font-medium text-foreground">
-                      Drop files here or click to upload
+                  <div className="space-y-0.5">
+                    <h3 className="text-sm font-medium text-foreground">
+                       click to upload
                     </h3>
-                    <p className="text-xs text-muted-foreground">
-                      Supports PDF, DOC, DOCX files up to 10MB each
+                    <p className="text-[10px] text-muted-foreground">
+                      Supports PDF, DOC, DOCX up to 10MB
                     </p>
                   </div>
                 </div>
               </label>
-            </div>
+              </div>
+            
           </CardContent>
         </Card>
 
         {/* File List */}
         {files.length > 0 && (
+          
           <Card className="shadow-card">
-            <CardHeader>
+            <CardHeader className="pb-2 pt-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="w-5 h-5 text-primary" />
+                <CardTitle className="flex items-center space-x-2 text-base">
+                  <Users className="w-4 h-4 text-primary" />
                   <span>Uploaded CVs ({files.length})</span>
                 </CardTitle>
                 {isProcessing && (
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">Processing...</span>
-                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <span className="text-xs text-muted-foreground">Processing...</span>
+                    <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                   </div>
                 )}
               </div>
               {isProcessing && (
-                <div className="space-y-2">
-                  <Progress value={processingProgress} className="h-2" />
+                <div className="space-y-1 mt-2">
+                  <Progress value={processingProgress} className="h-1.5" />
                   <p className="text-xs text-muted-foreground">
                     {completedFiles} of {files.length} files processed
                   </p>
                 </div>
               )}
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
+            <CardContent className="pb-4">
+              <div className="space-y-1 max-h-[240px] overflow-y-auto">
                 {files.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div className="flex items-center space-x-3">
+                  <div key={file.id} className="flex items-center justify-between p-2 bg-muted rounded hover:bg-muted/80 transition-colors">
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
                       {getStatusIcon(file.status)}
-                      <div>
-                        <p className="font-medium text-foreground">{file.name}</p>
-                        <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <p className="font-medium text-sm text-foreground truncate">{file.name}</p>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">({formatFileSize(file.size)})</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          file.status === 'completed'
+                     <div className="flex items-center space-x-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full whitespace-nowrap ${
+                          file.status === 'Ready'
                             ? 'bg-success/20 text-success'
                             : file.status === 'processing'
                             ? 'bg-primary/20 text-primary'
-                            : file.status === 'duplicate'
-                            ? 'bg-yellow-200 text-yellow-800'  // 🟡 duplicate style
+                            // : file.status === 'duplicate'
+                            // ? 'bg-yellow-200 text-yellow-800'  // 🟡 duplicate style
                             : file.status === 'error'
                             ? 'bg-danger/20 text-danger'
                             : 'bg-muted-foreground/20 text-muted-foreground'
@@ -391,10 +409,10 @@ const CandidateUpload = () => {
                           ? 'Ready'
                           : file.status === 'processing'
                           ? 'Processing'
-                          : file.status === 'completed'
-                          ? 'Completed'
-                          : file.status === 'duplicate'
-                          ? 'Duplicate'
+                          : file.status === 'Ready'
+                          ? 'Ready'
+                          // : file.status === 'duplicate'
+                          // ? 'Duplicate'
                           : 'Error'}
                       </span>
 
@@ -403,9 +421,9 @@ const CandidateUpload = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeFile(file.id)}
-                          className="h-8 w-8 p-0"
+                           className="h-6 w-6 p-0"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-3 h-3" />
                         </Button>
                       )}
                     </div>
@@ -415,6 +433,7 @@ const CandidateUpload = () => {
               </div>
             </CardContent>
           </Card>
+          
         )}
 
         {/* Action Buttons */}

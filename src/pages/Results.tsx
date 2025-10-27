@@ -683,14 +683,13 @@ const Results = () => {
                     <TableHead className="py-2 px-3">Candidate</TableHead>
                     <TableHead className="py-2 px-3">Overall Score</TableHead>
                     <TableHead className="py-2 px-3">Application Date</TableHead>
-                    <TableHead className="py-2 px-3">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredCandidates.map((candidate) => (
                     <TableRow key={candidate.score_id}>
                       <TableCell className="py-2 px-3">
-                        <div>
+                        <div className = "flex items-center space-x-2">
                           <button
                             className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
                             onClick={() => {
@@ -719,7 +718,7 @@ const Results = () => {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2 px-3">
+                      {/* <TableCell className="py-2 px-3">
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="outline" size="sm" onClick={() => setSelectedCandidate(candidate)}>
@@ -729,7 +728,7 @@ const Results = () => {
                           </DialogTrigger>
                           {selectedCandidate && <CandidateDetailDialog candidate={selectedCandidate} />}
                         </Dialog>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -760,11 +759,15 @@ const Results = () => {
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                       <span className="text-lg font-semibold text-muted-foreground">
-                        {sidebarCandidate.candidate_id
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
+                        {sidebarCandidate?.candidate_id
+                          ? sidebarCandidate.candidate_id
+                              .toString()
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                          : "NA"}
                       </span>
+
                     </div>
                     <div className="flex items-center gap-2 text-base">
                       <span className="font-semibold text-foreground">{sidebarCandidate.candidate_id}</span>
