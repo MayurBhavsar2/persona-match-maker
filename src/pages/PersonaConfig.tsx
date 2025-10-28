@@ -15,284 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CheckCircle2, AlertCircle, Lightbulb, Save,Loader2,Minus,Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, AlertCircle, Lightbulb, Save,Loader2,Minus,Plus, Trash2, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// ---------- TYPE DEFINITIONS ----------
-// interface Skillset {
-//   technologies?: string[];
-// }
-
-// interface Subcategory {
-//   name: string;
-//   weight_percentage: number;
-//   range_min: number;
-//   range_max: number;
-//   level_id?: string;
-//   position: number;
-//   skillset?: Skillset;
-// }
-
-// interface Category {
-//   name: string;
-//   weight_percentage: number;
-//   range_min: number;
-//   range_max: number;
-//   position: number;
-//   subcategories: Subcategory[];
-//   notes?: { custom_notes: string };
-// }
-
-// ---------- HARDCODED PAYLOAD ----------
-// const personaPayload = {
-//     "job_description_id": "jd-2025-FE-001",
-//     "name": "Senior Frontend Developer Persona",
-//     "categories": [
-//       {
-//         "name": "Technical Skills",
-//         "weight_percentage": 35,
-//         "range_min": -5,
-//         "range_max": 10,
-//         "position": 1,
-//         "subcategories": [
-//           {
-//             "name": "Frontend Frameworks",
-//             "weight_percentage": 30,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "5",
-//             "position": 1,
-//             "skillset": {
-//               "technologies": ["React", "Next.js", "Vue.js", "Angular"]
-//             }
-//           },
-//           {
-//             "name": "JavaScript & TypeScript",
-//             "weight_percentage": 25,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "5",
-//             "position": 2,
-//             "skillset": {
-//               "technologies": ["JavaScript (ES6+)", "TypeScript", "Node.js (basic)"]
-//             }
-//           },
-//           {
-//             "name": "UI Development & Styling",
-//             "weight_percentage": 25,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "4",
-//             "position": 3,
-//             "skillset": {
-//               "technologies": ["HTML5", "CSS3", "Tailwind", "Sass", "Styled Components"]
-//             }
-//           },
-//           {
-//             "name": "Performance & Optimization",
-//             "weight_percentage": 20,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "4",
-//             "position": 4,
-//             "skillset": {
-//               "technologies": ["Lighthouse", "Core Web Vitals", "Lazy Loading", "Code Splitting"]
-//             }
-//           }
-//         ],
-//         "notes": {
-//           "custom_notes": "Expertise in modern frameworks with strong TypeScript skills and focus on scalable, high-performance UI."
-//         }
-//       },
-//       {
-//         "name": "Cognitive Demands",
-//         "weight_percentage": 15,
-//         "range_min": -3,
-//         "range_max": 7,
-//         "position": 2,
-//         "subcategories": [
-//           {
-//             "name": "Problem Solving",
-//             "weight_percentage": 40,
-//             "range_min": -3,
-//             "range_max": 7,
-//             "level_id": "5",
-//             "position": 1
-//           },
-//           {
-//             "name": "Design Thinking",
-//             "weight_percentage": 35,
-//             "range_min": -3,
-//             "range_max": 7,
-//             "level_id": "4",
-//             "position": 2
-//           },
-//           {
-//             "name": "Attention to Detail",
-//             "weight_percentage": 25,
-//             "range_min": -3,
-//             "range_max": 7,
-//             "level_id": "4",
-//             "position": 3
-//           }
-//         ],
-//         "notes": {
-//           "custom_notes": "Should balance creative design interpretation with technical implementation precision."
-//         }
-//       },
-//       {
-//         "name": "Values (Schwartz)",
-//         "weight_percentage": 10,
-//         "range_min": -2,
-//         "range_max": 5,
-//         "position": 3,
-//         "subcategories": [
-//           {
-//             "name": "Creativity & Self-Direction",
-//             "weight_percentage": 35,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "4",
-//             "position": 1
-//           },
-//           {
-//             "name": "Achievement",
-//             "weight_percentage": 25,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "4",
-//             "position": 2
-//           },
-//           {
-//             "name": "Benevolence",
-//             "weight_percentage": 20,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "3",
-//             "position": 3
-//           },
-//           {
-//             "name": "Conformity",
-//             "weight_percentage": 20,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "2",
-//             "position": 4
-//           }
-//         ],
-//         "notes": {
-//           "custom_notes": "Encourages innovation while maintaining code standards and collaboration ethics."
-//         }
-//       },
-//       {
-//         "name": "Foundational Behaviors",
-//         "weight_percentage": 15,
-//         "range_min": -3,
-//         "range_max": 7,
-//         "position": 4,
-//         "subcategories": [
-//           {
-//             "name": "Collaboration",
-//             "weight_percentage": 35,
-//             "range_min": -3,
-//             "range_max": 7,
-//             "level_id": "4",
-//             "position": 1
-//           },
-//           {
-//             "name": "Adaptability",
-//             "weight_percentage": 35,
-//             "range_min": -3,
-//             "range_max": 7,
-//             "level_id": "4",
-//             "position": 2
-//           },
-//           {
-//             "name": "Ownership",
-//             "weight_percentage": 30,
-//             "range_min": -3,
-//             "range_max": 7,
-//             "level_id": "5",
-//             "position": 3
-//           }
-//         ],
-//         "notes": {
-//           "custom_notes": "Thrives in agile environments, embraces feedback loops, and owns delivery end-to-end."
-//         }
-//       },
-//       {
-//         "name": "Leadership Skills",
-//         "weight_percentage": 15,
-//         "range_min": -5,
-//         "range_max": 10,
-//         "position": 5,
-//         "subcategories": [
-//           {
-//             "name": "Mentoring & Peer Review",
-//             "weight_percentage": 40,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "4",
-//             "position": 1
-//           },
-//           {
-//             "name": "Decision Making",
-//             "weight_percentage": 30,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "4",
-//             "position": 2
-//           },
-//           {
-//             "name": "Strategic Vision",
-//             "weight_percentage": 30,
-//             "range_min": -5,
-//             "range_max": 10,
-//             "level_id": "3",
-//             "position": 3
-//           }
-//         ],
-//         "notes": {
-//           "custom_notes": "Guides UI architecture, ensures code quality through reviews, and supports cross-functional alignment."
-//         }
-//       },
-//       {
-//         "name": "Education and Experience",
-//         "weight_percentage": 10,
-//         "range_min": -2,
-//         "range_max": 5,
-//         "position": 6,
-//         "subcategories": [
-//           {
-//             "name": "Academic Qualification",
-//             "weight_percentage": 40,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "2",
-//             "position": 1
-//           },
-//           {
-//             "name": "Years of Experience",
-//             "weight_percentage": 40,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "5",
-//             "position": 2
-//           },
-//           {
-//             "name": "Certifications & Portfolio",
-//             "weight_percentage": 20,
-//             "range_min": -2,
-//             "range_max": 5,
-//             "level_id": "3",
-//             "position": 3
-//           }
-//         ],
-//         "notes": {
-//           "custom_notes": "Typically 5–8 years of frontend development with a strong portfolio of responsive, scalable web apps."
-//         }
-//       }
-//     ]
-//   };
 
 // ---------- COMPONENT ----------
 const PersonaConfig = () => {
@@ -565,15 +290,19 @@ const PersonaConfig = () => {
     <Layout currentStep={2}>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* HEADER */}
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
+       <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
+            <span className="text-muted-foreground">Role:</span>
+            <span className="text-xl font-bold text-primary">{roleName}</span>
+          </div>
           {/* <p className="text-lg text-muted-foreground">
             Define the weightage for different skills and attributes to create your ideal candidate profile
           </p> */}
-          <div className="flex items-center justify-center space-x-2 text-sm">
+          {/* <div className="flex items-center justify-center space-x-2 text-sm">
             <span className="text-muted-foreground">Role:</span>
             <span className="font-medium text-primary">{roleName}</span>
-          </div>
+          </div> */}
         </div>
 
         {/* STICKY TABS */}
@@ -609,28 +338,38 @@ const PersonaConfig = () => {
           </Card> */}
 
           {/* Categories Accordion */}
-          <Accordion type="multiple" className="space-y-2">
+          <TooltipProvider>
+          <Accordion type="multiple" className = "space-y-0">
+            
             {categories.map((cat) => {
               const skillTotal = getCategorySkillTotal(cat.position - 1);
               const isSkillTotalValid = skillTotal === 100;
               return (
                 <AccordionItem key={cat.position} value={cat.position.toString()} className="border-0">
-                  <Card className="shadow-card">
-                    <AccordionTrigger className="pl-4 pr-6 py-2 hover:no-underline">
+                  <Card className="shadow-card overflow-hidden rounded-none first:rounded-t-lg last:rounded-b-lg border-b-0 last:border-b">
+                    <AccordionTrigger className="px-3 py-2 hover:no-underline">
                       <div className="flex items-center justify-between w-full">
-                        <div className="flex items-center gap-4">
-                        <h3 className="text-lg font-semibold text-foreground w-[220px] text-left">{cat.name}</h3>
-                          <div className="flex items-center justify-end w-24">
+                       <h3 className="text-base font-medium text-foreground w-[220px] text-left">{cat.name}</h3>
+                        <div className="flex items-center justify-center flex-1 mr-32">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                            <div className="flex items-center justify-end w-24">
                             <Input
                               type="text"
                               value={cat.weight_percentage}
                               onChange={(e) => updateCategory(cat.position, { weight_percentage: parseInt(e.target.value) || 0 })}
-                              className="w-20 h-8 text-center"
+                              className="w-14 h-7 text-center font-mono text-sm border-muted font-bold"
                               min={0}
                               max={100}
                             />
-                            <span className="text-sm text-muted-foreground ml-1">%</span>
-                          </div>
+                            <span className="text-sm text-muted-foreground ml-2"> %</span>
+                            </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Category weight percentage (all categories must total 100%)</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          
                         </div>
                         <div className="flex items-center space-x-2">
                           {isSkillTotalValid ? <CheckCircle2 className="w-4 h-4 text-success" /> : <AlertCircle className="w-4 h-4 text-destructive" />}
@@ -641,73 +380,137 @@ const PersonaConfig = () => {
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
-                      <CardContent className="pt-0 space-y-4">
+                      <CardContent className="pt-0 pb-2 space-y-2">
                         {/* Table of Subcategories */}
-                        <div className="rounded-md border">
+                        <div>
                           <Table>
                             <TableHeader>
-                              <TableRow>
-                                <TableHead className="w-[25%]">Skill Name</TableHead>
-                                <TableHead className="w-[15%] text-center">Weight (%)</TableHead>
-                                <TableHead className="w-[15%] text-center">Required Level</TableHead>
-                                <TableHead className="w-[40%]">Skills & Technologies</TableHead>
-                              <TableHead className="w-[5%]"></TableHead>
+                              <TableRow className="hover:bg-transparent border-b">
+                              <TableHead className="w-[25%] py-2 text-sm font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-help">
+                                      Skill Name
+                                      <Info className="h-3.5 w-3.5" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Name of the specific skill or competency</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[1%] text-center py-2 text-sm font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center justify-center gap-1 cursor-help">
+                                      Weight
+                                      <Info className="h-3.5 w-3.5" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Percentage weight of this skill within the category</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[1%] text-center py-2 text-sm font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center justify-center gap-1 cursor-help">
+                                      Level
+                                      <Info className="h-3.5 w-3.5" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                  <div className="grid grid-cols-2 gap-x-3 text-sm text-center">
+                                    <p className="text-right font-medium">Level 1</p>
+                                    <p className="text-left">Basic</p>
+
+                                    <p className="text-right font-medium">Level 2</p>
+                                    <p className="text-left">Working</p>
+
+                                    <p className="text-right font-medium">Level 3</p>
+                                    <p className="text-left">Proficient</p>
+
+                                    <p className="text-right font-medium">Level 4</p>
+                                    <p className="text-left">Advanced</p>
+
+                                    <p className="text-right font-medium">Level 5</p>
+                                    <p className="text-left">Expert</p>
+                                  </div>
+                                </TooltipContent>
+
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[40%] py-2 text-sm font-medium">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="flex items-center gap-1 cursor-help">
+                                      Skills & Technologies
+                                      <Info className="h-3.5 w-3.5" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Specific technologies, tools, or skills required</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TableHead>
+                              <TableHead className="w-[5%] py-2"></TableHead>
                               </TableRow>
                             </TableHeader>
-                            <TableBody>
+                            <TableBody className="text-[14.9px]">
                               {cat.subcategories.map((sub) => (
-                                <TableRow key={sub.position}>
-                                  <TableCell>
+                                <TableRow key={sub.position} className="hover:bg-muted/30 border-b h-9">
+                                  <TableCell className="p-0 align-middle">
                                     <Input
                                       value={sub.name}
                                       onChange={(e) => updateSubcategory(cat.position, sub.position, { name: e.target.value })}
-                                      className="border-0 p-0 h-auto bg-transparent focus-visible:ring-0 font-medium"
+                                      className="border-0 p-1 h-8 bg-transparent focus-visible:ring-0 text-sm ml-3"
                                     />
                                   </TableCell>
-                                  <TableCell className="text-center">
+                                  <TableCell className="text-center p-0 align-middle">
                                     <Input
                                       type="text"
                                       value={sub.weight_percentage}
                                       onChange={(e) => updateSubcategory(cat.position, sub.position, { weight_percentage: parseInt(e.target.value) || 0 })}
-                                      className="w-16 h-8 text-center"
+                                      className="w-12 h-8 text-center text-[14.9px] border-muted ml-2"
                                       min={0}
                                       max={100}
                                     />
                                   </TableCell>
-                                  <TableCell className="text-center">
+                                  <TableCell className="text-center p-0 align-middle">
                                     <Select
                                       value={sub.level_id}
                                       onValueChange={(value) => updateSubcategory(cat.position, sub.position, { level_id: value })}
                                     >
-                                      <SelectTrigger className="w-32 h-8">
+                                      <SelectTrigger className="w-16 h-8 text-[14px] border-muted">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="1">1 - Basic</SelectItem>
-                                        <SelectItem value="2">2 - Working</SelectItem>
-                                        <SelectItem value="3">3 - Proficient</SelectItem>
-                                        <SelectItem value="4">4 - Advanced</SelectItem>
-                                        <SelectItem value="5">5 - Expert</SelectItem>
+                                        <SelectItem value="1">1</SelectItem>
+                                        <SelectItem value="2">2</SelectItem>
+                                        <SelectItem value="3">3</SelectItem>
+                                        <SelectItem value="4">4</SelectItem>
+                                        <SelectItem value="5">5</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </TableCell>
-                                  <TableCell>
+                                  <TableCell className = "p-0 align-middle">
                                     <Textarea
                                       value={sub.skillset?.technologies.join(", ")}
                                       onChange={(e) => updateSubcategory(cat.position, sub.position, {
                                         skillset: { technologies: e.target.value.split(",").map(t => t.trim()) }
                                       })}
-                                      className="min-h-[60px] resize-none border-0 p-0 bg-transparent focus-visible:ring-0 font-semibold"
+                                      className="min-h-[35px] h-8 resize-none border-0 p-1 bg-transparent focus-visible:ring-0 text-[14.9px] ml-3"
                                     />
                                   </TableCell>
-                                  <TableCell className="text-center">
+                                  <TableCell className="text-center p-0 align-middle">
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setDeleteConfirm({ cat: cat.id, position: sub.position })}
-                                    className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                    className="h-8 w-8 p-0 hover:text-destructive"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </TableCell>
                                 </TableRow>
@@ -715,37 +518,50 @@ const PersonaConfig = () => {
                             </TableBody>
                           </Table>
                         </div>
-                        <div className="flex justify-between items-center pt-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm text-muted-foreground">
-                            <span className="font-bold font-semibold">Skills total:</span> <span className={`font-mono  ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}>{skillTotal}%</span>
-                          </span>
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => addSkillToCategory(cat.id)}
-                            className="h-8 gap-2"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Add Skill
-                          </Button>
-                        </div>
-                        </div>
+                       <div className="flex justify-between items-center pt-2">
+  <div className="flex items-center gap-3 w-full">
+    {/* Add Skill button aligned with Skill Name column */}
+    <div className="flex-shrink-0">
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={() => addSkillToCategory(cat.id)}
+        className="h-8 gap-2"
+      >
+        <Plus className="h-4 w-4" />
+        Add Skill
+      </Button>
+    </div>
+
+    {/* Skill total stays in its original position */}
+    <div className="text-sm text-muted-foreground flex items-center">
+      <span
+        className={`font-mono font-bold text-base ml-[14.1rem] ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}
+      >
+        {skillTotal}%
+      </span>
+    </div>
+  </div>
+</div>
+
+
+
+
 
                         {/* Custom Notes */}
-                        <div className="mt-4 pt-3 border-t">
+                        {/* <div className="mt-2 pt-2 border-t">
                           <Label htmlFor={`custom-${cat.position}`} className="text-xs font-medium text-muted-foreground">
                             Custom Addition
                           </Label>
                           <Textarea
                             id={`custom-${cat.position}`}
                             placeholder="Add custom notes for this category..."
-                            className="mt-1 min-h-[60px] text-xs"
+                            className="min-h-[50px] text-xs border-muted"
                             value={cat.notes?.custom_notes || ""}
                             onChange={(e) => updateCategory(cat.position, { notes: { custom_notes: e.target.value } })}
                           />
-                        </div>
+                        </div> */}
                       </CardContent>
                     </AccordionContent>
                   </Card>
@@ -753,6 +569,7 @@ const PersonaConfig = () => {
               );
             })}
           </Accordion>
+          </TooltipProvider>
           <Card className="shadow-card border-2 border-primary/20 bg-primary/5">
             <CardContent className="py-2 px-4">
               <div className="flex items-center justify-between">
@@ -766,12 +583,12 @@ const PersonaConfig = () => {
                 </div>
                 <div className={`text-lg font-mono font-bold ${
                   validation.totalValid ? 'text-success' : 'text-destructive'
-                }`}>
-                  {getTotalWeight()}% / 100%
+                } mr-[31.1rem]`}>
+                  {getTotalWeight()}%
                 </div>
               </div>
               {!validation.totalValid && (
-                <p className="text-xs text-destructive mt-2">
+                <p className="text-xs text-destructive mt-[0.25rem]">
                   Category weights must total exactly 100%
                 </p>
               )}
@@ -844,18 +661,16 @@ const PersonaConfig = () => {
               </div>
 
               {/* Skill Total */}
-              <div className="pt-2 border-t border-border/50">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-semibold">Skills Total:</span>
-                  <span
-                    className={`font-mono font-semibold ${
-                      isSkillTotalValid ? "text-success" : "text-destructive"
-                    }`}
-                  >
-                    <span className="text-muted-foreground font-semibold text-2xl font-bold">{skillTotal}%</span> {/* increase font size*/}
-                  </span>
-                </div>
-              </div>
+               <div className="pt-2 border-t border-border/50">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Skills Total:</span>
+                        <span
+                                className={`font-mono font-bold text-lg ${isSkillTotalValid ? 'text-success' : 'text-destructive'}`}
+                              >
+                                {skillTotal}%
+                              </span>
+                      </div>
+                    </div>
             </div>
           );
         })}
@@ -946,10 +761,11 @@ const PersonaConfig = () => {
               <DialogTitle>Confirm Save Persona</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <Input placeholder="Enter persona name" value={roleName} onChange={(e) => setPersonaName(e.target.value)} />
+              <Input placeholder="persona-<position>-<username>-<date-time>" value={personaName} onChange={(e) => setPersonaName(e.target.value)} />
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setShowSaveDialog(false)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setShowSaveDialog(true)}>Cancel</Button>
                 <Button onClick={confirmSavePersona}>Confirm Save</Button>
+                
               </div>
             </div>
           </DialogContent>

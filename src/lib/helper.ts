@@ -37,53 +37,119 @@ export interface UploadedCandidate {
   const API_URL = import.meta.env.VITE_API_URL;
   
   // Upload candidates
-  export const useUploadCandidates = () => {
-    const queryClient = useQueryClient();
-    const { toast } = useToast();
+  // export const useUploadCandidates = () => {
+  //   const queryClient = useQueryClient();
+  //   const { toast } = useToast();
   
-    return useMutation({
-      mutationFn: async (files: File[]) => {
-        const formData = new FormData();
-        files.forEach(file => formData.append("files", file));
+  //   return useMutation({
+  //     mutationFn: async (files: File[]) => {
+  //       const formData = new FormData();
+  //       files.forEach(file => formData.append("files", file));
   
-        const response = await fetch(`${API_URL}/api/v1/candidate/upload`, {
-          method: "POST",
-          body: formData,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+  //       const response = await fetch(`${API_URL}/api/v1/candidate/upload`, {
+  //         method: "POST",
+  //         body: formData,
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       });
   
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Upload failed");
-        }
+  //       if (!response.ok) {
+  //         const error = await response.json();
+  //         throw new Error(error.message || "Upload failed");
+  //       }
   
-        const data: UploadedCandidate[] = await response.json();
-        return data;
-      },
-      onSuccess: (data) => {
-        // Store in React Query cache
-        queryClient.setQueryData(['uploadedCandidates'], data);
+  //       const data: UploadedCandidate[] = await response.json();
+  //       return data;
+  //     },
+  //     onSuccess: (data) => {
+  //       // Store in React Query cache
+  //       queryClient.setQueryData(['uploadedCandidates'], data);
         
-        const hasDuplicates = data.some(c => c.status === 'duplicate');
-        if (hasDuplicates) {
-          toast({
-            title: "Duplicate CVs found",
-            description: "Some CVs are duplicates and already exist in the system.",
-            variant: "destructive",
-          });
-        }
-      },
-      onError: (error: Error) => {
+  //       const hasDuplicates = data.some(c => c.status === 'duplicate');
+  //       if (hasDuplicates) {
+  //         toast({
+  //           title: "Duplicate CVs found",
+  //           description: "Some CVs are duplicates and already exist in the system.",
+  //           variant: "destructive",
+  //         });
+  //       }
+  //     },
+  //     onError: (error: Error) => {
+  //       toast({
+  //         title: "Upload failed",
+  //         description: error.message || "Something went wrong.",
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   });
+  // };
+
+  // Upload candidates
+export const useUploadCandidates = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (files: File[]) => {
+      const formData = new FormData();
+      files.forEach(file => formData.append("files", file));
+
+      const response = await fetch(`${API_URL}/api/v1/candidate/upload`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Upload failed");
+      }
+
+      const data: UploadedCandidate[] = await response.json();
+      return data;
+    },
+    onSuccess: (data) => {
+      // Store in React Query cache
+      queryClient.setQueryData(['uploadedCandidates'], data);
+      
+      const hasDuplicates = data.some(c => c.status === 'duplicate');
+      const newCandidates = data.filter(c => c.status !== 'duplicate');
+      const duplicateCount = data.filter(c => c.status === 'duplicate').length;
+      
+      if (hasDuplicates && newCandidates.length === 0) {
+        // All files are duplicates
         toast({
-          title: "Upload failed",
-          description: error.message || "Something went wrong.",
-          variant: "destructive",
+          title: "All CVs are duplicates",
+          description: "All uploaded CVs already exist in the system. You can still proceed with evaluation.",
+          variant: "default", // Changed from "destructive"
+        });
+      } else if (hasDuplicates) {
+        // Some files are duplicates
+        toast({
+          title: "Some CVs are duplicates",
+          description: `${duplicateCount} CV(s) already exist in the system. ${newCandidates.length} new CV(s) uploaded successfully.`,
+          variant: "default", // Changed from "destructive"
+        });
+      } else {
+        // All new files
+        toast({
+          title: "Upload successful",
+          description: `${data.length} CV(s) uploaded successfully.`,
         });
       }
-    });
-  };
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Something went wrong.",
+        variant: "destructive",
+      });
+    }
+  });
+};
   
   // Score candidates
   export const useScoreCandidates = () => {
@@ -151,7 +217,7 @@ export interface UploadedCandidate {
         // Navigate after short delay
         setTimeout(() => {
           navigate("/results");
-        }, 1500);
+        }, 500);
       },
       onError: (error: Error) => {
         toast({
