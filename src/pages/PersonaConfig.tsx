@@ -307,6 +307,7 @@ const PersonaConfig = () => {
   const [activeTab, setActiveTab] = useState("distribution");
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [validationError, setValidationError] = useState(null);
+  const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(true);
   const distributionRef = useRef<HTMLDivElement>(null);
@@ -446,7 +447,13 @@ const PersonaConfig = () => {
     if (value === "insights") aiInsightsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSavePersona = () => setShowSaveDialog(true);
+  const handleSavePersona = () => {
+    // Reset persona name and error when opening dialog
+    setPersonaName("");
+    setError("");
+    setShowSaveDialog(true);
+  };
+
   const confirmSavePersona = async () => {
   
   const selectedRoleData = localStorage.getItem("jdData"); // or use your state if stored there
@@ -567,9 +574,9 @@ const PersonaConfig = () => {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* HEADER */}
        <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-baseline justify-center gap-3">
             <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
-            <span className="text-muted-foreground">Role:</span>
+            <span className="text-muted-foreground text-xl">Role:</span>
             <span className="text-xl font-bold text-primary">{roleName}</span>
           </div>
           {/* <p className="text-lg text-muted-foreground">
@@ -1039,7 +1046,7 @@ const PersonaConfig = () => {
             <div className="space-y-4">
               <Input placeholder="persona-<position>-<username>-<date-time>" value={personaName} onChange={(e) => setPersonaName(e.target.value)} />
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setShowSaveDialog(true)}>Cancel</Button>
+                <Button variant="outline" onClick={() => setShowSaveDialog(false)}>Cancel</Button>
                 <Button onClick={confirmSavePersona}>Confirm Save</Button>
                 
               </div>
