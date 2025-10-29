@@ -152,7 +152,7 @@ const JDComparison = () => {
     fetchOriginalJD();
   }, [jdId]);
 
-const USE_MOCK_API = true;
+const USE_MOCK_API = false;
 
 const generateAIEnhancedJD = async (jdData: any) => {
   try {

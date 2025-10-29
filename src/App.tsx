@@ -31,7 +31,9 @@ const Layout: React.FC = () => {
   );
 };
 
-const App = () => (
+const App = () => {
+  console.log("updated build: 29/10/2025 - contains persona input, role+persona value in results")
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -66,6 +68,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  )
+}
 
 export default App;

@@ -35,6 +35,7 @@ const CandidateUpload = () => {
   const persona_id = personaData ? JSON.parse(personaData).id : null;
 
   const isProcessing = uploadMutation.isPending || scoreMutation.isPending;
+  const useMockData = false
 
   // const handleFileUpload = async (uploadedFiles: FileList | null) => {
   //   if (!uploadedFiles) return;
@@ -218,7 +219,7 @@ const CandidateUpload = () => {
     }
 
     // Score all candidates - the hook handles navigation
-    await scoreMutation.mutateAsync({ candidates, persona_id });
+    await scoreMutation.mutateAsync({ candidates, persona_id, useMockData });
   };
 
   const getStatusIcon = (status: UploadedFile['status']) => {

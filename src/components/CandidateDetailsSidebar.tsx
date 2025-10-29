@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
+import { evaluationData } from "@/SampleResultEvaluationResponse";
+
+
 import {
   Table,
   TableBody,
@@ -83,16 +88,7 @@ const CandidateDetailsSidebar = ({
 
   // Use mock data or API data
   const scores = useMockData
-    ? [
-        {
-          id: "mock-1",
-          role_name: candidate?.selectedRole || "Senior QA Engineer",
-          persona_name: candidate?.selectedPersona || "Default Persona",
-          final_score: candidate?.overallScore || 0,
-          scored_at: candidate?.applicationDate || new Date().toISOString(),
-          categories: candidate?.detailedEvaluation?.categories || [],
-        },
-      ]
+    ? evaluationData?.scores
     : scoresData?.scores || [];
 
   return (
@@ -213,9 +209,12 @@ const CandidateDetailsSidebar = ({
                               Overall Score
                             </TableHead>
                             <TableHead className="text-center py-2 px-3">
+                              Status
+                            </TableHead>
+                            <TableHead className="text-center py-2 px-3">
                               Date
                             </TableHead>
-                            <TableHead className="w-12 py-2 px-3"></TableHead>
+                            {/* <TableHead className="w-12 py-2 px-3"></TableHead> */}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -223,11 +222,7 @@ const CandidateDetailsSidebar = ({
                             <>
                               <TableRow
                                 key={score.id}
-                                className={`cursor-pointer hover:bg-muted/50 transition-all ${
-                                  expandedScoreIndex === index 
-                                    ? ' bg-background shadow-md' 
-                                    : ''
-                                }`}
+                                className={`cursor-pointer transition-all ${index % 2 !== 0 ? 'bg-gray-300 hover:!bg-gray-300' : 'bg-white '}`}
                               >
                                 {/* h-auto sticky top-[76px] z-20 */}
       <TableCell className="font-medium py-2 px-3">
@@ -250,9 +245,19 @@ const CandidateDetailsSidebar = ({
         </Button>
       </TableCell>
       <TableCell className="text-center py-2 px-3">
-        {new Date(score.scored_at).toLocaleDateString()}
+        {score.final_decision?.replace("_", " ")}
       </TableCell>
-      <TableCell className="py-2 px-3 text-right">
+      <TableCell className="text-center py-2 px-3">
+        {new Date(score.scored_at).toLocaleString('en-US', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false
+}).replace(',', ' -')}
+      </TableCell>
+      {/* <TableCell className="py-2 px-3 text-right">
         <Button
           variant="ghost"
           size="sm"
@@ -267,18 +272,18 @@ const CandidateDetailsSidebar = ({
             <ChevronDown className="h-4 w-4" />
           )}
         </Button>
-      </TableCell>
+      </TableCell> */}
     </TableRow>
 
     {/* Expanded Attribution Evaluation */}
     {expandedScoreIndex === index && score.categories?.length > 0 && (
-      <TableRow>
-        <TableCell colSpan={5} className="p-0">
-          <div className="bg-muted/30 p-6 space-y-4">
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
+      <TableRow className={`${index % 2 !== 0 ? 'bg-gray-300 hover:!bg-gray-300' : 'bg-white '}`}>
+        <TableCell colSpan={5} className="p-0 w-full hover:bg-transparent">
+          <div className="p-6 space-y-4 flex min-w-full justify-center items-center hover:bg-transparent">
+            <div className="rounded-md border w-full hover:bg-transparent">
+              <Table className="w-full hover:bg-transparent">
+                <TableHeader >
+                  <TableRow className={`${index % 2 !== 0 ? 'bg-gray-300 hover:!bg-gray-300' : 'bg-white '}`}>
                     <TableHead className="py-2 px-3 w-[45%]">
                       Skills
                     </TableHead>
@@ -302,11 +307,13 @@ const CandidateDetailsSidebar = ({
                         <AccordionItem
                           key={catIndex}
                           value={`category-${catIndex}`}
-                          className="border-0"
+                          className={`border-0 transition-all hover:bg-transparent ${
+                              catIndex % 2 !== 0 ? 'bg-gray-300' : 'bg-white'
+                            }`}
                           asChild
                         >
                           <>
-                            <TableRow className="cursor-pointer hover:bg-muted/50 [&[data-state=open]]:bg-muted/50">
+                            <TableRow className="cursor-pointer hover:bg-transparent">
                               <TableCell className="font-medium py-2 px-3 border-0 w-[45%]">
                                 {category.category_name}
                               </TableCell>
@@ -351,10 +358,32 @@ const CandidateDetailsSidebar = ({
                                             Actual
                                           </TableHead>
                                           <TableHead className="py-1 px-2">
-                                            Scored
+                                            <Tooltip>
+                                                                              <TooltipTrigger asChild>
+                                                                                <div className="flex items-center gap-1 cursor-help">
+                                                                                  Scored
+                                                                                  <Info className="h-3.5 w-3.5" />
+                                                                                </div>
+                                                                              </TooltipTrigger>
+                                                                              <TooltipContent>
+                                                                                <p>Calculation made against weightage</p>
+                                                                              </TooltipContent>
+                                                                            </Tooltip>
+                                          
                                           </TableHead>
                                           <TableHead className="py-1 px-2">
-                                            Score
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <div className="flex items-center gap-1 cursor-help">
+                                                  Score
+                                                  <Info className="h-3.5 w-3.5" />
+                                                </div>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                <p>Placeholder text</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                            
                                           </TableHead>
                                           <TableHead className="py-1 px-2">
                                             Notes

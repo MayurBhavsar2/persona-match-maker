@@ -160,11 +160,18 @@ export const useUploadCandidates = () => {
     return useMutation({
       mutationFn: async ({ 
         candidates, 
-        persona_id 
+        persona_id,
+        useMockData = false
       }: { 
         candidates: UploadedCandidate[], 
         persona_id: string 
       }) => {
+
+        if (useMockData) {
+        const { scoreWithAi } = await import('@/SampleResultEvaluationResponse');
+        return [scoreWithAi];
+      }
+
         const results: ScoreResponse[] = [];
   
         for (const candidate of candidates) {

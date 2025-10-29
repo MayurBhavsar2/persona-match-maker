@@ -47,104 +47,104 @@ export interface ScoreResponse {
 // hooks/useCandidateScoring.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEvaluatedCandidates } from "@/lib/helper";
+import { useEvaluatedCandidates, useScoreCandidates } from "@/lib/helper";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 // Single candidate scoring
-const scoreCandidate = async (data: ScoreRequest): Promise<ScoreResponse> => {
-  const response = await axios.post(
-    `${API_URL}/api/v1/candidate/score-with-ai`,
-    null,
-    {
-      params: {
-        candidate_id: data.candidate_id,
-        persona_id: data.persona_id,
-        cv_id: data.cv_id,
-        force_rescore: data.force_rescore || false,
-      },
-    }
-  );
-  return response.data;
-};
+// const scoreCandidate = async (data: ScoreRequest): Promise<ScoreResponse> => {
+//   const response = await axios.post(
+//     `${API_URL}/api/v1/candidate/score-with-ai`,
+//     null,
+//     {
+//       params: {
+//         candidate_id: data.candidate_id,
+//         persona_id: data.persona_id,
+//         cv_id: data.cv_id,
+//         force_rescore: data.force_rescore || false,
+//       },
+//     }
+//   );
+//   return response.data;
+// };
 
-// Multiple candidates scoring
-const scoreCandidates = async (
-  candidates: ScoreRequest[]
-): Promise<ScoreResponse[]> => {
-  const promises = candidates.map((candidate) => scoreCandidate(candidate));
-  return Promise.all(promises);
-};
+// // Multiple candidates scoring
+// const scoreCandidates = async (
+//   candidates: ScoreRequest[]
+// ): Promise<ScoreResponse[]> => {
+//   const promises = candidates.map((candidate) => scoreCandidate(candidate));
+//   return Promise.all(promises);
+// };
 
-// Hook for scoring a single candidate
-export const useScoreCandidate = () => {
-  const queryClient = useQueryClient();
+// // Hook for scoring a single candidate
+// export const useScoreCandidate = () => {
+//   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: scoreCandidate,
-    onSuccess: () => {
-      // Invalidate relevant queries after successful scoring
-      queryClient.invalidateQueries({ queryKey: ['candidate-scores'] });
-    },
-    onError: (error) => {
-      console.error('Error scoring candidate:', error);
-    },
-  });
-};
+//   return useMutation({
+//     mutationFn: scoreCandidate,
+//     onSuccess: () => {
+//       // Invalidate relevant queries after successful scoring
+//       queryClient.invalidateQueries({ queryKey: ['candidate-scores'] });
+//     },
+//     onError: (error) => {
+//       console.error('Error scoring candidate:', error);
+//     },
+//   });
+// };
 
-// Hook for scoring multiple candidates
-export const useScoreCandidates = () => {
-  const queryClient = useQueryClient();
+// // Hook for scoring multiple candidates
+// export const useScoreCandidates = () => {
+//   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: scoreCandidates,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['candidate-scores'] });
-    },
-    onError: (error) => {
-      console.error('Error scoring candidates:', error);
-    },
-  });
-};
+//   return useMutation({
+//     mutationFn: scoreCandidates,
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: ['candidate-scores'] });
+//     },
+//     onError: (error) => {
+//       console.error('Error scoring candidates:', error);
+//     },
+//   });
+// };
 
-// Hook for scoring candidates from your data structure
-export const useScoreCandidatesFromData = (personaId: string) => {
-  const queryClient = useQueryClient();
+// // Hook for scoring candidates from your data structure
+// export const useScoreCandidatesFromData = (personaId: string) => {
+//   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (candidatesData: CandidateData[]) => {
-      const scoreRequests: ScoreRequest[] = candidatesData.map((candidate) => ({
-        candidate_id: candidate.candidate_id,
-        persona_id: personaId,
-        cv_id: candidate.cv_id,
-        force_rescore: false,
-      }));
+//   return useMutation({
+//     mutationFn: async (candidatesData: CandidateData[]) => {
+//       const scoreRequests: ScoreRequest[] = candidatesData.map((candidate) => ({
+//         candidate_id: candidate.candidate_id,
+//         persona_id: personaId,
+//         cv_id: candidate.cv_id,
+//         force_rescore: false,
+//       }));
 
-      return scoreCandidates(scoreRequests);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['candidate-scores'] });
-    },
-    onError: (error) => {
-      console.error('Error scoring candidates:', error);
-    },
-  });
-};
+//       return scoreCandidates(scoreRequests);
+//     },
+//     onSuccess: () => {
+//       queryClient.invalidateQueries({ queryKey: ['candidate-scores'] });
+//     },
+//     onError: (error) => {
+//       console.error('Error scoring candidates:', error);
+//     },
+//   });
+// };
 
-// Hook to fetch existing scores (if you have a GET endpoint)
-export const useCandidateScores = (candidateIds?: string[]) => {
-  return useQuery({
-    queryKey: ['candidate-scores', candidateIds],
-    queryFn: async () => {
-      // Adjust this endpoint based on your actual API
-      const response = await axios.get(`${API_URL}/api/v1/candidate/scores`, {
-        params: { candidate_ids: candidateIds?.join(',') },
-      });
-      return response.data;
-    },
-    enabled: !!candidateIds && candidateIds.length > 0,
-  });
-};
+// // Hook to fetch existing scores (if you have a GET endpoint)
+// export const useCandidateScores = (candidateIds?: string[]) => {
+//   return useQuery({
+//     queryKey: ['candidate-scores', candidateIds],
+//     queryFn: async () => {
+//       // Adjust this endpoint based on your actual API
+//       const response = await axios.get(`${API_URL}/api/v1/candidate/scores`, {
+//         params: { candidate_ids: candidateIds?.join(',') },
+//       });
+//       return response.data;
+//     },
+//     enabled: !!candidateIds && candidateIds.length > 0,
+//   });
+// };
 
 
 const Results = () => {
@@ -160,39 +160,77 @@ const Results = () => {
   const [selectedPersona, setSelectedPersona] = useState<string>(personaData?.id ?? "");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<any | null>(null);
-  const [showAllCandidates, setShowAllCandidates] = useState(false);
+  const [showAllCandidates, setShowAllCandidates] = useState(true);
   const [useMockData, setUseMockData] = useState(false); 
 
-  const fetchPersonas = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/`, {
-        method: "GET",
-        headers: {
+const fetchPersonas = async () => {
+
+    const headers = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+        }
 
-      if (!response.ok) throw new Error("Failed to fetch personas");
-      const data = await response.json();
+    try {
+      axios.get(`${import.meta.env.VITE_API_URL}/api/v1/persona/`, {headers:headers})
+      .then(response => {
+        if(response?.status !== 200) throw new Error("Failed to fetch personas");
+        const personaList = response?.data
+        console.log("personas list from axios: ", personaList)
+        setPersonas(personaList);
 
-      const personaList = data;
-      setPersonas(personaList);
-
-      // Extract unique roles
-      const uniqueRoles = Array.from(new Set(personaList.map((p: any) => p.role_name)))
-        .map((roleName) => {
-          return { name: roleName, id: roleName };
+        const rolesMap = new Map();
+        personaList.forEach((persona: any) => {
+          if (!rolesMap.has(persona.role_id)) {
+            rolesMap.set(persona.role_id, {
+              id: persona.role_id,
+              name: persona.role_name
+            });
+          }
         });
+        
+        const uniqueRoles = Array.from(rolesMap.values());
+        console.log("unique roles: ", uniqueRoles)
+        setRoles(uniqueRoles);
+        
+        // Auto-select from localStorage AFTER data is loaded
+        const savedJdData = localStorage.getItem('jdData');
+        const savedPersonaData = localStorage.getItem('savedPersona');
+        console.log(`role id & jd derived from local: `)
 
-      setRoles(uniqueRoles);
-    } catch (error) {
+        
+        
+        if (savedJdData) {
+          const jdData = JSON.parse(savedJdData);
+          console.log("role id derived from local: ", jdData?.roleId)
+          setSelectedRole(jdData.roleId || "");
+        }
+        
+        if (savedPersonaData) {
+          const personaData = JSON.parse(savedPersonaData);
+          console.log("persona id derived from local: ", personaData?.id)
+          setSelectedPersona(personaData.id || "");
+        }
+      })
+       .catch (error =>{
       console.error("Error fetching personas:", error);
-    }
+    })
+  }
+  finally {
+    console.log("fetch call ran")
+  }
+}
+
+// Filter personas when role changes
+  const getPersonasForRole = (roleId: string) => {
+    if (!roleId) return [];
+    return personas.filter(p => p.role_id === roleId);
   };
 
-  const handleScoreCandidates = () => {    
-    scoreCandidates(
+  const handleScoreCandidates = () => {   
+    if (useMockData) {
+      console.log("Mockdata being used")
+    } else {
+      scoreCandidates(
       { candidates: candidates, persona_id: selectedPersona },
       {
         onSuccess: (results) => {
@@ -200,70 +238,29 @@ const Results = () => {
         }
       }
     );
+    }
+    
   };
 
-  // const fetchCandidatesFromLocalStorage = () => {
-  //   const storedData = localStorage.getItem("evaluatedCandidates");
-  //   if (storedData) {
-  //     try {
-  //       const parsedData = JSON.parse(storedData);
-  //       const candidateNames = [
-  //         "Mayur Bhavsar",
-  //         "Priya Sharma",
-  //         "Rajesh Kumar",
-  //         "Anita Patel",
-  //         "Vikram Singh",
-  //         "Sneha Gupta",
-  //         "Arjun Mehta",
-  //         "Kavya Iyer",
-  //         "Rohit Joshi",
-  //         "Deepika Rao",
-  //       ];
+  const handleRoleChange = (roleId: string) => {
+  setSelectedRole(roleId);
+  setSelectedPersona(""); // Clear persona selection when role changes
+  
+  // Update localStorage
+  // const jdData = { roleId };
+  // localStorage.setItem('jdData', JSON.stringify(jdData));
+};
 
-  //       const candidatesWithDetailedData = parsedData?.candidates?.map((candidate: any, index: number) => {
-  //         if (candidate?.name?.startsWith("Candidate ")) {
-  //           candidate.name = candidateNames[index % candidateNames.length];
-  //         }
-
-  //         if (!candidate.detailedEvaluation) {
-  //           const categories = generateDetailedEvaluation(candidate);
-  //           candidate.detailedEvaluation = {
-  //             categories: categories,
-  //             summary: [
-  //               {
-  //                 attribute: "Technical Skills",
-  //                 weight: "54%",
-  //                 percentScored: `${candidate.technicalSkills}%`,
-  //                 attributeScore: `${(candidate.technicalSkills * 0.54).toFixed(2)}%`,
-  //               },
-  //               { attribute: "Cognitive Demands", weight: "24%", percentScored: "93.8%", attributeScore: "22.50%" },
-  //               { attribute: "Values", weight: "6%", percentScored: "92.5%", attributeScore: "5.55%" },
-  //               {
-  //                 attribute: "Foundational Behaviors",
-  //                 weight: "10%",
-  //                 percentScored: `${candidate.communication}%`,
-  //                 attributeScore: `${(candidate.communication * 0.1).toFixed(2)}%`,
-  //               },
-  //               { attribute: "Leadership Skills", weight: "4%", percentScored: "100.0%", attributeScore: "4.00%" },
-  //               {
-  //                 attribute: "Education & Experience",
-  //                 weight: "2%",
-  //                 percentScored: `${candidate.experience}%`,
-  //                 attributeScore: `${(candidate.experience * 0.02).toFixed(2)}%`,
-  //               },
-  //             ],
-  //           };
-  //           candidate.categories = categories;
-  //         }
-  //         return candidate;
-  //       });
-
-  //       setCandidates(candidatesWithDetailedData);
-  //     } catch (error) {
-  //       console.error("Error parsing candidate data from localStorage:", error);
-  //     }
-  //   }
-  // };
+// Handle persona change
+const handlePersonaChange = (personaId: string) => {
+  setSelectedPersona(personaId);
+  
+  // Find the persona object to save complete data
+  const persona = personas.find(p => p.id === personaId);
+  if (persona) {
+    localStorage.setItem('savedPersona', JSON.stringify(persona));
+  }
+};
 
   useEffect(() => {
     console.log("data from evaluated data: ", evaluatedData)
@@ -281,12 +278,6 @@ const Results = () => {
     fetchPersonas();
   }, []);
 
-  const getPersonasForRole = (roleName: string) => {
-    if (!roleName) return [];
-    return personas
-      .filter((p) => p.role_name === roleName)
-      .map((p) => p.name);
-  };
 
   const generateDetailedEvaluation = (candidate: any): any[] => {
     return [
@@ -545,7 +536,44 @@ const Results = () => {
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-bold text-foreground">Candidate Results</h1>
 
-          <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6">
+  <div className="flex items-center gap-3">
+    <label className="text-sm font-medium text-foreground">Role:</label>
+    <Select value={selectedRole} onValueChange={handleRoleChange}>
+      <SelectTrigger className="w-[250px] bg-background border-border">
+        <SelectValue placeholder="Select a role" />
+      </SelectTrigger>
+      <SelectContent className="bg-background border-border z-50">
+        {roles.map((role) => (
+          <SelectItem key={role.id} value={role.id}>
+            {role.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+
+  <div className="flex items-center gap-3">
+    <label className="text-sm font-medium text-foreground">Persona:</label>
+    <Select 
+      value={selectedPersona} 
+      onValueChange={handlePersonaChange}
+      disabled={!selectedRole} // Disable until role is selected
+    >
+      <SelectTrigger className="w-[350px] bg-background border-border">
+        <SelectValue placeholder="Select a persona" />
+      </SelectTrigger>
+      <SelectContent className="bg-background border-border z-50">
+        {getPersonasForRole(selectedRole).map((persona) => (
+          <SelectItem key={persona.id} value={persona.id}>
+            {persona.name || persona.persona_name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  </div>
+</div>
+          {/* <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-foreground">Role:</label>
               <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -577,26 +605,30 @@ const Results = () => {
                 </SelectContent>
               </Select>
             </div>
-          </div>
+          </div> */}
 
-          <div className="flex items-center gap-2">
-            <Button
-              variant={showAllCandidates ? "outline" : "default"}
-              size="sm"
-              onClick={() => setShowAllCandidates(false)}
-              className={!showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
-            >
-              Perfect Fit
-            </Button>
-            <Button
-              variant={!showAllCandidates ? "outline" : "default"}
-              size="sm"
-              onClick={() => setShowAllCandidates(true)}
-              className={showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""}
-            >
-              All
-            </Button>
-          </div>
+          <div className="inline-flex rounded-md shadow-sm" role="group">
+  <Button
+    variant={showAllCandidates ? "outline" : "default"}
+    size="sm"
+    onClick={() => setShowAllCandidates(false)}
+    className={`rounded-r-none border-r-0 ${
+      !showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""
+    }`}
+  >
+    Perfect Fit
+  </Button>
+  <Button
+    variant={!showAllCandidates ? "outline" : "default"}
+    size="sm"
+    onClick={() => setShowAllCandidates(true)}
+    className={`rounded-l-none ${
+      showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""
+    }`}
+  >
+    All
+  </Button>
+</div>
         </div>
 
         {/* Mock Data Toggle (For Development) */}
@@ -631,7 +663,7 @@ const Results = () => {
                       <TableCell className="py-2 px-3">
                         <div>
                           <button
-                            className="font-medium text-foreground hover:text-primary underline-offset-4 hover:underline cursor-pointer text-left"
+                            className="font-medium text-primary underline-offset-4 underline cursor-pointer text-left"
                             onClick={() => {
                               setSidebarCandidate(candidate);
                               setSidebarOpen(true);
