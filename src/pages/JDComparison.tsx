@@ -13,6 +13,17 @@ const JDComparison = () => {
   const { toast } = useToast();
   const [selectedVersion, setSelectedVersion] = useState<"original" | "ai" | null>(null);
   const [isEditing, setIsEditing] = useState({ original: false, ai: false });
+  
+  // Get role name from JD data
+  const getSelectedRole = () => {
+    const jdData = localStorage.getItem('jdData');
+    if (jdData) {
+      const parsedJD = JSON.parse(jdData);
+      return parsedJD.role || 'Not specified';
+    }
+    return localStorage.getItem('selectedRole') || 'Not specified';
+  };
+  const selectedRole = getSelectedRole();
   const [originalJD, setOriginalJD] = useState(`Position: RPA Developer
 
 Job Summary:
@@ -153,7 +164,11 @@ Preferred Qualifications:
     <Layout currentStep={1}>
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Job Description Comparison</h1>
+          <div className="flex items-center justify-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">Job Description Comparison</h1>
+            <span className="text-muted-foreground">|</span>
+            <span className="text-xl font-bold text-primary">{selectedRole}</span>
+          </div>
           <p className="text-lg text-muted-foreground">
             Compare your original JD with our AI-enhanced version and select the one that best fits your needs
           </p>
