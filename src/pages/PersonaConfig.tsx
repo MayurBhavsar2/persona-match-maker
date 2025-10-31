@@ -31,6 +31,7 @@ const PersonaConfig = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const distributionRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -57,7 +58,7 @@ const PersonaConfig = () => {
     }
 
     const { jdId } = JSON.parse(selectedJD);
-    const USE_MOCK_API = false;
+    const USE_MOCK_API = true;
 
     const fetchPersona = async () => {
       try {
@@ -67,6 +68,10 @@ const PersonaConfig = () => {
         if (USE_MOCK_API) {
           data = await mockFetchPersona(jdId);
         } else {
+          // console.log("JD ID:", jdId);
+          // console.log("Token:", localStorage.getItem("token"));
+          // console.log("API URL:", import.meta.env.VITE_API_URL);
+
           const response = await fetch(
             `${import.meta.env.VITE_API_URL}/api/v1/persona/generate-from-jd/${jdId}`,
             {
@@ -81,6 +86,7 @@ const PersonaConfig = () => {
 
           if (!response.ok) throw new Error("Failed to fetch persona");
           data = await response.json();
+          console.log(data)
         }
 
         // Normalize data to ensure consistent types
@@ -164,29 +170,88 @@ const PersonaConfig = () => {
     if (value === "summary") summaryRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const addSkillToCategory = (categoryId: string) => {
-    setCategories(prev =>
-      prev.map(cat => {
-        if (cat.id === categoryId) {
-          const maxPosition = cat.subcategories.reduce(
-            (max: number, sub: any) => Math.max(max, sub.position || 0), 
-            0
-          );
-          const newSubcategory = {
-            id: `new-skill-${Date.now()}`,
+const addSkillToCategory = (categoryIndex: number) => {
+  setCategories(prev =>
+    prev.map((cat, idx) => {
+      if (idx !== categoryIndex) return cat; // match by index
+
+      const maxPosition = cat.subcategories.reduce(
+        (max: number, sub: any) => Math.max(max, sub.position || 0),
+        0
+      );
+
+      const newSubcategory = {
+        id: `new-skill-${Date.now()}`,
             name: "New Skill",
             weight_percentage: 0,
             level_id: "3",
             notes: "",
             position: maxPosition + 1,
             skillset: { technologies: [] },
-          };
-          return { ...cat, subcategories: [...cat.subcategories, newSubcategory] };
-        }
-        return cat;
-      })
-    );
-  };
+      };
+
+      return { ...cat, subcategories: [...cat.subcategories, newSubcategory] };
+    })
+  );
+};
+
+
+
+
+
+
+
+  // const addSkillToCategory = (categoryId: string,subcategoryId: string) => {
+  //   setCategories(prev =>
+  //     prev.map(cat => {
+  //       if (cat.id === categoryId) {
+  //         const maxPosition = cat.subcategories.reduce(
+  //           (max: number, sub: any) => Math.max(max, sub.position || 0), 
+  //           0
+  //         );
+  //         const newSubcategory = {
+  //           id: `new-skill-${Date.now()}`,
+  //           name: "New Skill",
+  //           weight_percentage: 0,
+  //           level_id: "3",
+  //           notes: "",
+  //           position: maxPosition + 1,
+  //           skillset: { technologies: [] },
+  //         };
+  //         return { ...cat, subcategories: [...cat.subcategories, newSubcategory] };
+  //       }
+  //       return cat;
+  //     })
+  //   );
+  // };
+ 
+//   const addSkillToCategory = (categoryId: string, subcategoryId: string) => {
+//   setCategories(prev =>
+//     prev.map(cat => {
+//       if (cat.id === categoryId) {
+//         const updatedSubcategories = cat.subcategories.map(sub => {
+//           if (sub.id === subcategoryId) {
+//             const updatedTechnologies = [
+//               ...(sub.skillset?.technologies || []),
+//               "New Skill"
+//             ];
+//             return {
+//               ...sub,
+//               skillset: {
+//                 ...sub.skillset,
+//                 technologies: updatedTechnologies
+//               }
+//             };
+//           }
+//           return sub;
+//         });
+//         return { ...cat, subcategories: updatedSubcategories };
+//       }
+//       return cat;
+//     })
+//   );
+// };
+
 
   const removeSkillFromCategory = (categoryId: string, subPosition: number) => {
     setCategories(prev =>
@@ -218,6 +283,10 @@ const PersonaConfig = () => {
         variant: "destructive",
       });
       return;
+    }else{
+    setPersonaName("");
+    setError("");
+    setShowSaveDialog(true);
     }
     setShowSaveDialog(true);
   };
@@ -415,7 +484,7 @@ const PersonaConfig = () => {
                               <TooltipTrigger asChild>
                                 <div className="flex items-center justify-end w-24">
                                   <Input
-                                    type="number"
+                                    type="text"
                                     value={cat.weight_percentage}
                                     onChange={(e) => updateCategory(cat.position, { 
                                       weight_percentage: parseFloat(e.target.value) || 0 
@@ -514,6 +583,7 @@ const PersonaConfig = () => {
                                   <TableHead className="w-[5%] py-2"></TableHead>
                                 </TableRow>
                               </TableHeader>
+                              <div></div>
                               <TableBody className="text-[14.9px]">
                                 {cat.subcategories.map((sub: any) => (
                                   <TableRow key={sub.position} className="hover:bg-muted/30 border-b h-9">
@@ -528,7 +598,7 @@ const PersonaConfig = () => {
                                     </TableCell>
                                     <TableCell className="text-center p-0 align-middle">
                                       <Input
-                                        type="number"
+                                        type="text"
                                         value={sub.weight_percentage}
                                         onChange={(e) => updateSubcategory(cat.position, sub.position, { 
                                           weight_percentage: parseFloat(e.target.value) || 0 

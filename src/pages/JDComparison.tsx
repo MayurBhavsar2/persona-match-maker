@@ -7,13 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles,Undo2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { stringify } from "querystring";
 
-const JDComparison = () => {
+const JDComparison: React.FC = () => {
   const { jdId } = useParams<{ jdId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [roleId, setRoleId] = useState("");
+  const [roleName, setRoleName] = useState("");
+  const [previousOriginalJD, setPreviousOriginalJD] = useState<string>("");
+  const [previousAIJD, setPreviousAIJD] = useState<string>("");
+
   const [selectedVersion, setSelectedVersion] = useState<"original" | "ai" | null>(null);
   const [isEditing, setIsEditing] = useState({ original: false, ai: false });
   
@@ -113,6 +119,7 @@ const JDComparison = () => {
   //     timestamp: Date.now()
   //   }));
   const [loading, setLoading] = useState<boolean>(true);
+  
 
   useEffect(() => {
     if (!jdId) return;
@@ -152,17 +159,23 @@ const JDComparison = () => {
     fetchOriginalJD();
   }, [jdId]);
 
-const USE_MOCK_API = false;
+const USE_MOCK_API = true;
 
 const generateAIEnhancedJD = async (jdData: any) => {
   try {
-    let data;
+    let data : string;
+    const jdDataString = localStorage.getItem("jdData");
+    const jdData = JSON.parse(jdDataString);
+    const roleName = jdData.role; // Access the role name
 
     if (USE_MOCK_API) {
-      data = await mockGenerateAIEnhancedJD(jdData);
+      let mockData : Object = await mockGenerateAIEnhancedJD(jdData);;
+
+      data = JSON.stringify(mockData).replace(/\*/g, "").replace(/\\n/g, "\n");
+
     } else {
       const payload = {
-        role: jdData.role || "",
+        role: roleName || "",
         company_id: "",
         methodology: "direct",
         min_similarity: 0.5,
@@ -176,15 +189,25 @@ const generateAIEnhancedJD = async (jdData: any) => {
         },
         body: JSON.stringify(payload),
       });
+      console.log("waiting for response");
 
       if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
 
-      data = await response.json();
+      console.log("getting proper response from api ")
+
+      data = await response.json() ;
+      // console.log(data['refined_text']);
+      // console.log("type of data now ", typeof data)
+      // console.log("filling data after ai generated data we get : ",data);
+
+       data = JSON.stringify(data['refined_text']).replace(/\*/g, "").replace(/\\n/g, "\n");
+    //console.log("AI",data)
+    //setAiGeneratedJD(cleanedRefinedText);
     }
       // console.log("Mock/Real API Response:", data);
 
-    const cleanedRefinedText = (data || "⚠️ No AI-enhanced JD returned").replace(/\*/g, " ");
-    setAiGeneratedJD(cleanedRefinedText);
+   
+    setAiGeneratedJD(data);
 
   } catch (error) {
     console.error("Error generating AI Enhanced JD:", error);
@@ -340,18 +363,58 @@ const handleSelect = async (version: "original" | "ai") => {
       });
        return;
     }
+  } else{
+    if (version === "original") {
+      setPreviousOriginalJD(originalJD);
+    } else {
+      setPreviousAIJD(aiGeneratedJD);
+    }
   }
 
   // Toggle edit mode
   setIsEditing(prev => ({ ...prev, [version]: !prev[version] }));
+
+  // const rolesName = localStorage.getItem("jdData");
+  // const getRole = JSON.parse(rolesName);
+  // setRoleName(getRole.role || "Unknown Role")
+
+  
 };
+
+  const handleUndo = (version: "original" | "ai") => {
+    if (version === "original") {
+      setOriginalJD(previousOriginalJD);
+    } else {
+      setAiGeneratedJD(previousAIJD);
+    }
+  };
+
+  useEffect(() => {
+  const storedJDData = localStorage.getItem("jdData");
+  if (storedJDData) {
+    try {
+      const parsedData = JSON.parse(storedJDData);
+      setRoleName(parsedData.role || "Unknown Role");
+    } catch (err) {
+      console.error("Failed to parse jdData:", err);
+    }
+  }
+}, []);
 
 
   return (
     <Layout currentStep={1}>
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Job Description Comparison</h1>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center space-y-3">
+          <div className="flex items-baseline justify-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">Job Description Comparison</h1>
+            {roleName && (
+                    <>
+                      <span className="text-muted-foreground text-xl">Role:</span>
+                      <span className="text-xl font-bold text-primary">{roleName}</span>
+                    </>
+                  )}
+          </div>
           <p className="text-lg text-muted-foreground">
             Compare your original JD with our AI-enhanced version and select the one that best fits your needs
           </p>
@@ -394,23 +457,35 @@ const handleSelect = async (version: "original" | "ai") => {
               )}
               
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleEdit("original")}
-                  className="flex items-center space-x-1"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
-                </Button>
+                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleEdit("original")}
+                    className="flex items-center space-x-1"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
+                  </Button>
+                  {isEditing.original && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUndo("original")}
+                      className="flex items-center space-x-1"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      <span>Undo</span>
+                    </Button>
+                  )}
+                </div>
                 
                 <div className="flex items-center space-x-2">
                         <Checkbox
-  id="originalJD"
-  checked={selectedVersion === "original"}
-  onCheckedChange={(checked) => {
-    if (checked) handleSelect("original");
-  }}
-/>
+                          id="originalJD"
+                          checked={selectedVersion === "original"}
+                          onCheckedChange={(checked) => {
+                            if (checked) handleSelect("original");
+                          }}
+                        />
                         <label
                           htmlFor="originalJD"
                           className={`text-sm font-medium leading-none ${
@@ -465,23 +540,34 @@ const handleSelect = async (version: "original" | "ai") => {
               )}
               
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleEdit("ai")}
-                  className="flex items-center space-x-1"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
-                </Button>
-                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleEdit("ai")}
+                    className="flex items-center space-x-1"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
+                  </Button>
+                  {isEditing.ai && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUndo("ai")}
+                      className="flex items-center space-x-1"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      <span>Undo</span>
+                    </Button>
+                  )}
+                </div>
                 <div className="flex items-center space-x-2">
                       <Checkbox
-  id="aiJD"
-  checked={selectedVersion === "ai"}
-  onCheckedChange={(checked) => {
-    if (checked) handleSelect("ai");
-  }}
-/>
+                        id="aiJD"
+                        checked={selectedVersion === "ai"}
+                        onCheckedChange={(checked) => {
+                          if (checked) handleSelect("ai");
+                        }}
+                      />
                       <label
                         htmlFor="aiJD"
                         className={`text-sm font-medium leading-none ${
@@ -536,6 +622,7 @@ const handleSelect = async (version: "original" | "ai") => {
       </div>
     </Layout>
   );
+  
 };
 
 export default JDComparison;

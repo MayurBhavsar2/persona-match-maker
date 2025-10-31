@@ -156,12 +156,12 @@ export const useUploadCandidates = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { toast } = useToast();
-  
+    const useMockData = false;
     return useMutation({
       mutationFn: async ({ 
         candidates, 
         persona_id,
-        useMockData = false
+       
       }: { 
         candidates: UploadedCandidate[], 
         persona_id: string 

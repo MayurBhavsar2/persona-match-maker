@@ -157,7 +157,7 @@ const Results = () => {
   const personaData = localStorage.getItem('savedPersona');
   const persona_id = personaData ? JSON.parse(personaData).id : null; 
   const [selectedRole, setSelectedRole] = useState<string>("");
-  const [selectedPersona, setSelectedPersona] = useState<string>(personaData?.id ?? "");
+  const [selectedPersona, setSelectedPersona] = useState<string>(personaData ?? "");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<any | null>(null);
   const [showAllCandidates, setShowAllCandidates] = useState(true);

@@ -68,14 +68,20 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
 
   const handleBackClick = () => {
     switch (currentStep) {
-      case 2:
+      case 1:
         navigate('/jd-upload');
         break;
+      case 2:
+        navigate('/jd-comparison/:jdId');
+        break;
       case 3:
-        navigate('/persona-config');
+        navigate('/persona-config/:jdId');
         break;
       case 4:
         navigate('/candidate-upload');
+        break;
+      case 5:
+        navigate('/results');
         break;
       default:
         navigate('/');
@@ -91,7 +97,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Back Button */}
-              {currentStep && currentStep > 1 && (
+              {currentStep && currentStep > 0 && (
                 <Button 
                   variant="ghost" 
                   onClick={handleBackClick}

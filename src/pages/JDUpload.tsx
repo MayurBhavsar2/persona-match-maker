@@ -51,12 +51,14 @@ const JDUpload = () => {
       if (!response.ok) throw new Error(`Failed to fetch roles: ${response.status}`);
 
       const data = await response.json();
+      console.log(data)
     
       // Assuming roles come from data.results
       const roles = data.job_roles
           ? data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
           : data.map((r: any) => ({ id: r.id, name: r.name }));
-
+      
+        localStorage.setItem("jobRoles", JSON.stringify(roles));
 setPredefinedRoles(roles);
 
     } catch (error) {
@@ -68,18 +70,8 @@ setPredefinedRoles(roles);
       });
     }
   };
-  const token = localStorage.getItem("token")
 
-  if(token) {
-    fetchRoles();
-  } else {
-    toast({
-      title: "You're not logged in.",
-      description: "Please login to continue.",
-    })
-    navigate("/login")
-  }
-  
+  fetchRoles();
 }, [page, size, activeOnly]); // refetch if any param changes
 
 
