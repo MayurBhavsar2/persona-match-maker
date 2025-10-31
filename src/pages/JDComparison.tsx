@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles, Undo2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const JDComparison = () => {
@@ -13,6 +13,8 @@ const JDComparison = () => {
   const { toast } = useToast();
   const [selectedVersion, setSelectedVersion] = useState<"original" | "ai" | null>(null);
   const [isEditing, setIsEditing] = useState({ original: false, ai: false });
+  const [savedOriginalJD, setSavedOriginalJD] = useState("");
+  const [savedAiJD, setSavedAiJD] = useState("");
   
   // Get role name from JD data
   const getSelectedRole = () => {
@@ -157,7 +159,23 @@ Preferred Qualifications:
   };
 
   const toggleEdit = (version: "original" | "ai") => {
+    if (!isEditing[version]) {
+      // Entering edit mode - save current value
+      if (version === "original") {
+        setSavedOriginalJD(originalJD);
+      } else {
+        setSavedAiJD(aiGeneratedJD);
+      }
+    }
     setIsEditing(prev => ({ ...prev, [version]: !prev[version] }));
+  };
+
+  const handleUndo = (version: "original" | "ai") => {
+    if (version === "original") {
+      setOriginalJD(savedOriginalJD);
+    } else {
+      setAiGeneratedJD(savedAiJD);
+    }
   };
 
   return (
@@ -211,14 +229,26 @@ Preferred Qualifications:
               )}
               
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleEdit("original")}
-                  className="flex items-center space-x-1"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleEdit("original")}
+                    className="flex items-center space-x-1"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
+                  </Button>
+                  {isEditing.original && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUndo("original")}
+                      className="flex items-center space-x-1"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      <span>Undo</span>
+                    </Button>
+                  )}
+                </div>
                 
                 <Button
                   variant={selectedVersion === "original" ? "success" : "default"}
@@ -268,14 +298,26 @@ Preferred Qualifications:
               )}
               
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleEdit("ai")}
-                  className="flex items-center space-x-1"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleEdit("ai")}
+                    className="flex items-center space-x-1"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
+                  </Button>
+                  {isEditing.ai && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUndo("ai")}
+                      className="flex items-center space-x-1"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      <span>Undo</span>
+                    </Button>
+                  )}
+                </div>
                 
                 <Button
                   variant={selectedVersion === "ai" ? "success" : "gradient"}
