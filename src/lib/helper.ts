@@ -17,7 +17,7 @@ export interface UploadedCandidate {
     candidate_id: string;
     persona_id: string;
     final_score: number;
-    match_status: string;
+    final_decision: string;
     pipeline_stage_reached: number;
     candidate_name: string;
     file_name: string;
@@ -156,16 +156,8 @@ export const useUploadCandidates = () => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const { toast } = useToast();
-    const useMockData = false;
-    return useMutation({
-      mutationFn: async ({ 
-        candidates, 
-        persona_id,
-       
-      }: { 
-        candidates: UploadedCandidate[], 
-        persona_id: string 
-      }) => {
+    const useMockData = true;
+    return useMutation({mutationFn: async ({ candidates, persona_id,}: {candidates: UploadedCandidate[],persona_id: string}) => {
 
         if (useMockData) {
         const { scoreWithAi } = await import('@/SampleResultEvaluationResponse');

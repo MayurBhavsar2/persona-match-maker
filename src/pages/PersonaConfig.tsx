@@ -22,7 +22,7 @@ const PersonaConfig = () => {
 
   // State
   const [categories, setCategories] = useState<any[]>([]);
-  const [deleteConfirm, setDeleteConfirm] = useState<{ cat: string; position: number } | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ cat: number; position: number } | null>(null);
   const [personaName, setPersonaName] = useState("");
   const [roleName, setRoleName] = useState("");
   const [roleId, setRoleId] = useState("");
@@ -170,30 +170,78 @@ const PersonaConfig = () => {
     if (value === "summary") summaryRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-const addSkillToCategory = (categoryIndex: number) => {
-  setCategories(prev =>
-    prev.map((cat, idx) => {
-      if (idx !== categoryIndex) return cat; // match by index
+// const addSkillToCategory = (categoryId: string) => {
+//     setCategories(prev =>
+//       prev.map(cat => {
+//         if (cat.id === categoryId) {
+//           const newSubcategory = {
+//             name: "New Skill",
+//             weight_percentage: 0,
+//             level_id: 3,
+//             notes: "",
+//             position:cat.subcategories.length+1,
+//           };
+//           return { ...cat, subcategories: [...(cat.subcategories || []), newSubcategory] };
+//         }
+//         return cat;
+//       })
+//     );
+//   };
 
-      const maxPosition = cat.subcategories.reduce(
-        (max: number, sub: any) => Math.max(max, sub.position || 0),
-        0
-      );
 
-      const newSubcategory = {
-        id: `new-skill-${Date.now()}`,
-            name: "New Skill",
-            weight_percentage: 0,
-            level_id: "3",
-            notes: "",
-            position: maxPosition + 1,
-            skillset: { technologies: [] },
-      };
 
-      return { ...cat, subcategories: [...cat.subcategories, newSubcategory] };
+  
+// const addSkillToCategory = (categoryIndex: number) => {
+//   setCategories(prev =>
+//     prev.map((cat, idx) => {
+//       if (idx !== categoryIndex) return cat; // match by index
+
+//       const maxPosition = cat.subcategories.reduce(
+//         (max: number, sub: any) => Math.max(max, sub.position || 0),
+//         0
+//       );
+
+//       const newSubcategory = {
+//         id: `new-skill-${Date.now()}`,
+//             name: "New Skill",
+//             weight_percentage: 0,
+//             level_id: "3",
+//             notes: "",
+//             position: maxPosition + 1,
+//             skillset: { technologies: [] },
+//       };
+
+//       return { ...cat, subcategories: [...cat.subcategories, newSubcategory] };
+//     })
+//   );
+// };
+
+
+const addSkillToCategory = (categoryPosition) => {
+  setCategories(prev => 
+    prev.map(cat => {
+      if (cat.position === categoryPosition) {
+        // ✅ Only modify the matching category
+        return {
+          ...cat,
+          subcategories: [
+            ...cat.subcategories,
+            {
+              position: cat.subcategories.length + 1,
+              name: "New Skill",
+              weight_percentage: 0,
+              level_id: "1",
+              skillset: { technologies: [] }
+            }
+          ]
+        };
+      }
+      return cat; // 🔹 Leave other categories unchanged
     })
   );
 };
+
+
 
 
 
@@ -253,10 +301,10 @@ const addSkillToCategory = (categoryIndex: number) => {
 // };
 
 
-  const removeSkillFromCategory = (categoryId: string, subPosition: number) => {
+  const removeSkillFromCategory = (categoryPosition: number, subPosition: number) => {
     setCategories(prev =>
       prev.map(cat => {
-        if (cat.id === categoryId) {
+        if (cat.position === categoryPosition) {
           return {
             ...cat,
             subcategories: cat.subcategories.filter((sub: any) => sub.position !== subPosition)
@@ -583,9 +631,10 @@ const addSkillToCategory = (categoryIndex: number) => {
                                   <TableHead className="w-[5%] py-2"></TableHead>
                                 </TableRow>
                               </TableHeader>
-                              <div></div>
+                              
                               <TableBody className="text-[14.9px]">
-                                {cat.subcategories.map((sub: any) => (
+                                {cat.subcategories.map((sub: any,subIndex:number) => (
+                                  
                                   <TableRow key={sub.position} className="hover:bg-muted/30 border-b h-9">
                                     <TableCell className="p-0 align-middle">
                                       <Input
@@ -643,7 +692,7 @@ const addSkillToCategory = (categoryIndex: number) => {
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setDeleteConfirm({ cat: cat.id, position: sub.position })}
+                                        onClick={() => setDeleteConfirm({ cat: cat.position, position: sub.position })}
                                         className="h-8 w-8 p-0 hover:text-destructive"
                                       >
                                         <Trash2 className="h-3 w-3" />
@@ -655,19 +704,22 @@ const addSkillToCategory = (categoryIndex: number) => {
                             </Table>
                           </div>
                           <div className="flex justify-between items-center pt-2">
-                            <div className="flex items-center gap-3 w-full">
+                            
+                           <div className="flex items-center gap-3 w-full"> 
+                              
                               <div className="flex-shrink-0">
                                 <Button
                                   type="button"
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => addSkillToCategory(cat.id)}
+                                  onClick={() => addSkillToCategory(cat.position)}
                                   className="h-8 gap-2"
                                 >
                                   <Plus className="h-4 w-4" />
                                   Add Skill
                                 </Button>
                               </div>
+                               
                               <div className="text-sm text-muted-foreground flex items-center">
                                 <span
                                   className={`font-mono font-bold text-base ml-[14.1rem] ${
@@ -678,6 +730,7 @@ const addSkillToCategory = (categoryIndex: number) => {
                                 </span>
                               </div>
                             </div>
+                           
                           </div>
                         </CardContent>
                       </AccordionContent>

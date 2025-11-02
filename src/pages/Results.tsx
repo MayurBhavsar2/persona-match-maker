@@ -252,15 +252,15 @@ const fetchPersonas = async () => {
 };
 
 // Handle persona change
-const handlePersonaChange = (personaId: string) => {
-  setSelectedPersona(personaId);
-  
-  // Find the persona object to save complete data
-  const persona = personas.find(p => p.id === personaId);
-  if (persona) {
-    localStorage.setItem('savedPersona', JSON.stringify(persona));
-  }
-};
+  const handlePersonaChange = (personaId: string) => {
+    setSelectedPersona(personaId);
+    
+    // Find the persona object to save complete data
+    const persona = personas.find(p => p.id === personaId);
+    if (persona) {
+      localStorage.setItem('savedPersona', JSON.stringify(persona));
+    }
+  };
 
   useEffect(() => {
     console.log("data from evaluated data: ", evaluatedData)
