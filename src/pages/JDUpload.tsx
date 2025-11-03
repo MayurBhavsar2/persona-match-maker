@@ -212,82 +212,112 @@ const handleSaveRole = async () => {
   });
 
   try {
-    if (inputMethod === "upload" && file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("role", roleName);
-      formData.append("role_id", roleId);
-      formData.append("title", roleName);
-      formData.append("notes", instructions || "");
+  let jdId: any | null = null;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+  if (inputMethod === "upload" && file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("role", roleName);
+    formData.append("role_id", roleId);
+    formData.append("title", roleName);
+    formData.append("notes", instructions || "");
 
-      if (!response.ok) throw new Error("File upload failed");
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
 
-      const result = await response.json();
-      const jdId = result.id;
-      if (!jdId) throw new Error("JD ID not returned from backend");
+    // ✅ Read the response JSON regardless of status
+    const result = await response.json().catch(() => null);
 
-      localStorage.setItem("jdData", JSON.stringify({
+    // ✅ Custom check for "No text content found" error
+    if (!response.ok) {
+      const errorMessage = result?.detail || "";
+
+      if (errorMessage.includes("No text content found")) {
+        toast({
+          title: "Unreadable File",
+          description: "Uploaded file doesn’t contain readable text. Please upload another file.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Processing failed",
+          description: "There was an error processing your job description. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+      return; // ⛔ stop further execution
+    }
+
+    jdId = result.id;
+    if (!jdId) throw new Error("JD ID not returned from backend");
+
+    localStorage.setItem(
+      "jdData",
+      JSON.stringify({
         role: roleName,
         roleId: roleId,
         fileName: file.name,
         instructions,
         timestamp: Date.now(),
-      }));
+      })
+    );
+  } 
+  
+  else if (inputMethod === "text" && jdText.trim()) {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        title: roleName,
+        role: roleName,
+        role_id: roleId,
+        notes: instructions,
+        original_text: jdText,
+        company_id: "0",
+        tags: [],
+      }),
+    });
 
-      navigate(`/jd-comparison/${jdId}`);
-    } 
-    
-    else if (inputMethod === "text" && jdText.trim()) {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          title: roleName,
-          role: roleName,
-          role_id: roleId,
-          notes: instructions,
-          original_text: jdText,
-          company_id: "0",
-          tags: [],
-        }),
-      });
+    const result = await response.json();
+    if (!response.ok) throw new Error(`Upload failed: ${result?.detail || response.statusText}`);
 
-      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-      const result = await response.json();
+    jdId = result.id;
+    if (!jdId) throw new Error("JD ID not returned from backend");
 
-      const jdId = result.id;
-      if (!jdId) throw new Error("JD ID not returned from backend");
-
-      localStorage.setItem("jdData", JSON.stringify({
+    localStorage.setItem(
+      "jdData",
+      JSON.stringify({
         role: roleName,
         roleId: roleId,
         jdContent: jdText,
         instructions,
         timestamp: Date.now(),
-      }));
-
-      navigate(`/jd-comparison/${jdId}`);
-    }
-  } catch (error) {
-    console.error("API Error:", error);
-    toast({
-      title: "Processing failed",
-      description: "There was an error processing your job description. Please try again.",
-      variant: "destructive",
-    });
-    setTimeout(() => navigate("/jd-comparison"), 1500);
+      })
+    );
   }
+
+  // ✅ Navigate only if jdId is set
+  if (jdId) {
+    navigate(`/jd-comparison/${jdId}`);
+  }
+} catch (error) {
+  console.error("API Error:", error);
+  toast({
+    title: "Processing failed",
+    description: "There was an error processing your job description. Please try again.",
+    variant: "destructive",
+  });
+}
+
 };
 
 

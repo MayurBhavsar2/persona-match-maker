@@ -35,7 +35,7 @@ const CandidateUpload = () => {
   const persona_id = personaData ? JSON.parse(personaData).id : null;
 
   const isProcessing = uploadMutation.isPending || scoreMutation.isPending;
-  const useMockData = true;
+  const useMockData = false;
 
   // const handleFileUpload = async (uploadedFiles: FileList | null) => {
   //   if (!uploadedFiles) return;

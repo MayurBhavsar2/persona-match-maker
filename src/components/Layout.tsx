@@ -1,5 +1,5 @@
 import { ReactNode , useState,useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Briefcase, Users, BarChart3, Settings, ArrowLeft, LogOut, User,Phone } from "lucide-react";
 import logoImage from "@/assets/logo.png";
@@ -21,6 +21,8 @@ interface LayoutProps {
 
 const Layout = ({ children, currentStep }: LayoutProps) => {
   const navigate = useNavigate();
+  const { jdId } = useParams();
+
   const [user, setUser] = useState<{ name: string; email: string; role: string; phone: string } | null>(null);
 
   
@@ -67,27 +69,28 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
   ];
 
   const handleBackClick = () => {
-    switch (currentStep) {
-      case 1:
-        navigate('/jd-upload');
-        break;
-      case 2:
-        navigate('/jd-comparison/:jdId');
-        break;
-      case 3:
-        navigate('/persona-config/:jdId');
-        break;
-      case 4:
-        navigate('/candidate-upload');
-        break;
-      case 5:
-        navigate('/results');
-        break;
-      default:
-        navigate('/');
-        break;
-    }
-  };
+  switch (currentStep) {
+    case 1:
+      navigate('/jd-upload');
+      break;
+    case 2:
+      navigate(jdId ? `/jd-comparison/${jdId}` : '/jd-comparison');
+      break;
+    case 3:
+      navigate(jdId ? `/persona-config/${jdId}` : '/persona-config');
+      break;
+    case 4:
+      navigate('/candidate-upload');
+      break;
+    case 5:
+      navigate('/results');
+      break;
+    default:
+      navigate('/');
+      break;
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-subtle">

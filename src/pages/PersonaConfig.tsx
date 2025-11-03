@@ -58,7 +58,7 @@ const PersonaConfig = () => {
     }
 
     const { jdId } = JSON.parse(selectedJD);
-    const USE_MOCK_API = true;
+    const USE_MOCK_API = false;
 
     const fetchPersona = async () => {
       try {
@@ -165,10 +165,29 @@ const PersonaConfig = () => {
   };
 
   const scrollToSection = (value: string) => {
-    setActiveTab(value);
-    if (value === "distribution") distributionRef.current?.scrollIntoView({ behavior: "smooth" });
-    if (value === "summary") summaryRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  setActiveTab(value);
+
+  // Adjust this number based on your sticky header height
+  const headerOffset = 133;
+
+  const ref =
+    value === "distribution"
+      ? distributionRef.current
+      : value === "summary"
+      ? summaryRef.current
+      : null;
+
+  if (ref) {
+    const elementPosition = ref.getBoundingClientRect().top + window.scrollY;
+    const offsetPosition = elementPosition - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
+};
+
 
 // const addSkillToCategory = (categoryId: string) => {
 //     setCategories(prev =>
@@ -490,7 +509,7 @@ const addSkillToCategory = (categoryPosition) => {
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-baseline justify-center gap-3">
             <h1 className="text-3xl font-bold text-foreground">Configure Ideal Persona</h1>
             <span className="text-muted-foreground">Role:</span>
             <span className="text-xl font-bold text-primary">{roleName}</span>
