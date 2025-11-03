@@ -29,15 +29,14 @@ interface CandidateDetailsSidebarProps {
   candidate: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  useMockData?: boolean;
 }
 
 const CandidateDetailsSidebar = ({
   candidate,
   open,
   onOpenChange,
-  useMockData = false,
 }: CandidateDetailsSidebarProps) => {
+  const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
   const [expandedScoreIndex, setExpandedScoreIndex] = useState<number | null>(
     null
   );

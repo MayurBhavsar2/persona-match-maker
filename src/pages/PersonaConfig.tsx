@@ -58,7 +58,7 @@ const PersonaConfig = () => {
     }
 
     const { jdId } = JSON.parse(selectedJD);
-    const USE_MOCK_API = false;
+    const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA ?? 'true';
 
     const fetchPersona = async () => {
       try {

@@ -159,7 +159,7 @@ const JDComparison: React.FC = () => {
     fetchOriginalJD();
   }, [jdId]);
 
-const USE_MOCK_API = false;
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA ?? false;
 
 const generateAIEnhancedJD = async (jdData: any) => {
   try {

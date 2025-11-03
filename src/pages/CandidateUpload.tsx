@@ -35,7 +35,7 @@ const CandidateUpload = () => {
   const persona_id = personaData ? JSON.parse(personaData).id : null;
 
   const isProcessing = uploadMutation.isPending || scoreMutation.isPending;
-  const useMockData = false;
+  const useMockData = import.meta.env.VITE_USE_MOCK_DATA ?? false;
 
   // const handleFileUpload = async (uploadedFiles: FileList | null) => {
   //   if (!uploadedFiles) return;
@@ -194,33 +194,36 @@ const CandidateUpload = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+
   const handleEvaluate = async () => {
-    if (!persona_id) {
-      toast({
-        title: "Evaluation failed",
-        description: "Missing persona information.",
-        variant: "destructive",
-      });
-      return;
-    }
+  if (!persona_id) {
+    toast({
+      title: "Evaluation failed",
+      description: "Missing persona information.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    // Get all uploaded candidate data from files (including duplicates)
-    const candidates = files
-      .filter(f => f.candidateData && (f.status === 'Ready' || f.status === 'duplicate'))
-      .map(f => f.candidateData!);
+  const candidates = files
+    .filter(f => f.candidateData && (f.status === 'Ready' || f.status === 'duplicate'))
+    .map(f => f.candidateData!);
 
-    if (candidates.length === 0) {
-      toast({
-        title: "No candidates to evaluate",
-        description: "Please upload candidate CVs before proceeding.",
-        variant: "destructive",
-      });
-      return;
-    }
+  if (candidates.length === 0) {
+    toast({
+      title: "No candidates to evaluate",
+      description: "Please upload candidate CVs before proceeding.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    // Score all candidates - the hook handles navigation
+  try {
     await scoreMutation.mutateAsync({ candidates, persona_id });
-  };
+  } catch (error) {
+    console.error('Evaluation error:', error);
+  }
+};
 
   const getStatusIcon = (status: UploadedFile['status']) => {
     switch (status) {

@@ -47,7 +47,7 @@ export interface ScoreResponse {
 // hooks/useCandidateScoring.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEvaluatedCandidates, useScoreCandidates } from "@/lib/helper";
+import { useEvaluatedCandidates } from "@/lib/helper";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -151,7 +151,6 @@ const Results = () => {
   const [candidates, setCandidates] = useState<any[]>([]);
   const navigate = useNavigate()
   const { data: evaluatedData, isLoading, isError } = useEvaluatedCandidates();
-  const { mutate: scoreCandidates, isPending: isScoring } = useScoreCandidates();
   const [roles, setRoles] = useState<any[]>([]);
   const [personas, setPersonas] = useState<any[]>([]);
   const personaData = localStorage.getItem('savedPersona');
@@ -161,7 +160,7 @@ const Results = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCandidate, setSidebarCandidate] = useState<any | null>(null);
   const [showAllCandidates, setShowAllCandidates] = useState(true);
-  const [useMockData, setUseMockData] = useState(false); 
+ 
 
 const fetchPersonas = async () => {
 
@@ -226,21 +225,7 @@ const fetchPersonas = async () => {
     return personas.filter(p => p.role_id === roleId);
   };
 
-  const handleScoreCandidates = () => {   
-    if (useMockData) {
-      console.log("Mockdata being used")
-    } else {
-      scoreCandidates(
-      { candidates: candidates, persona_id: selectedPersona },
-      {
-        onSuccess: (results) => {
-          console.log('Scored:', results);
-        }
-      }
-    );
-    }
-    
-  };
+
 
   const handleRoleChange = (roleId: string) => {
   setSelectedRole(roleId);
@@ -268,7 +253,7 @@ const fetchPersonas = async () => {
     console.log("candidates data received: ", candidates)
     if (!isLoading && evaluatedData) {
       setCandidates(evaluatedData?.candidates || []);
-      handleScoreCandidates()
+      // Remove the handleScoreCandidates() call - candidates are already scored
     } else if (!isLoading && !evaluatedData) {
       navigate('/candidate-upload');
     }
@@ -631,19 +616,7 @@ const fetchPersonas = async () => {
 </div>
         </div>
 
-        {/* Mock Data Toggle (For Development) */}
-        {/* <div className="flex items-center gap-2 p-2 bg-muted rounded">
-          <label className="text-sm font-medium">Use Mock Data:</label>
-          <input
-            type="checkbox"
-            checked={useMockData}
-            onChange={(e) => setUseMockData(e.target.checked)}
-            className="w-4 h-4"
-          />
-          <span className="text-xs text-muted-foreground">
-            (Toggle to switch between mock data and API)
-          </span>
-        </div> */}
+
 
         {/* Results Table */}
         <Card className="shadow-card">
@@ -711,7 +684,6 @@ const fetchPersonas = async () => {
         candidate={sidebarCandidate}
         open={sidebarOpen}
         onOpenChange={setSidebarOpen}
-        useMockData={useMockData}
       />
     </Layout>
   );
