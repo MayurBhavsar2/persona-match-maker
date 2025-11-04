@@ -21,6 +21,9 @@ const JDUpload = () => {
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
+  const [hiringManager, setHiringManager] = useState("");
+  const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingManagers, setLoadingManagers] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,6 +77,52 @@ setPredefinedRoles(roles);
   fetchRoles();
 }, [page, size, activeOnly]); // refetch if any param changes
 
+
+useEffect(() => {
+    const fetchHiringManagers = async () => {
+      setLoadingManagers(true);
+      try {
+        // TODO: Replace with your actual API endpoint for fetching hiring managers
+        const response = await fetch('YOUR_API_ENDPOINT_FOR_HIRING_MANAGERS', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any required headers (authorization, etc.)
+            // 'Authorization': 'Bearer YOUR_API_KEY',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch hiring managers');
+        }
+
+        const data = await response.json();
+        
+        // TODO: Adjust based on your API response structure
+        // Expected format: [{ id: "1", name: "John Doe" }, { id: "2", name: "Jane Smith" }]
+        setHiringManagers(data.hiringManagers || data);
+        
+      } catch (error) {
+        console.error('Error fetching hiring managers:', error);
+        toast({
+          title: "Failed to load hiring managers",
+          description: "Using default list. Please check your API connection.",
+          variant: "destructive",
+        });
+        
+        // Fallback: Demo data for testing
+        setHiringManagers([
+          { id: "1", name: "John Doe" },
+          { id: "2", name: "Jane Smith" },
+          { id: "3", name: "Michael Johnson" }
+        ]);
+      } finally {
+        setLoadingManagers(false);
+      }
+    };
+
+    fetchHiringManagers();
+  }, []);
 
     // Popup state for Add Role
 const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -188,6 +237,15 @@ const handleSaveRole = async () => {
     return;
   }
 
+  if (!hiringManager) {
+      toast({
+        title: "Hiring Manager required",
+        description: "Please select a hiring manager.",
+        variant: "destructive",
+      });
+      return;
+    }
+
   if (inputMethod === "upload" && !file) {
     toast({
       title: "File required",
@@ -220,6 +278,7 @@ const handleSaveRole = async () => {
     formData.append("role", roleName);
     formData.append("role_id", roleId);
     formData.append("title", roleName);
+    formData.append('hiringManager', hiringManager);
     formData.append("notes", instructions || "");
 
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
@@ -261,6 +320,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
+        hiringManager,
         roleId: roleId,
         fileName: file.name,
         instructions,
@@ -279,6 +339,7 @@ const handleSaveRole = async () => {
       body: JSON.stringify({
         title: roleName,
         role: roleName,
+        hiringManager,
         role_id: roleId,
         notes: instructions,
         original_text: jdText,
@@ -297,6 +358,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
+        hiringManager,
         roleId: roleId,
         jdContent: jdText,
         instructions,
@@ -342,9 +404,11 @@ const handleSaveRole = async () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+
             {/* Role Selection */}
-            <div className="flex items-center space-x-1">
-              <Label htmlFor="role" className="min-w-[40px] text-base">Role:</Label>
+            
+            <div className="flex items-center gap-2">
+              <Label htmlFor="role" className="text-base whitespace-nowrap">Role:</Label>
               <div className="flex-1">
                 {!showCustomRole ? (
                   <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -359,6 +423,7 @@ const handleSaveRole = async () => {
                       ))}
                     </SelectContent>
                   </Select>
+                  
                 ) : (
                   <Input
                     placeholder="Enter custom role..."
@@ -368,6 +433,29 @@ const handleSaveRole = async () => {
                 )
                 }
               </div>
+
+                {/* Hiring Manager Selection */}
+                
+              {/* <Label htmlFor="hiringManager" className="text-base whitespace-nowrap">Manager</Label> */}
+              <div className="flex-1">
+                <Select 
+                  value={hiringManager} 
+                  onValueChange={setHiringManager}
+                  disabled={loadingManagers}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingManagers ? "Loading..." : "Select Hiring Manager..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hiringManagers.map((manager) => (
+                      <SelectItem key={manager.id} value={manager.name}>
+                        {manager.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {!showCustomRole ? (
                 <Button
                     variant="outline"
@@ -390,6 +478,10 @@ const handleSaveRole = async () => {
                 </Button>
               )}
             </div>
+
+            
+  
+          
 
             {/* Job Description Input Method Selection */}
             <div className="space-y-4">
