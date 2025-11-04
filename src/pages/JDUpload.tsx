@@ -276,76 +276,71 @@ const JDUpload = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Role and Hiring Manager Selection - Single Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {/* Role Selection */}
-              <div className="flex items-center space-x-1">
-                <Label htmlFor="role" className="min-w-[60px] text-base">Role</Label>
-                <div className="flex-1">
-                  {!showCustomRole ? (
-                    <Select value={selectedRole} onValueChange={setSelectedRole}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {predefinedRoles.map((role) => (
-                          <SelectItem key={role} value={role}>
-                            {role}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Input
-                      placeholder="Enter custom role..."
-                      value={customRole}
-                      onChange={(e) => setCustomRole(e.target.value)}
-                    />
-                  )}
-                </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="role" className="text-base whitespace-nowrap">Role</Label>
+              <div className="flex-1">
                 {!showCustomRole ? (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowCustomRole(true)}
-                    className="flex items-center space-x-1"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Custom</span>
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowCustomRole(false);
-                      setCustomRole("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </div>
-
-              {/* Hiring Manager Selection */}
-              <div className="flex items-center space-x-1">
-                <Label htmlFor="hiringManager" className="min-w-[80px] text-base">Manager</Label>
-                <div className="flex-1">
-                  <Select 
-                    value={hiringManager} 
-                    onValueChange={setHiringManager}
-                    disabled={loadingManagers}
-                  >
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
                     <SelectTrigger>
-                      <SelectValue placeholder={loadingManagers ? "Loading..." : "Select manager..."} />
+                      <SelectValue placeholder="Select a role..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {hiringManagers.map((manager) => (
-                        <SelectItem key={manager.id} value={manager.name}>
-                          {manager.name}
+                      {predefinedRoles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                ) : (
+                  <Input
+                    placeholder="Enter custom role..."
+                    value={customRole}
+                    onChange={(e) => setCustomRole(e.target.value)}
+                  />
+                )}
               </div>
+              
+              <Label htmlFor="hiringManager" className="text-base whitespace-nowrap">Manager</Label>
+              <div className="flex-1">
+                <Select 
+                  value={hiringManager} 
+                  onValueChange={setHiringManager}
+                  disabled={loadingManagers}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingManagers ? "Loading..." : "Select manager..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hiringManagers.map((manager) => (
+                      <SelectItem key={manager.id} value={manager.name}>
+                        {manager.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {!showCustomRole ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCustomRole(true)}
+                  className="flex items-center space-x-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Custom</span>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCustomRole(false);
+                    setCustomRole("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
 
             {/* Job Description Input Method Selection */}
