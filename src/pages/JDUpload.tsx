@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ const JDUpload = () => {
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
+  const [hiringManager, setHiringManager] = useState("");
+  const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingManagers, setLoadingManagers] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +38,53 @@ const JDUpload = () => {
     "UX/UI Designer",
     "Quality Assurance Engineer"
   ];
+
+  // Fetch hiring managers from API
+  useEffect(() => {
+    const fetchHiringManagers = async () => {
+      setLoadingManagers(true);
+      try {
+        // TODO: Replace with your actual API endpoint for fetching hiring managers
+        const response = await fetch('YOUR_API_ENDPOINT_FOR_HIRING_MANAGERS', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any required headers (authorization, etc.)
+            // 'Authorization': 'Bearer YOUR_API_KEY',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch hiring managers');
+        }
+
+        const data = await response.json();
+        
+        // TODO: Adjust based on your API response structure
+        // Expected format: [{ id: "1", name: "John Doe" }, { id: "2", name: "Jane Smith" }]
+        setHiringManagers(data.hiringManagers || data);
+        
+      } catch (error) {
+        console.error('Error fetching hiring managers:', error);
+        toast({
+          title: "Failed to load hiring managers",
+          description: "Using default list. Please check your API connection.",
+          variant: "destructive",
+        });
+        
+        // Fallback: Demo data for testing
+        setHiringManagers([
+          { id: "1", name: "John Doe" },
+          { id: "2", name: "Jane Smith" },
+          { id: "3", name: "Michael Johnson" }
+        ]);
+      } finally {
+        setLoadingManagers(false);
+      }
+    };
+
+    fetchHiringManagers();
+  }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0];
@@ -73,6 +123,15 @@ const JDUpload = () => {
       return;
     }
 
+    if (!hiringManager) {
+      toast({
+        title: "Hiring Manager required",
+        description: "Please select a hiring manager.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (inputMethod === "upload" && !file) {
       toast({
         title: "File required",
@@ -102,6 +161,7 @@ const JDUpload = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('role', role);
+        formData.append('hiringManager', hiringManager);
         formData.append('instructions', instructions);
 
         const response = await fetch('YOUR_API_ENDPOINT_FOR_FILE_UPLOAD', {
@@ -122,6 +182,7 @@ const JDUpload = () => {
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
           role,
+          hiringManager,
           fileName: file.name,
           jdContent: result.extractedText || null, // Assuming API returns extracted text
           instructions,
@@ -140,6 +201,7 @@ const JDUpload = () => {
           },
           body: JSON.stringify({
             role,
+            hiringManager,
             jobDescription: jdText,
             instructions
           })
@@ -154,6 +216,7 @@ const JDUpload = () => {
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
           role,
+          hiringManager,
           fileName: "Pasted Job Description",
           jdContent: jdText,
           instructions,
@@ -178,6 +241,7 @@ const JDUpload = () => {
       // Fallback: Store data locally for demo purposes
       localStorage.setItem('jdData', JSON.stringify({
         role,
+        hiringManager,
         fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
         jdContent: inputMethod === "text" ? jdText : null,
         instructions,
@@ -256,6 +320,29 @@ const JDUpload = () => {
                   Cancel
                 </Button>
               )}
+            </div>
+
+            {/* Hiring Manager Selection */}
+            <div className="flex items-center space-x-1">
+              <Label htmlFor="hiringManager" className="min-w-[60px] text-base">Manager</Label>
+              <div className="flex-1">
+                <Select 
+                  value={hiringManager} 
+                  onValueChange={setHiringManager}
+                  disabled={loadingManagers}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={loadingManagers ? "Loading managers..." : "Select hiring manager..."} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hiringManagers.map((manager) => (
+                      <SelectItem key={manager.id} value={manager.name}>
+                        {manager.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Job Description Input Method Selection */}
