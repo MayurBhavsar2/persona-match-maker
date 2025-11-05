@@ -313,12 +313,16 @@ const JDUpload = () => {
                       variant="outline"
                       role="combobox"
                       aria-expanded={openManagerPopover}
-                      className="w-full justify-between"
+                      className="w-full justify-between h-10 px-3 py-2 text-sm font-normal bg-background border-input hover:bg-background hover:text-foreground"
                       disabled={loadingManagers}
                     >
-                      {selectedManagers.length > 0
-                        ? `${selectedManagers.length} manager${selectedManagers.length > 1 ? 's' : ''} selected`
-                        : loadingManagers ? "Loading..." : "Select manager(s)..."}
+                      <span className={cn(
+                        selectedManagers.length === 0 && "text-muted-foreground"
+                      )}>
+                        {selectedManagers.length > 0
+                          ? `${selectedManagers.length} manager${selectedManagers.length > 1 ? 's' : ''} selected`
+                          : loadingManagers ? "Loading..." : "Select manager(s)..."}
+                      </span>
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
