@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileText, Plus, ChevronRight, Type, File, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 
 const JDUpload = () => {
@@ -20,7 +21,7 @@ const JDUpload = () => {
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
-  const [hiringManager, setHiringManager] = useState("");
+  const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingManagers, setLoadingManagers] = useState(false);
 
@@ -123,10 +124,10 @@ const JDUpload = () => {
       return;
     }
 
-    if (!hiringManager) {
+    if (selectedManagers.length === 0) {
       toast({
         title: "Hiring Manager required",
-        description: "Please select a hiring manager.",
+        description: "Please select at least one hiring manager.",
         variant: "destructive",
       });
       return;
@@ -161,7 +162,7 @@ const JDUpload = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('role', role);
-        formData.append('hiringManager', hiringManager);
+        formData.append('hiringManagers', JSON.stringify(selectedManagers));
         formData.append('instructions', instructions);
 
         const response = await fetch('YOUR_API_ENDPOINT_FOR_FILE_UPLOAD', {
@@ -182,7 +183,7 @@ const JDUpload = () => {
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
           role,
-          hiringManager,
+          hiringManagers: selectedManagers,
           fileName: file.name,
           jdContent: result.extractedText || null, // Assuming API returns extracted text
           instructions,
@@ -201,7 +202,7 @@ const JDUpload = () => {
           },
           body: JSON.stringify({
             role,
-            hiringManager,
+            hiringManagers: selectedManagers,
             jobDescription: jdText,
             instructions
           })
@@ -216,7 +217,7 @@ const JDUpload = () => {
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
           role,
-          hiringManager,
+          hiringManagers: selectedManagers,
           fileName: "Pasted Job Description",
           jdContent: jdText,
           instructions,
@@ -241,7 +242,7 @@ const JDUpload = () => {
       // Fallback: Store data locally for demo purposes
       localStorage.setItem('jdData', JSON.stringify({
         role,
-        hiringManager,
+        hiringManagers: selectedManagers,
         fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
         jdContent: inputMethod === "text" ? jdText : null,
         instructions,
@@ -302,23 +303,40 @@ const JDUpload = () => {
               </div>
               
               <Label htmlFor="hiringManager" className="text-base whitespace-nowrap">Manager</Label>
-              <div className="flex-1">
+              <div className="flex-1 space-y-2">
                 <Select 
-                  value={hiringManager} 
-                  onValueChange={setHiringManager}
+                  value="" 
+                  onValueChange={(value) => {
+                    if (!selectedManagers.includes(value)) {
+                      setSelectedManagers([...selectedManagers, value]);
+                    }
+                  }}
                   disabled={loadingManagers}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={loadingManagers ? "Loading..." : "Select manager..."} />
+                    <SelectValue placeholder={loadingManagers ? "Loading..." : "Select manager(s)..."} />
                   </SelectTrigger>
                   <SelectContent>
-                    {hiringManagers.map((manager) => (
+                    {hiringManagers.filter(m => !selectedManagers.includes(m.name)).map((manager) => (
                       <SelectItem key={manager.id} value={manager.name}>
                         {manager.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {selectedManagers.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedManagers.map((manager) => (
+                      <Badge key={manager} variant="secondary" className="flex items-center gap-1">
+                        {manager}
+                        <X 
+                          className="w-3 h-3 cursor-pointer hover:text-destructive" 
+                          onClick={() => setSelectedManagers(selectedManagers.filter(m => m !== manager))}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {!showCustomRole ? (
