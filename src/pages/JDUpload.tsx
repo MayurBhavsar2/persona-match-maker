@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Plus, ChevronRight, Type, File, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const JDUpload = () => {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ const JDUpload = () => {
   const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingManagers, setLoadingManagers] = useState(false);
+  const [openManagerPopover, setOpenManagerPopover] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -303,40 +306,54 @@ const JDUpload = () => {
               </div>
               
               <Label htmlFor="hiringManager" className="text-base whitespace-nowrap">Manager</Label>
-              <div className="flex-1 space-y-2">
-                <Select 
-                  value="" 
-                  onValueChange={(value) => {
-                    if (!selectedManagers.includes(value)) {
-                      setSelectedManagers([...selectedManagers, value]);
-                    }
-                  }}
-                  disabled={loadingManagers}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingManagers ? "Loading..." : "Select manager(s)..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hiringManagers.filter(m => !selectedManagers.includes(m.name)).map((manager) => (
-                      <SelectItem key={manager.id} value={manager.name}>
-                        {manager.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {selectedManagers.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {selectedManagers.map((manager) => (
-                      <Badge key={manager} variant="secondary" className="flex items-center gap-1">
-                        {manager}
-                        <X 
-                          className="w-3 h-3 cursor-pointer hover:text-destructive" 
-                          onClick={() => setSelectedManagers(selectedManagers.filter(m => m !== manager))}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+              <div className="flex-1">
+                <Popover open={openManagerPopover} onOpenChange={setOpenManagerPopover}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openManagerPopover}
+                      className="w-full justify-between"
+                      disabled={loadingManagers}
+                    >
+                      {selectedManagers.length > 0
+                        ? `${selectedManagers.length} manager${selectedManagers.length > 1 ? 's' : ''} selected`
+                        : loadingManagers ? "Loading..." : "Select manager(s)..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search managers..." />
+                      <CommandList>
+                        <CommandEmpty>No manager found.</CommandEmpty>
+                        <CommandGroup>
+                          {hiringManagers.map((manager) => (
+                            <CommandItem
+                              key={manager.id}
+                              value={manager.name}
+                              onSelect={() => {
+                                setSelectedManagers(
+                                  selectedManagers.includes(manager.name)
+                                    ? selectedManagers.filter((m) => m !== manager.name)
+                                    : [...selectedManagers, manager.name]
+                                );
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedManagers.includes(manager.name) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {manager.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {!showCustomRole ? (
