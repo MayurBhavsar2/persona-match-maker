@@ -8,8 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Plus, ChevronRight, Type, File, X } from "lucide-react";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const JDUpload = () => {
   const navigate = useNavigate();
@@ -21,9 +24,10 @@ const JDUpload = () => {
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
-  const [hiringManager, setHiringManager] = useState("");
+  const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
   const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingManagers, setLoadingManagers] = useState(false);
+  const [openManagerPopover, setOpenManagerPopover] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -87,6 +91,7 @@ useEffect(() => {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            
             // Add any required headers (authorization, etc.)
             // 'Authorization': 'Bearer YOUR_API_KEY',
           }
@@ -237,10 +242,10 @@ const handleSaveRole = async () => {
     return;
   }
 
-  if (!hiringManager) {
+  if (selectedManagers.length === 0) {
       toast({
         title: "Hiring Manager required",
-        description: "Please select a hiring manager.",
+        description: "Please select at least one hiring manager.",
         variant: "destructive",
       });
       return;
@@ -278,7 +283,7 @@ const handleSaveRole = async () => {
     formData.append("role", roleName);
     formData.append("role_id", roleId);
     formData.append("title", roleName);
-    formData.append('hiringManager', hiringManager);
+    formData.append('hiringManagers', JSON.stringify(selectedManagers));
     formData.append("notes", instructions || "");
 
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
@@ -320,7 +325,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
-        hiringManager,
+        hiringManagers: selectedManagers,
         roleId: roleId,
         fileName: file.name,
         instructions,
@@ -339,7 +344,7 @@ const handleSaveRole = async () => {
       body: JSON.stringify({
         title: roleName,
         role: roleName,
-        hiringManager,
+        hiringManagers: selectedManagers,
         role_id: roleId,
         notes: instructions,
         original_text: jdText,
@@ -358,7 +363,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
-        hiringManager,
+        hiringManagers: selectedManagers,
         roleId: roleId,
         jdContent: jdText,
         instructions,
@@ -438,22 +443,53 @@ const handleSaveRole = async () => {
                 
               {/* <Label htmlFor="hiringManager" className="text-base whitespace-nowrap">Manager</Label> */}
               <div className="flex-1">
-                <Select 
-                  value={hiringManager} 
-                  onValueChange={setHiringManager}
-                  disabled={loadingManagers}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={loadingManagers ? "Loading..." : "Select Hiring Manager..."} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hiringManagers.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.name}>
-                        {manager.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover open={openManagerPopover} onOpenChange={setOpenManagerPopover}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openManagerPopover}
+                      className="w-full justify-between h-10 px-3 py-2 text-sm font-normal bg-background border-input hover:bg-background hover:text-foreground"
+                      disabled={loadingManagers}
+                    >
+                      {selectedManagers.length > 0
+                        ? `${selectedManagers.length} manager${selectedManagers.length > 1 ? 's' : ''} selected`
+                        : loadingManagers ? "Loading..." : "Select manager(s)..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                    <Command>
+                      <CommandInput placeholder="Search managers..." />
+                      <CommandList>
+                        <CommandEmpty>No manager found.</CommandEmpty>
+                        <CommandGroup>
+                          {hiringManagers.map((manager) => (
+                            <CommandItem
+                              key={manager.id}
+                              value={manager.name}
+                              onSelect={() => {
+                                setSelectedManagers(
+                                  selectedManagers.includes(manager.name)
+                                    ? selectedManagers.filter((m) => m !== manager.name)
+                                    : [...selectedManagers, manager.name]
+                                );
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedManagers.includes(manager.name) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {manager.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {!showCustomRole ? (
