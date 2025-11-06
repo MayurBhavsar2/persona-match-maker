@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Upload, FileText, Plus, ChevronRight, Type, File, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import axiosInstance, { isAxiosError } from "@/lib/utils";
+
 
 const JDUpload = () => {
   const navigate = useNavigate();
@@ -30,57 +32,49 @@ const JDUpload = () => {
   const [size, setSize] = useState(10);
   const [activeOnly, setActiveOnly] = useState(false);
 
-  useEffect(() => {
-  const fetchRoles = async () => {
-    try {
-      // Construct dynamic query parameters
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
-        active_only: activeOnly.toString(),
-      });
+//   useEffect(() => {
+//   const fetchRoles = async () => {
+//     try {
+//       // Construct dynamic query parameters
+//       const queryParams = new URLSearchParams({
+//         page: page.toString(),
+//         size: size.toString(),
+//         active_only: activeOnly.toString(),
+//       });
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?${queryParams.toString()}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+//       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?${queryParams.toString()}`, {
+//         method: "GET",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${localStorage.getItem("token")}`,
+//         },
+//       });
 
-      if (!response.ok) throw new Error(`Failed to fetch roles: ${response.status}`);
+//       if (!response.ok) throw new Error(`Failed to fetch roles: ${response.status}`);
 
-      const data = await response.json();
+//       const data = await response.json();
+//       console.log(data)
     
-      // Assuming roles come from data.results
-      const roles = data.job_roles
-          ? data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
-          : data.map((r: any) => ({ id: r.id, name: r.name }));
+//       // Assuming roles come from data.results
+//       const roles = data.job_roles
+//           ? data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
+//           : data.map((r: any) => ({ id: r.id, name: r.name }));
+      
+//         localStorage.setItem("jobRoles", JSON.stringify(roles));
+// setPredefinedRoles(roles);
 
-setPredefinedRoles(roles);
+//     } catch (error) {
+//       console.error("Error fetching roles:", error);
+//       toast({
+//         title: "Error fetching roles",
+//         description: "Could not load roles. Please try again later.",
+//         variant: "destructive",
+//       });
+//     }
+//   };
 
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-      toast({
-        title: "Error fetching roles",
-        description: "Could not load roles. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  };
-  const token = localStorage.getItem("token")
-
-  if(token) {
-    fetchRoles();
-  } else {
-    toast({
-      title: "You're not logged in.",
-      description: "Please login to continue.",
-    })
-    navigate("/login")
-  }
-  
-}, [page, size, activeOnly]); // refetch if any param changes
+//   fetchRoles();
+// }, [page, size, activeOnly]); // refetch if any param changes
 
 
     // Popup state for Add Role
@@ -220,83 +214,177 @@ const handleSaveRole = async () => {
   });
 
   try {
-    if (inputMethod === "upload" && file) {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("role", roleName);
-      formData.append("role_id", roleId);
-      formData.append("title", roleName);
-      formData.append("notes", instructions || "");
+  let jdId: any | null = null;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+  if (inputMethod === "upload" && file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("role", roleName);
+    formData.append("role_id", roleId);
+    formData.append("title", roleName);
+    formData.append("notes", instructions || "");
 
-      if (!response.ok) throw new Error("File upload failed");
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
 
-      const result = await response.json();
-      const jdId = result.id;
-      if (!jdId) throw new Error("JD ID not returned from backend");
+    // ✅ Read the response JSON regardless of status
+    const result = await response.json().catch(() => null);
 
-      localStorage.setItem("jdData", JSON.stringify({
+    // ✅ Custom check for "No text content found" error
+    if (!response.ok) {
+      const errorMessage = result?.detail || "";
+
+      if (errorMessage.includes("No text content found")) {
+        toast({
+          title: "Unreadable File",
+          description: "Uploaded file doesn’t contain readable text. Please upload another file.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Processing failed",
+          description: "There was an error processing your job description. Please try again.",
+          variant: "destructive",
+        });
+      }
+
+      return; // ⛔ stop further execution
+    }
+
+    jdId = result.id;
+    if (!jdId) throw new Error("JD ID not returned from backend");
+
+    localStorage.setItem(
+      "jdData",
+      JSON.stringify({
         role: roleName,
         roleId: roleId,
         fileName: file.name,
         instructions,
         timestamp: Date.now(),
-      }));
+      })
+    );
+  } 
+  
+  else if (inputMethod === "text" && jdText.trim()) {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        title: roleName,
+        role: roleName,
+        role_id: roleId,
+        notes: instructions,
+        original_text: jdText,
+        company_id: "0",
+        tags: [],
+      }),
+    });
 
-      navigate(`/jd-comparison/${jdId}`);
-    } 
-    
-    else if (inputMethod === "text" && jdText.trim()) {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          title: roleName,
-          role: roleName,
-          role_id: roleId,
-          notes: instructions,
-          original_text: jdText,
-          company_id: "0",
-          tags: [],
-        }),
-      });
+    const result = await response.json();
+    if (!response.ok) throw new Error(`Upload failed: ${result?.detail || response.statusText}`);
 
-      if (!response.ok) throw new Error(`Upload failed: ${response.status}`);
-      const result = await response.json();
+    jdId = result.id;
+    if (!jdId) throw new Error("JD ID not returned from backend");
 
-      const jdId = result.id;
-      if (!jdId) throw new Error("JD ID not returned from backend");
-
-      localStorage.setItem("jdData", JSON.stringify({
+    localStorage.setItem(
+      "jdData",
+      JSON.stringify({
         role: roleName,
         roleId: roleId,
         jdContent: jdText,
         instructions,
         timestamp: Date.now(),
-      }));
-
-      navigate(`/jd-comparison/${jdId}`);
-    }
-  } catch (error) {
-    console.error("API Error:", error);
-    toast({
-      title: "Processing failed",
-      description: "There was an error processing your job description. Please try again.",
-      variant: "destructive",
-    });
-    setTimeout(() => navigate("/jd-comparison"), 1500);
+      })
+    );
   }
+
+  // ✅ Navigate only if jdId is set
+  if (jdId) {
+    navigate(`/jd-comparison/${jdId}`);
+  }
+} catch (error) {
+  console.error("API Error:", error);
+  toast({
+    title: "Processing failed",
+    description: "There was an error processing your job description. Please try again.",
+    variant: "destructive",
+  });
+}
+
 };
+
+
+
+useEffect(() => {
+  const fetchRoles = async () => {
+    try {
+      const response = await axiosInstance.get('/api/v1/job-role/', {
+        params: {
+          page: page,
+          size: size,
+          active_only: activeOnly,
+        },
+      });
+
+      console.log(response.data);
+    
+      // Assuming roles come from data.results
+      const roles = response.data.job_roles
+        ? response.data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
+        : response.data.map((r: any) => ({ id: r.id, name: r.name }));
+      
+      localStorage.setItem("jobRoles", JSON.stringify(roles));
+      setPredefinedRoles(roles);
+
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      
+      if (isAxiosError(error)) {
+        if (error.code === 'ECONNRESET' || error.code === 'ERR_NETWORK') {
+          toast({
+            title: "Connection Error",
+            description: "Connection lost. Please check your internet and try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+          toast({
+            title: "Request Timeout",
+            description: "The server is taking too long to respond. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        toast({
+          title: "Error fetching roles",
+          description: error.response?.data?.message || "Could not load roles. Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Error fetching roles",
+        description: "Could not load roles. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  fetchRoles();
+}, [page, size, activeOnly]);
 
 
   return (

@@ -59,7 +59,7 @@ const Index = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={() => navigate('/jd-upload')}
+              onClick={() => navigate('/dashboard')}
               className="bg-gradient-primary hover:opacity-90 transition-smooth px-8 py-6 text-lg"
             >
               Start Recruiting

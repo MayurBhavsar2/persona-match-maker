@@ -7,112 +7,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles,Undo2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { stringify } from "querystring";
+import axiosInstance, { isAxiosError } from "@/lib/utils";
 
-const JDComparison = () => {
+const JDComparison: React.FC = () => {
   const { jdId } = useParams<{ jdId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [roleId, setRoleId] = useState("");
+  const [roleName, setRoleName] = useState("");
+  const [previousOriginalJD, setPreviousOriginalJD] = useState<string>("");
+  const [previousAIJD, setPreviousAIJD] = useState<string>("");
+
   const [selectedVersion, setSelectedVersion] = useState<"original" | "ai" | null>(null);
   const [isEditing, setIsEditing] = useState({ original: false, ai: false });
   
   const [originalJD, setOriginalJD] = useState<string>("Loading Original JD.....");
   const [aiGeneratedJD, setAiGeneratedJD] = useState<string>(`Loading AI Enhanced JD.....`);
 
-  // const generatePersonaFromJD = async (jdId: string) => {
-  //   try {
-  //     const response = await fetch(
-  //       `/api/v1/persona/generate-from-jd/${jdId}`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
-  //         },
-  //       }
-  //     );
-
-  //     if (!response.ok) throw new Error("Failed to generate persona from JD");
-
-  //     const data = await response.json();
-  //     console.log("Persona generated successfully:", data);
-  //     localStorage.setItem("generatedPersona", JSON.stringify(data));
-  //     navigate(`/persona-config/${data.job_description_id}`);
-  //     return data;
-  //   } catch (error) {
-  //     console.error("Error generating persona:", error);
-  //   }
-  // };
-
-    
-                  //     `Position: RPA Developer
-
-                  // Job Summary:
-                  // We are seeking an experienced RPA Developer to join our automation team. The candidate will be responsible for developing, testing, and maintaining robotic process automation solutions.
-
-                  // Key Responsibilities:
-                  // • Design and develop RPA workflows using UiPath/Blue Prism
-                  // • Collaborate with business analysts to identify automation opportunities
-                  // • Test and debug automation scripts
-                  // • Provide technical support for deployed bots
-
-                  // Requirements:
-                  // • 3+ years of experience in RPA development
-                  // • Proficiency in UiPath or Blue Prism
-                  // • Basic understanding of programming languages
-                  // • Strong analytical skills`
-
-
-  
-    
-                      //     `Position: RPA Developer - Senior Level
-
-                      // Job Summary:
-                      // We are seeking a highly skilled RPA Developer to design, develop, and deploy enterprise-grade robotic process automation solutions. The ideal candidate will drive digital transformation initiatives and optimize business processes through intelligent automation.
-
-                      // Key Responsibilities:
-                      // • Architect and develop scalable RPA workflows using UiPath, Blue Prism, or Automation Anywhere
-                      // • Conduct comprehensive process analysis and automation feasibility assessments
-                      // • Implement advanced automation features including AI/ML integration, OCR, and API connectivity
-                      // • Collaborate with cross-functional teams to identify high-impact automation opportunities
-                      // • Establish automation governance frameworks and best practices
-                      // • Mentor junior developers and provide technical leadership
-                      // • Monitor bot performance and implement continuous improvement strategies
-
-                      // Technical Requirements:
-                      // • 5+ years of hands-on experience in RPA development
-                      // • Expert proficiency in UiPath, Blue Prism, or Automation Anywhere platforms
-                      // • Strong programming skills in C#, Python, VB.NET, or Java
-                      // • Experience with database technologies (SQL Server, Oracle, MySQL)
-                      // • Knowledge of web technologies (HTML, CSS, JavaScript, REST APIs)
-                      // • Familiarity with cloud platforms (Azure, AWS) and containerization (Docker)
-                      // • Understanding of AI/ML concepts and integration with RPA platforms
-
-                      // Soft Skills:
-                      // • Excellent analytical and problem-solving abilities
-                      // • Strong communication and stakeholder management skills
-                      // • Detail-oriented with focus on quality and accuracy
-                      // • Ability to work independently and manage multiple projects
-                      // • Continuous learning mindset and adaptability to new technologies
-
-                      // Preferred Qualifications:
-                      // • RPA platform certifications (UiPath Advanced Developer, Blue Prism Professional)
-                      // • Experience with process mining tools (Celonis, Process Street)
-                      // • Knowledge of business process management (BPM) principles
-                      // • Agile/Scrum methodology experience`
-                      
-
-  // const handleSelectVersion = (version: "original" | "ai") => {
-  //   setSelectedVersion(version);
-    
-  //   const finalJD = version === "original" ? originalJD : aiGeneratedJD;
-  //   localStorage.setItem('selectedJD', JSON.stringify({
-  //     version: version,
-  //     content: finalJD,
-  //     timestamp: Date.now()
-  //   }));
   const [loading, setLoading] = useState<boolean>(true);
+  
 
   useEffect(() => {
     if (!jdId) return;
@@ -152,45 +68,62 @@ const JDComparison = () => {
     fetchOriginalJD();
   }, [jdId]);
 
-const USE_MOCK_API = true;
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
-const generateAIEnhancedJD = async (jdData: any) => {
-  try {
-    let data;
+// const generateAIEnhancedJD = async (jdData: any) => {
+//   try {
+//     let data : string;
+//     const jdDataString = localStorage.getItem("jdData");
+//     const jdData = JSON.parse(jdDataString);
+//     const roleName = jdData.role; 
+//     console.log('USE_MOCK_API:', USE_MOCK_API)
 
-    if (USE_MOCK_API) {
-      data = await mockGenerateAIEnhancedJD(jdData);
-    } else {
-      const payload = {
-        role: jdData.role || "",
-        company_id: "",
-        methodology: "direct",
-        min_similarity: 0.5,
-      };
+//     if (USE_MOCK_API) {
+//       const mockData : object = await mockGenerateAIEnhancedJD(jdData);;
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}/refine/ai`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
+//       data = JSON.stringify(mockData).replace(/\*/g, "").replace(/\\n/g, "\n");
 
-      if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
+//     } else {
+//       const payload = {
+//         role: roleName || "",
+//         company_id: "",
+//         methodology: "direct",
+//         min_similarity: 0.5,
+//       };
 
-      data = await response.json();
-    }
-      // console.log("Mock/Real API Response:", data);
+//       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}/refine/ai`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${localStorage.getItem("token")}`,
+//         },
+//         body: JSON.stringify(payload),
+//       });
+//       console.log("waiting for response");
 
-    const cleanedRefinedText = (data || "⚠️ No AI-enhanced JD returned").replace(/\*/g, " ");
-    setAiGeneratedJD(cleanedRefinedText);
+//       if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
 
-  } catch (error) {
-    console.error("Error generating AI Enhanced JD:", error);
-    setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
-  }
-};
+//       console.log("getting proper response from api ")
+
+//       data = await response.json() ;
+//       // console.log(data['refined_text']);
+//       // console.log("type of data now ", typeof data)
+//       // console.log("filling data after ai generated data we get : ",data);
+
+//        data = JSON.stringify(data['refined_text']).replace(/\*/g, "").replace(/\\n/g, "\n");
+//     //console.log("AI",data)
+//     //setAiGeneratedJD(cleanedRefinedText);
+//     }
+//       // console.log("Mock/Real API Response:", data);
+
+   
+//     setAiGeneratedJD(data);
+
+//   } catch (error) {
+//     console.error("Error generating AI Enhanced JD:", error);
+//     setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
+//   }
+// };
 
 
 
@@ -212,6 +145,76 @@ const generateAIEnhancedJD = async (jdData: any) => {
 //     console.error("Error fetching highlights:", error);
 //   }
 // };
+
+//updated function with timeout
+
+const generateAIEnhancedJD = async (jdData: any) => {
+  try {
+    let data: string;
+    const jdDataString = localStorage.getItem("jdData");
+    const jdData = JSON.parse(jdDataString);
+    const roleName = jdData.role;
+    console.log('USE_MOCK_API:', USE_MOCK_API);
+
+    if (USE_MOCK_API) {
+      const mockData: object = await mockGenerateAIEnhancedJD(jdData);
+      data = JSON.stringify(mockData).replace(/\*/g, "").replace(/\\n/g, "\n");
+    } else {
+      const payload = {
+        role: roleName || "",
+        company_id: "",
+        methodology: "direct",
+        min_similarity: 0.5,
+      };
+
+      console.log("waiting for response");
+
+      const response = await axiosInstance.post(
+        `/api/v1/jd/${jdId}/refine/ai`,
+        payload,
+        {
+          timeout: 90000, // 90 seconds
+        }
+      );
+
+      console.log("getting proper response from api");
+
+      data = JSON.stringify(response.data['refined_text']).replace(/\*/g, "").replace(/\\n/g, "\n");
+    }
+
+    setAiGeneratedJD(data);
+
+  } catch (error) {
+    console.error("Error generating AI Enhanced JD:", error);
+    
+    if (isAxiosError(error)) {
+      // Connection reset or network errors
+      if (error.code === 'ECONNRESET' || error.code === 'ERR_NETWORK') {
+        setAiGeneratedJD("⚠️ Connection lost. Please check your internet and try again.");
+        return;
+      }
+      
+      // Timeout
+      if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+        setAiGeneratedJD("⚠️ Request timeout. The server is taking too long to respond.");
+        return;
+      }
+      
+      // Server errors
+      if (error.response?.status === 500) {
+        setAiGeneratedJD("⚠️ Server error. Please try again later.");
+        return;
+      }
+      
+      // Other API errors
+      setAiGeneratedJD(`⚠️ ${error.response?.data?.message || 'Failed to generate AI Enhanced JD.'}`);
+      return;
+    }
+    
+    setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
+  }
+};
+
 const handleSelect = async (version: "original" | "ai") => {
   try {
     // If user is editing, save the changes first
@@ -340,18 +343,58 @@ const handleSelect = async (version: "original" | "ai") => {
       });
        return;
     }
+  } else{
+    if (version === "original") {
+      setPreviousOriginalJD(originalJD);
+    } else {
+      setPreviousAIJD(aiGeneratedJD);
+    }
   }
 
   // Toggle edit mode
   setIsEditing(prev => ({ ...prev, [version]: !prev[version] }));
+
+  // const rolesName = localStorage.getItem("jdData");
+  // const getRole = JSON.parse(rolesName);
+  // setRoleName(getRole.role || "Unknown Role")
+
+  
 };
+
+  const handleUndo = (version: "original" | "ai") => {
+    if (version === "original") {
+      setOriginalJD(previousOriginalJD);
+    } else {
+      setAiGeneratedJD(previousAIJD);
+    }
+  };
+
+  useEffect(() => {
+  const storedJDData = localStorage.getItem("jdData");
+  if (storedJDData) {
+    try {
+      const parsedData = JSON.parse(storedJDData);
+      setRoleName(parsedData.role || "Unknown Role");
+    } catch (err) {
+      console.error("Failed to parse jdData:", err);
+    }
+  }
+}, []);
 
 
   return (
     <Layout currentStep={1}>
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Job Description Comparison</h1>
+      <div className="max-w-6xl mx-auto space-y-6">
+        <div className="text-center space-y-3">
+          <div className="flex items-baseline justify-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground">Job Description Comparison</h1>
+            {roleName && (
+                    <>
+                      <span className="text-muted-foreground text-xl">Role:</span>
+                      <span className="text-xl font-bold text-primary">{roleName}</span>
+                    </>
+                  )}
+          </div>
           <p className="text-lg text-muted-foreground">
             Compare your original JD with our AI-enhanced version and select the one that best fits your needs
           </p>
@@ -394,23 +437,35 @@ const handleSelect = async (version: "original" | "ai") => {
               )}
               
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleEdit("original")}
-                  className="flex items-center space-x-1"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
-                </Button>
+                 <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleEdit("original")}
+                    className="flex items-center space-x-1"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
+                  </Button>
+                  {isEditing.original && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUndo("original")}
+                      className="flex items-center space-x-1"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      <span>Undo</span>
+                    </Button>
+                  )}
+                </div>
                 
                 <div className="flex items-center space-x-2">
                         <Checkbox
-  id="originalJD"
-  checked={selectedVersion === "original"}
-  onCheckedChange={(checked) => {
-    if (checked) handleSelect("original");
-  }}
-/>
+                          id="originalJD"
+                          checked={selectedVersion === "original"}
+                          onCheckedChange={(checked) => {
+                            if (checked) handleSelect("original");
+                          }}
+                        />
                         <label
                           htmlFor="originalJD"
                           className={`text-sm font-medium leading-none ${
@@ -465,23 +520,34 @@ const handleSelect = async (version: "original" | "ai") => {
               )}
               
               <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => toggleEdit("ai")}
-                  className="flex items-center space-x-1"
-                >
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
-                </Button>
-                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => toggleEdit("ai")}
+                    className="flex items-center space-x-1"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
+                  </Button>
+                  {isEditing.ai && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUndo("ai")}
+                      className="flex items-center space-x-1"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                      <span>Undo</span>
+                    </Button>
+                  )}
+                </div>
                 <div className="flex items-center space-x-2">
                       <Checkbox
-  id="aiJD"
-  checked={selectedVersion === "ai"}
-  onCheckedChange={(checked) => {
-    if (checked) handleSelect("ai");
-  }}
-/>
+                        id="aiJD"
+                        checked={selectedVersion === "ai"}
+                        onCheckedChange={(checked) => {
+                          if (checked) handleSelect("ai");
+                        }}
+                      />
                       <label
                         htmlFor="aiJD"
                         className={`text-sm font-medium leading-none ${
@@ -536,6 +602,7 @@ const handleSelect = async (version: "original" | "ai") => {
       </div>
     </Layout>
   );
+  
 };
 
 export default JDComparison;

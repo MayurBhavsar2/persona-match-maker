@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { Eye, EyeOff, ArrowLeft, UserPlus, Shield, CheckCircle } from "lucide-react";
+import axios from 'axios';
+
 
 const Register = () => {
   const navigate = useNavigate();
@@ -26,68 +28,130 @@ const Register = () => {
     confirmPassword: "",
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
+  //   if (formData.password !== formData.confirmPassword) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Passwords do not match",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
 
-    try {
-      // Replace with your backend API URL
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/signup`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add any required headers (authorization, etc.)
-          // 'Authorization': 'Bearer YOUR_API_KEY',
-        },
-        body: JSON.stringify({
-          first_name: formData.first_name,
-          last_name:formData.last_name,
-          email: formData.email,
-          phone:formData.phone,
-          role: formData.role,
-          role_id:formData.role_id,
-          password: formData.password,
-        }),
-      });
+  //   try {
+  //     // Replace with your backend API URL
+  //     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/signup`, {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         // Add any required headers (authorization, etc.)
+  //         // 'Authorization': 'Bearer YOUR_API_KEY',
+  //       },
+  //       body: JSON.stringify({
+  //         first_name: formData.first_name,
+  //         last_name:formData.last_name,
+  //         email: formData.email,
+  //         phone:formData.phone,
+  //         role: formData.role,
+  //         role_id:formData.role_id,
+  //         password: formData.password,
+  //       }),
+  //     });
 
-      console.log("API Response status:", response.status);
-      console.log("API Response ok:", response.ok);
+  //     console.log("API Response status:", response.status);
+  //     console.log("API Response ok:", response.ok);
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Registration successful:", data);
-        toast({
-          title: "Registration Successful",
-          description: "Welcome to your HR platform!",
-        });
-        navigate("/login");
-      } else {
-        const errorData = await response.text();
-        console.error("Registration failed with status:", response.status, "Error:", errorData);
-        toast({
-          title: "Registration Failed",
-          description: `Server error: ${response.status}. Check if backend is running.`,
-          variant: "destructive",
-        });
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log("Registration successful:", data);
+  //       toast({
+  //         title: "Registration Successful",
+  //         description: "Welcome to your HR platform!",
+  //       });
+  //       navigate("/login");
+  //     } else {
+  //       const errorData = await response.text();
+  //       const errorMessage = errorData?.detail
+  //       console.error("Registration failed with status:", response.status, "Error:", errorData);
+  //       toast({
+  //         title: "Registration Failed",
+  //         description: errorMessage,
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Network error during registration:", error);
+  //     toast({
+  //       title: "Registration Failed",
+  //       description: "Network error. Check if backend is running on localhost:8000",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+  
+
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (formData.password !== formData.confirmPassword) {
+    toast({
+      title: "Error",
+      description: "Passwords do not match",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/api/v1/auth/signup`,
+      {
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role,
+        role_id: formData.role_id,
+        password: formData.password,
       }
-    } catch (error) {
-      console.error("Network error during registration:", error);
+    );
+
+    console.log("Registration successful:", response.data);
+    toast({
+      title: "Registration Successful",
+      description: "Welcome to your HR platform!",
+    });
+    navigate("/login");
+    
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          error.response?.data?.error ||
+                          error.message ||
+                          "Registration failed. Please try again.";
+      
+      console.error("Registration failed:", error.response?.data);
+      
       toast({
         title: "Registration Failed",
-        description: "Network error. Check if backend is running on localhost:8000",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } else {
+      console.error("Network error:", error);
+      toast({
+        title: "Registration Failed",
+        description: "Network error. Check if backend is running.",
         variant: "destructive",
       });
     }
-  };
-  
+  }
+};
+
   useEffect(() => {
   const fetchRoles = async () => {
     try {
