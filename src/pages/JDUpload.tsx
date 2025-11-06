@@ -27,6 +27,7 @@ const JDUpload = () => {
   const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingManagers, setLoadingManagers] = useState(false);
   const [openManagerPopover, setOpenManagerPopover] = useState(false);
+  const [title, setTitle] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -380,6 +381,17 @@ const JDUpload = () => {
                   Cancel
                 </Button>
               )}
+            </div>
+
+            {/* Title Input */}
+            <div className="space-y-2">
+              <Label htmlFor="title" className="text-base">Title</Label>
+              <Input
+                id="title"
+                placeholder="Enter job title..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </div>
 
             {/* Job Description Input Method Selection */}
