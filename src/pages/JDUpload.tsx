@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Plus, ChevronRight, Type, File, X } from "lucide-react";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import axiosInstance, { isAxiosError } from "@/lib/utils";
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const JDUpload = () => {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ const JDUpload = () => {
   const [instructions, setInstructions] = useState("");
   const [showCustomRole, setShowCustomRole] = useState(false);
   const [inputMethod, setInputMethod] = useState<"upload" | "text">("upload");
+  const [selectedManagers, setSelectedManagers] = useState<string[]>([]);
+  const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
+  const [loadingManagers, setLoadingManagers] = useState(false);
+  const [openManagerPopover, setOpenManagerPopover] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -32,50 +37,97 @@ const JDUpload = () => {
   const [size, setSize] = useState(10);
   const [activeOnly, setActiveOnly] = useState(false);
 
-//   useEffect(() => {
-//   const fetchRoles = async () => {
-//     try {
-//       // Construct dynamic query parameters
-//       const queryParams = new URLSearchParams({
-//         page: page.toString(),
-//         size: size.toString(),
-//         active_only: activeOnly.toString(),
-//       });
+  useEffect(() => {
+  const fetchRoles = async () => {
+    try {
+      // Construct dynamic query parameters
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        active_only: activeOnly.toString(),
+      });
 
-//       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?${queryParams.toString()}`, {
-//         method: "GET",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${localStorage.getItem("token")}`,
-//         },
-//       });
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?${queryParams.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-//       if (!response.ok) throw new Error(`Failed to fetch roles: ${response.status}`);
+      if (!response.ok) throw new Error(`Failed to fetch roles: ${response.status}`);
 
-//       const data = await response.json();
-//       console.log(data)
+      const data = await response.json();
+      console.log(data)
     
-//       // Assuming roles come from data.results
-//       const roles = data.job_roles
-//           ? data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
-//           : data.map((r: any) => ({ id: r.id, name: r.name }));
+      // Assuming roles come from data.results
+      const roles = data.job_roles
+          ? data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
+          : data.map((r: any) => ({ id: r.id, name: r.name }));
       
-//         localStorage.setItem("jobRoles", JSON.stringify(roles));
-// setPredefinedRoles(roles);
+        localStorage.setItem("jobRoles", JSON.stringify(roles));
+setPredefinedRoles(roles);
 
-//     } catch (error) {
-//       console.error("Error fetching roles:", error);
-//       toast({
-//         title: "Error fetching roles",
-//         description: "Could not load roles. Please try again later.",
-//         variant: "destructive",
-//       });
-//     }
-//   };
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+      toast({
+        title: "Error fetching roles",
+        description: "Could not load roles. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
 
-//   fetchRoles();
-// }, [page, size, activeOnly]); // refetch if any param changes
+  fetchRoles();
+}, [page, size, activeOnly]); // refetch if any param changes
 
+
+useEffect(() => {
+    const fetchHiringManagers = async () => {
+      setLoadingManagers(true);
+      try {
+        // TODO: Replace with your actual API endpoint for fetching hiring managers
+        const response = await fetch('YOUR_API_ENDPOINT_FOR_HIRING_MANAGERS', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            
+            // Add any required headers (authorization, etc.)
+            // 'Authorization': 'Bearer YOUR_API_KEY',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch hiring managers');
+        }
+
+        const data = await response.json();
+        
+        // TODO: Adjust based on your API response structure
+        // Expected format: [{ id: "1", name: "John Doe" }, { id: "2", name: "Jane Smith" }]
+        setHiringManagers(data.hiringManagers || data);
+        
+      } catch (error) {
+        console.error('Error fetching hiring managers:', error);
+        toast({
+          title: "Failed to load hiring managers",
+          description: "Using default list. Please check your API connection.",
+          variant: "destructive",
+        });
+        
+        // Fallback: Demo data for testing
+        setHiringManagers([
+          { id: "1", name: "John Doe" },
+          { id: "2", name: "Jane Smith" },
+          { id: "3", name: "Michael Johnson" }
+        ]);
+      } finally {
+        setLoadingManagers(false);
+      }
+    };
+
+    fetchHiringManagers();
+  }, []);
 
     // Popup state for Add Role
 const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -190,6 +242,15 @@ const handleSaveRole = async () => {
     return;
   }
 
+  if (selectedManagers.length === 0) {
+      toast({
+        title: "Hiring Manager required",
+        description: "Please select at least one hiring manager.",
+        variant: "destructive",
+      });
+      return;
+    }
+
   if (inputMethod === "upload" && !file) {
     toast({
       title: "File required",
@@ -222,6 +283,7 @@ const handleSaveRole = async () => {
     formData.append("role", roleName);
     formData.append("role_id", roleId);
     formData.append("title", roleName);
+    formData.append('hiringManagers', JSON.stringify(selectedManagers));
     formData.append("notes", instructions || "");
 
     const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/upload-document`, {
@@ -263,6 +325,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
+        hiringManagers: selectedManagers,
         roleId: roleId,
         fileName: file.name,
         instructions,
@@ -281,6 +344,7 @@ const handleSaveRole = async () => {
       body: JSON.stringify({
         title: roleName,
         role: roleName,
+        hiringManagers: selectedManagers,
         role_id: roleId,
         notes: instructions,
         original_text: jdText,
@@ -299,6 +363,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
+        hiringManagers: selectedManagers,
         roleId: roleId,
         jdContent: jdText,
         instructions,
@@ -323,70 +388,6 @@ const handleSaveRole = async () => {
 };
 
 
-
-useEffect(() => {
-  const fetchRoles = async () => {
-    try {
-      const response = await axiosInstance.get('/api/v1/job-role/', {
-        params: {
-          page: page,
-          size: size,
-          active_only: activeOnly,
-        },
-      });
-
-      console.log(response.data);
-    
-      // Assuming roles come from data.results
-      const roles = response.data.job_roles
-        ? response.data.job_roles.map((r: any) => ({ id: r.id, name: r.name }))
-        : response.data.map((r: any) => ({ id: r.id, name: r.name }));
-      
-      localStorage.setItem("jobRoles", JSON.stringify(roles));
-      setPredefinedRoles(roles);
-
-    } catch (error) {
-      console.error("Error fetching roles:", error);
-      
-      if (isAxiosError(error)) {
-        if (error.code === 'ECONNRESET' || error.code === 'ERR_NETWORK') {
-          toast({
-            title: "Connection Error",
-            description: "Connection lost. Please check your internet and try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-          toast({
-            title: "Request Timeout",
-            description: "The server is taking too long to respond. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        toast({
-          title: "Error fetching roles",
-          description: error.response?.data?.message || "Could not load roles. Please try again later.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      toast({
-        title: "Error fetching roles",
-        description: "Could not load roles. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  fetchRoles();
-}, [page, size, activeOnly]);
-
-
   return (
     <Layout currentStep={1}>
       <div className="max-w-4xl mx-auto space-y-8">
@@ -408,9 +409,11 @@ useEffect(() => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+
             {/* Role Selection */}
-            <div className="flex items-center space-x-1">
-              <Label htmlFor="role" className="min-w-[40px] text-base">Role:</Label>
+            
+            <div className="flex items-center gap-2">
+              <Label htmlFor="role" className="text-base whitespace-nowrap">Role:</Label>
               <div className="flex-1">
                 {!showCustomRole ? (
                   <Select value={selectedRole} onValueChange={setSelectedRole}>
@@ -425,6 +428,7 @@ useEffect(() => {
                       ))}
                     </SelectContent>
                   </Select>
+                  
                 ) : (
                   <Input
                     placeholder="Enter custom role..."
@@ -434,6 +438,60 @@ useEffect(() => {
                 )
                 }
               </div>
+
+                {/* Hiring Manager Selection */}
+                
+              {/* <Label htmlFor="hiringManager" className="text-base whitespace-nowrap">Manager</Label> */}
+              <div className="flex-1">
+                <Popover open={openManagerPopover} onOpenChange={setOpenManagerPopover}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openManagerPopover}
+                      className="w-full justify-between h-10 px-3 py-2 text-sm font-normal bg-background border-input hover:bg-background hover:text-foreground"
+                      disabled={loadingManagers}
+                    >
+                      {selectedManagers.length > 0
+                        ? `${selectedManagers.length} manager${selectedManagers.length > 1 ? 's' : ''} selected`
+                        : loadingManagers ? "Loading..." : "Select manager(s)..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="p-0" align="start" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                    <Command>
+                      <CommandInput placeholder="Search managers..." />
+                      <CommandList>
+                        <CommandEmpty>No manager found.</CommandEmpty>
+                        <CommandGroup>
+                          {hiringManagers.map((manager) => (
+                            <CommandItem
+                              key={manager.id}
+                              value={manager.name}
+                              onSelect={() => {
+                                setSelectedManagers(
+                                  selectedManagers.includes(manager.name)
+                                    ? selectedManagers.filter((m) => m !== manager.name)
+                                    : [...selectedManagers, manager.name]
+                                );
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedManagers.includes(manager.name) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {manager.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               {!showCustomRole ? (
                 <Button
                     variant="outline"
@@ -456,6 +514,10 @@ useEffect(() => {
                 </Button>
               )}
             </div>
+
+            
+  
+          
 
             {/* Job Description Input Method Selection */}
             <div className="space-y-4">

@@ -47,7 +47,7 @@ export interface ScoreResponse {
 // hooks/useCandidateScoring.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { useEvaluatedCandidates } from "@/lib/helper";
+import { useEvaluatedCandidates, useScoreCandidates } from "@/lib/helper";
 
 const API_URL = import.meta.env.VITE_API_URL;
 

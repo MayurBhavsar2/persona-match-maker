@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Edit3, CheckCircle, FileText, Sparkles,Undo2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { stringify } from "querystring";
-import axiosInstance, { isAxiosError } from "@/lib/utils";
 
 const JDComparison: React.FC = () => {
   const { jdId } = useParams<{ jdId: string }>();
@@ -27,6 +26,98 @@ const JDComparison: React.FC = () => {
   const [originalJD, setOriginalJD] = useState<string>("Loading Original JD.....");
   const [aiGeneratedJD, setAiGeneratedJD] = useState<string>(`Loading AI Enhanced JD.....`);
 
+  // const generatePersonaFromJD = async (jdId: string) => {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/v1/persona/generate-from-jd/${jdId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (!response.ok) throw new Error("Failed to generate persona from JD");
+
+  //     const data = await response.json();
+  //     console.log("Persona generated successfully:", data);
+  //     localStorage.setItem("generatedPersona", JSON.stringify(data));
+  //     navigate(`/persona-config/${data.job_description_id}`);
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Error generating persona:", error);
+  //   }
+  // };
+
+    
+                  //     `Position: RPA Developer
+
+                  // Job Summary:
+                  // We are seeking an experienced RPA Developer to join our automation team. The candidate will be responsible for developing, testing, and maintaining robotic process automation solutions.
+
+                  // Key Responsibilities:
+                  // • Design and develop RPA workflows using UiPath/Blue Prism
+                  // • Collaborate with business analysts to identify automation opportunities
+                  // • Test and debug automation scripts
+                  // • Provide technical support for deployed bots
+
+                  // Requirements:
+                  // • 3+ years of experience in RPA development
+                  // • Proficiency in UiPath or Blue Prism
+                  // • Basic understanding of programming languages
+                  // • Strong analytical skills`
+
+
+  
+    
+                      //     `Position: RPA Developer - Senior Level
+
+                      // Job Summary:
+                      // We are seeking a highly skilled RPA Developer to design, develop, and deploy enterprise-grade robotic process automation solutions. The ideal candidate will drive digital transformation initiatives and optimize business processes through intelligent automation.
+
+                      // Key Responsibilities:
+                      // • Architect and develop scalable RPA workflows using UiPath, Blue Prism, or Automation Anywhere
+                      // • Conduct comprehensive process analysis and automation feasibility assessments
+                      // • Implement advanced automation features including AI/ML integration, OCR, and API connectivity
+                      // • Collaborate with cross-functional teams to identify high-impact automation opportunities
+                      // • Establish automation governance frameworks and best practices
+                      // • Mentor junior developers and provide technical leadership
+                      // • Monitor bot performance and implement continuous improvement strategies
+
+                      // Technical Requirements:
+                      // • 5+ years of hands-on experience in RPA development
+                      // • Expert proficiency in UiPath, Blue Prism, or Automation Anywhere platforms
+                      // • Strong programming skills in C#, Python, VB.NET, or Java
+                      // • Experience with database technologies (SQL Server, Oracle, MySQL)
+                      // • Knowledge of web technologies (HTML, CSS, JavaScript, REST APIs)
+                      // • Familiarity with cloud platforms (Azure, AWS) and containerization (Docker)
+                      // • Understanding of AI/ML concepts and integration with RPA platforms
+
+                      // Soft Skills:
+                      // • Excellent analytical and problem-solving abilities
+                      // • Strong communication and stakeholder management skills
+                      // • Detail-oriented with focus on quality and accuracy
+                      // • Ability to work independently and manage multiple projects
+                      // • Continuous learning mindset and adaptability to new technologies
+
+                      // Preferred Qualifications:
+                      // • RPA platform certifications (UiPath Advanced Developer, Blue Prism Professional)
+                      // • Experience with process mining tools (Celonis, Process Street)
+                      // • Knowledge of business process management (BPM) principles
+                      // • Agile/Scrum methodology experience`
+                      
+
+  // const handleSelectVersion = (version: "original" | "ai") => {
+  //   setSelectedVersion(version);
+    
+  //   const finalJD = version === "original" ? originalJD : aiGeneratedJD;
+  //   localStorage.setItem('selectedJD', JSON.stringify({
+  //     version: version,
+  //     content: finalJD,
+  //     timestamp: Date.now()
+  //   }));
   const [loading, setLoading] = useState<boolean>(true);
   
 
@@ -70,60 +161,59 @@ const JDComparison: React.FC = () => {
 
 const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
-// const generateAIEnhancedJD = async (jdData: any) => {
-//   try {
-//     let data : string;
-//     const jdDataString = localStorage.getItem("jdData");
-//     const jdData = JSON.parse(jdDataString);
-//     const roleName = jdData.role; 
-//     console.log('USE_MOCK_API:', USE_MOCK_API)
+const generateAIEnhancedJD = async (jdData: any) => {
+  try {
+    let data : string;
+    const jdDataString = localStorage.getItem("jdData");
+    const jdData = JSON.parse(jdDataString);
+    const roleName = jdData.role; // Access the role name
 
-//     if (USE_MOCK_API) {
-//       const mockData : object = await mockGenerateAIEnhancedJD(jdData);;
+    if (USE_MOCK_API) {
+      let mockData : Object = await mockGenerateAIEnhancedJD(jdData);;
 
-//       data = JSON.stringify(mockData).replace(/\*/g, "").replace(/\\n/g, "\n");
+      data = JSON.stringify(mockData).replace(/\*/g, "").replace(/\\n/g, "\n");
 
-//     } else {
-//       const payload = {
-//         role: roleName || "",
-//         company_id: "",
-//         methodology: "direct",
-//         min_similarity: 0.5,
-//       };
+    } else {
+      const payload = {
+        role: roleName || "",
+        company_id: "",
+        methodology: "direct",
+        min_similarity: 0.5,
+      };
 
-//       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}/refine/ai`, {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${localStorage.getItem("token")}`,
-//         },
-//         body: JSON.stringify(payload),
-//       });
-//       console.log("waiting for response");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}/refine/ai`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      console.log("waiting for response");
 
-//       if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
+      if (!response.ok) throw new Error("Failed to generate AI Enhanced JD");
 
-//       console.log("getting proper response from api ")
+      console.log("getting proper response from api ")
 
-//       data = await response.json() ;
-//       // console.log(data['refined_text']);
-//       // console.log("type of data now ", typeof data)
-//       // console.log("filling data after ai generated data we get : ",data);
+      data = await response.json() ;
+      // console.log(data['refined_text']);
+      // console.log("type of data now ", typeof data)
+      // console.log("filling data after ai generated data we get : ",data);
 
-//        data = JSON.stringify(data['refined_text']).replace(/\*/g, "").replace(/\\n/g, "\n");
-//     //console.log("AI",data)
-//     //setAiGeneratedJD(cleanedRefinedText);
-//     }
-//       // console.log("Mock/Real API Response:", data);
+       data = JSON.stringify(data['refined_text']).replace(/\*/g, "").replace(/\\n/g, "\n");
+    //console.log("AI",data)
+    //setAiGeneratedJD(cleanedRefinedText);
+    }
+      // console.log("Mock/Real API Response:", data);
 
    
-//     setAiGeneratedJD(data);
+    setAiGeneratedJD(data);
 
-//   } catch (error) {
-//     console.error("Error generating AI Enhanced JD:", error);
-//     setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
-//   }
-// };
+  } catch (error) {
+    console.error("Error generating AI Enhanced JD:", error);
+    setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
+  }
+};
 
 
 
@@ -145,76 +235,6 @@ const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 //     console.error("Error fetching highlights:", error);
 //   }
 // };
-
-//updated function with timeout
-
-const generateAIEnhancedJD = async (jdData: any) => {
-  try {
-    let data: string;
-    const jdDataString = localStorage.getItem("jdData");
-    const jdData = JSON.parse(jdDataString);
-    const roleName = jdData.role;
-    console.log('USE_MOCK_API:', USE_MOCK_API);
-
-    if (USE_MOCK_API) {
-      const mockData: object = await mockGenerateAIEnhancedJD(jdData);
-      data = JSON.stringify(mockData).replace(/\*/g, "").replace(/\\n/g, "\n");
-    } else {
-      const payload = {
-        role: roleName || "",
-        company_id: "",
-        methodology: "direct",
-        min_similarity: 0.5,
-      };
-
-      console.log("waiting for response");
-
-      const response = await axiosInstance.post(
-        `/api/v1/jd/${jdId}/refine/ai`,
-        payload,
-        {
-          timeout: 90000, // 90 seconds
-        }
-      );
-
-      console.log("getting proper response from api");
-
-      data = JSON.stringify(response.data['refined_text']).replace(/\*/g, "").replace(/\\n/g, "\n");
-    }
-
-    setAiGeneratedJD(data);
-
-  } catch (error) {
-    console.error("Error generating AI Enhanced JD:", error);
-    
-    if (isAxiosError(error)) {
-      // Connection reset or network errors
-      if (error.code === 'ECONNRESET' || error.code === 'ERR_NETWORK') {
-        setAiGeneratedJD("⚠️ Connection lost. Please check your internet and try again.");
-        return;
-      }
-      
-      // Timeout
-      if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-        setAiGeneratedJD("⚠️ Request timeout. The server is taking too long to respond.");
-        return;
-      }
-      
-      // Server errors
-      if (error.response?.status === 500) {
-        setAiGeneratedJD("⚠️ Server error. Please try again later.");
-        return;
-      }
-      
-      // Other API errors
-      setAiGeneratedJD(`⚠️ ${error.response?.data?.message || 'Failed to generate AI Enhanced JD.'}`);
-      return;
-    }
-    
-    setAiGeneratedJD("⚠️ Failed to generate AI Enhanced JD.");
-  }
-};
-
 const handleSelect = async (version: "original" | "ai") => {
   try {
     // If user is editing, save the changes first
