@@ -196,6 +196,7 @@ const JDUpload = () => {
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
           role,
+          title,
           hiringManagers: selectedManagers,
           fileName: file.name,
           jdContent: result.extractedText || null, // Assuming API returns extracted text
@@ -230,6 +231,7 @@ const JDUpload = () => {
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
           role,
+          title,
           hiringManagers: selectedManagers,
           fileName: "Pasted Job Description",
           jdContent: jdText,
@@ -255,6 +257,7 @@ const JDUpload = () => {
       // Fallback: Store data locally for demo purposes
       localStorage.setItem('jdData', JSON.stringify({
         role,
+        title,
         hiringManagers: selectedManagers,
         fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
         jdContent: inputMethod === "text" ? jdText : null,
