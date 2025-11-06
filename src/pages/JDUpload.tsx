@@ -128,6 +128,15 @@ const JDUpload = () => {
       return;
     }
 
+    if (!title.trim()) {
+      toast({
+        title: "Title required",
+        description: "Please enter a job title.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (selectedManagers.length === 0) {
       toast({
         title: "Hiring Manager required",
