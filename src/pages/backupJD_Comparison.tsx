@@ -26,9 +26,98 @@ const JDComparison: React.FC = () => {
   const [originalJD, setOriginalJD] = useState<string>("Loading Original JD.....");
   const [aiGeneratedJD, setAiGeneratedJD] = useState<string>(`Loading AI Enhanced JD.....`);
 
- 
+  // const generatePersonaFromJD = async (jdId: string) => {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/v1/persona/generate-from-jd/${jdId}`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+
+  //     if (!response.ok) throw new Error("Failed to generate persona from JD");
+
+  //     const data = await response.json();
+  //     console.log("Persona generated successfully:", data);
+  //     localStorage.setItem("generatedPersona", JSON.stringify(data));
+  //     navigate(`/persona-config/${data.job_description_id}`);
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Error generating persona:", error);
+  //   }
+  // };
+
+    
+                  //     `Position: RPA Developer
+
+                  // Job Summary:
+                  // We are seeking an experienced RPA Developer to join our automation team. The candidate will be responsible for developing, testing, and maintaining robotic process automation solutions.
+
+                  // Key Responsibilities:
+                  // • Design and develop RPA workflows using UiPath/Blue Prism
+                  // • Collaborate with business analysts to identify automation opportunities
+                  // • Test and debug automation scripts
+                  // • Provide technical support for deployed bots
+
+                  // Requirements:
+                  // • 3+ years of experience in RPA development
+                  // • Proficiency in UiPath or Blue Prism
+                  // • Basic understanding of programming languages
+                  // • Strong analytical skills`
+
 
   
+    
+                      //     `Position: RPA Developer - Senior Level
+
+                      // Job Summary:
+                      // We are seeking a highly skilled RPA Developer to design, develop, and deploy enterprise-grade robotic process automation solutions. The ideal candidate will drive digital transformation initiatives and optimize business processes through intelligent automation.
+
+                      // Key Responsibilities:
+                      // • Architect and develop scalable RPA workflows using UiPath, Blue Prism, or Automation Anywhere
+                      // • Conduct comprehensive process analysis and automation feasibility assessments
+                      // • Implement advanced automation features including AI/ML integration, OCR, and API connectivity
+                      // • Collaborate with cross-functional teams to identify high-impact automation opportunities
+                      // • Establish automation governance frameworks and best practices
+                      // • Mentor junior developers and provide technical leadership
+                      // • Monitor bot performance and implement continuous improvement strategies
+
+                      // Technical Requirements:
+                      // • 5+ years of hands-on experience in RPA development
+                      // • Expert proficiency in UiPath, Blue Prism, or Automation Anywhere platforms
+                      // • Strong programming skills in C#, Python, VB.NET, or Java
+                      // • Experience with database technologies (SQL Server, Oracle, MySQL)
+                      // • Knowledge of web technologies (HTML, CSS, JavaScript, REST APIs)
+                      // • Familiarity with cloud platforms (Azure, AWS) and containerization (Docker)
+                      // • Understanding of AI/ML concepts and integration with RPA platforms
+
+                      // Soft Skills:
+                      // • Excellent analytical and problem-solving abilities
+                      // • Strong communication and stakeholder management skills
+                      // • Detail-oriented with focus on quality and accuracy
+                      // • Ability to work independently and manage multiple projects
+                      // • Continuous learning mindset and adaptability to new technologies
+
+                      // Preferred Qualifications:
+                      // • RPA platform certifications (UiPath Advanced Developer, Blue Prism Professional)
+                      // • Experience with process mining tools (Celonis, Process Street)
+                      // • Knowledge of business process management (BPM) principles
+                      // • Agile/Scrum methodology experience`
+                      
+
+  // const handleSelectVersion = (version: "original" | "ai") => {
+  //   setSelectedVersion(version);
+    
+  //   const finalJD = version === "original" ? originalJD : aiGeneratedJD;
+  //   localStorage.setItem('selectedJD', JSON.stringify({
+  //     version: version,
+  //     content: finalJD,
+  //     timestamp: Date.now()
+  //   }));
   const [loading, setLoading] = useState<boolean>(true);
   
 
@@ -128,7 +217,24 @@ const generateAIEnhancedJD = async (jdData: any) => {
 
 
 
+//   const fetchHighlights = async () => {
+//   try {
+//     const response = await fetch(`/api/v1/jd/${jdId}/diff?format=table`, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json",
+//         Authorization: `Bearer ${localStorage.getItem("token")}`,
+//       },
+//     });
+//     if (!response.ok) throw new Error("Failed to fetch highlights");
+//     const data = await response.json();
 
+//     // Render the diff_html directly
+//     setAiGeneratedJD(data.diff_html || "⚠️ No highlights returned");
+//   } catch (error) {
+//     console.error("Error fetching highlights:", error);
+//   }
+// };
 const handleSelect = async (version: "original" | "ai") => {
   try {
     // If user is editing, save the changes first

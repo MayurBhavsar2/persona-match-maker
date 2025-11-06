@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 
+
 const JDUpload = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -28,6 +29,10 @@ const JDUpload = () => {
   const [hiringManagers, setHiringManagers] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingManagers, setLoadingManagers] = useState(false);
   const [openManagerPopover, setOpenManagerPopover] = useState(false);
+  const [title, setTitle] = useState("");
+  const [textSaved, setTextSaved] = useState(false);
+  const [savedJdId, setSavedJdId] = useState<string | null>(null);
+  const [showTextCancelConfirm, setShowTextCancelConfirm] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -228,7 +233,7 @@ const handleSaveRole = async () => {
     fileInputRef.current?.click();
   };
 
- const handleSubmit = async () => {
+const handleSubmit = async () => {
   const selectedRoleObj = predefinedRoles.find(r => r.id === selectedRole);
   const roleId = selectedRoleObj ? selectedRoleObj.id : "";
   const roleName = selectedRoleObj ? selectedRoleObj.name : customRole || "";
@@ -241,6 +246,15 @@ const handleSaveRole = async () => {
     });
     return;
   }
+
+  if (!title.trim()) {
+      toast({
+        title: "Title required",
+        description: "Please enter a job title.",
+        variant: "destructive",
+      });
+      return;
+    }
 
   if (selectedManagers.length === 0) {
       toast({
@@ -281,8 +295,8 @@ const handleSaveRole = async () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("role", roleName);
+    formData.append('title', title);
     formData.append("role_id", roleId);
-    formData.append("title", roleName);
     formData.append('hiringManagers', JSON.stringify(selectedManagers));
     formData.append("notes", instructions || "");
 
@@ -296,7 +310,7 @@ const handleSaveRole = async () => {
 
     // ✅ Read the response JSON regardless of status
     const result = await response.json().catch(() => null);
-
+    //console.log(result);
     // ✅ Custom check for "No text content found" error
     if (!response.ok) {
       const errorMessage = result?.detail || "";
@@ -325,6 +339,7 @@ const handleSaveRole = async () => {
       "jdData",
       JSON.stringify({
         role: roleName,
+        title,
         hiringManagers: selectedManagers,
         roleId: roleId,
         fileName: file.name,
@@ -335,42 +350,15 @@ const handleSaveRole = async () => {
   } 
   
   else if (inputMethod === "text" && jdText.trim()) {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-      body: JSON.stringify({
-        title: roleName,
-        role: roleName,
-        hiringManagers: selectedManagers,
-        role_id: roleId,
-        notes: instructions,
-        original_text: jdText,
-        company_id: "0",
-        tags: [],
-      }),
+    if (!textSaved || !savedJdId) {
+    toast({
+      title: "Save Required",
+      description: "Please save/confirm the pasted JD first.",
+      variant: "destructive",
     });
-
-    const result = await response.json();
-    if (!response.ok) throw new Error(`Upload failed: ${result?.detail || response.statusText}`);
-
-    jdId = result.id;
-    if (!jdId) throw new Error("JD ID not returned from backend");
-
-    localStorage.setItem(
-      "jdData",
-      JSON.stringify({
-        role: roleName,
-        hiringManagers: selectedManagers,
-        roleId: roleId,
-        jdContent: jdText,
-        instructions,
-        timestamp: Date.now(),
-      })
-    );
+    return;
   }
+}
 
   // ✅ Navigate only if jdId is set
   if (jdId) {
@@ -386,6 +374,92 @@ const handleSaveRole = async () => {
 }
 
 };
+
+const handleSaveJDText = async () => {
+
+  const selectedRoleObj = predefinedRoles.find(r => r.id === selectedRole);
+  const roleId = selectedRoleObj ? selectedRoleObj.id : "";
+  const roleName = selectedRoleObj ? selectedRoleObj.name : customRole || "";
+
+  if (!jdText.trim()) {
+    toast({
+      title: "Job description required",
+      description: "Please enter the job description text.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (!title.trim()) {
+    toast({
+      title: "Title required",
+      description: "Please enter a job title.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  toast({ title: "Saving JD...", description: "Please wait." });
+
+  try {
+    let jdId: any | null = null;
+
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        title,
+        role: roleName,
+        hiringManagers: selectedManagers,
+        role_id: roleId,
+        notes: instructions,
+        original_text: jdText,
+        company_id: "0",
+        tags: [],
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result?.detail || "Failed to save job description");
+
+     jdId = result.id;
+     if (!jdId) throw new Error("JD ID not returned from backend");
+
+    setSavedJdId(result.id);
+    setTextSaved(true);
+   
+    // Save in localstorage
+    localStorage.setItem(
+      "jdData",
+      JSON.stringify({
+        role: roleName,
+        title,
+        hiringManagers: selectedManagers,
+        roleId,
+        jdContent: jdText,
+        instructions,
+        timestamp: Date.now(),
+      })
+    );
+
+    toast({ title: "Text JD Saved Successfully", description: "Proceed to Analysis" });
+     if (jdId) {
+    navigate(`/jd-comparison/${jdId}`);
+  }
+
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "Error",
+      description: "Could not save job description.",
+      variant: "destructive",
+    });
+  }
+};
+
 
 
   return (
@@ -412,7 +486,9 @@ const handleSaveRole = async () => {
 
             {/* Role Selection */}
             
-            <div className="flex items-center gap-2">
+             <div className="space-y-3">
+              
+              <div className="flex items-center gap-2">
               <Label htmlFor="role" className="text-base whitespace-nowrap">Role:</Label>
               <div className="flex-1">
                 {!showCustomRole ? (
@@ -515,9 +591,18 @@ const handleSaveRole = async () => {
               )}
             </div>
 
-            
-  
-          
+              {/* Title Input */}
+              <div className="flex items-center gap-2">
+                <Label htmlFor="title" className="text-base whitespace-nowrap">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter job title..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+          </div>
 
             {/* Job Description Input Method Selection */}
             <div className="space-y-4">
@@ -594,25 +679,80 @@ const handleSaveRole = async () => {
                     accept=".pdf,.doc,.docx,.txt"
                     onChange={handleFileUpload}
                   />
+
+                  
+
                 </div>
               )}
 
               {inputMethod === "text" && (
-                <div className="space-y-2">
-                  <Label htmlFor="jdText">Job Description Text</Label>
-                  <Textarea
-                    id="jdText"
-                    placeholder="Copy and paste your job description here..."
-                    value={jdText}
-                    onChange={(e) => setJdText(e.target.value)}
-                    rows={12}
-                    className="resize-none"
-                  />
-                  {/* <p className="text-xs text-muted-foreground">
-                    Paste the complete job description content here.
-                  </p> */}
-                </div>
-              )}
+                  <div className="space-y-2">
+                    <Label htmlFor="jdText">Job Description Text</Label>
+                    <Textarea
+                      id="jdText"
+                      placeholder="Copy and paste your job description here..."
+                      value={jdText}
+                      onChange={(e) => setJdText(e.target.value)}
+                      rows={12}
+                      className="resize-none"
+                    />
+                     <div className="flex justify-end mt-2">
+                        <Button
+                          variant="outline"
+                          onClick={handleSaveJDText}
+                          className="bg-primary text-white mr-4"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowTextCancelConfirm(true)}
+                          className="bg-primary text-white"
+                        >
+                          Cancel
+                        </Button>
+                    </div>
+                    {textSaved && (
+                      <p className="text-green-600 text-sm flex items-center gap-1">
+                        ✅ JD saved successfully. Click "Analyze Job Description" to proceed.
+                      </p>
+                    )}
+                  </div>
+                )}
+                <Dialog open={showTextCancelConfirm} onOpenChange={setShowTextCancelConfirm}>
+                  <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>Remove JD Text?</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to clear the Job Description text?
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowTextCancelConfirm(false)}
+                      >
+                        No
+                      </Button>
+
+                      <Button
+                        className="bg-destructive text-white"
+                        onClick={() => {
+                          setJdText("");      // Clear text
+                          setShowTextCancelConfirm(false);
+                          toast({
+                            title: "Text removed",
+                            description: "Job description text has been cleared.",
+                          });
+                        }}
+                      >
+                        Yes
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
             </div>
 
             {/* Instructions */}
@@ -701,8 +841,10 @@ const handleSaveRole = async () => {
               </DialogContent>
             </Dialog>
 
-
+                
     </Layout>
+    
+
   );
 };
 

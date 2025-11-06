@@ -123,46 +123,40 @@ const PersonaConfig = () => {
         if (USE_MOCK_API) {
           data = await mockFetchPersona(jdId);
         } else {
-          try {
-            const { data } = await axiosInstance.post(
-              `/api/v1/persona/generate-from-jd/${jdId}`,
-              { job_description_id: jdId },
-              {
-                timeout: 90000,
-              }
-            );
+          // console.log("JD ID:", jdId);
+          // console.log("Token:", localStorage.getItem("token"));
+          // console.log("API URL:", import.meta.env.VITE_API_URL);
 
-            console.log(data);
-
-            // Use data here...
-          } catch (error) {
-            if (isAxiosError(error)) {
-              if (error.code === "ECONNABORTED") {
-                throw new Error("Request timeout - please try again");
-              }
-              throw new Error(
-                error.response?.data?.message || "Failed to fetch persona"
-              );
+          const response = await fetch(
+            `${import.meta.env.VITE_API_URL}/api/v1/persona/generate-from-jd/${jdId}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({ job_description_id: jdId }),
             }
-            throw error;
-          }
+          );
+
+          if (!response.ok) throw new Error("Failed to fetch persona");
+          data = await response.json();
+          console.log(data)
         }
 
         // Normalize data to ensure consistent types
-        const normalizedCategories = (data.categories || []).map(
-          (cat: any) => ({
-            ...cat,
-            weight_percentage: Number(cat.weight_percentage) || 0,
-            range_min: Number(cat.range_min) || 0,
-            range_max: Number(cat.range_max) || 0,
-            subcategories: (cat.subcategories || []).map((sub: any) => ({
-              ...sub,
-              weight_percentage: Number(sub.weight_percentage) || 0,
-              level_id: String(sub.level_id || "3"),
-              skillset: sub.skillset || { technologies: [] },
-            })),
-          })
-        );
+        const normalizedCategories = (data.categories || []).map((cat: any) => ({
+          ...cat,
+          weight_percentage: Number(cat.weight_percentage) || 0,
+          range_min: Number(cat.range_min) || 0,
+          range_max: Number(cat.range_max) || 0,
+          subcategories: (cat.subcategories || []).map((sub: any) => ({
+            ...sub,
+            weight_percentage: Number(sub.weight_percentage) || 0,
+            level_id: String(sub.level_id || "3"),
+            skillset: sub.skillset || { technologies: [] },
+          })),
+        }));
 
         setCategories(normalizedCategories);
         setPersonaName(data.name || "");
