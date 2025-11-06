@@ -289,8 +289,10 @@ const JDUpload = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Role and Hiring Manager Selection - Single Row */}
-            <div className="flex items-center gap-2">
+            {/* Role, Hiring Manager, and Title Section */}
+            <div className="space-y-3">
+              {/* Role and Hiring Manager Selection - Single Row */}
+              <div className="flex items-center gap-2">
               <Label htmlFor="role" className="text-base whitespace-nowrap">Role</Label>
               <div className="flex-1">
                 {!showCustomRole ? (
@@ -390,18 +392,19 @@ const JDUpload = () => {
                   Cancel
                 </Button>
               )}
-            </div>
+              </div>
 
-            {/* Title Input */}
-            <div className="flex items-center gap-2">
-              <Label htmlFor="title" className="text-base whitespace-nowrap">Title</Label>
-              <Input
-                id="title"
-                placeholder="Enter job title..."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="flex-1"
-              />
+              {/* Title Input */}
+              <div className="flex items-center gap-2">
+                <Label htmlFor="title" className="text-base whitespace-nowrap">Title</Label>
+                <Input
+                  id="title"
+                  placeholder="Enter job title..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
             </div>
 
             {/* Job Description Input Method Selection */}
