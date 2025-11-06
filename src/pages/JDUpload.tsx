@@ -393,13 +393,14 @@ const JDUpload = () => {
             </div>
 
             {/* Title Input */}
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-base">Title</Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="title" className="text-base whitespace-nowrap">Title</Label>
               <Input
                 id="title"
                 placeholder="Enter job title..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                className="flex-1"
               />
             </div>
 
