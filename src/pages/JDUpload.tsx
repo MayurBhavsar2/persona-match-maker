@@ -175,6 +175,7 @@ const JDUpload = () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('role', role);
+        formData.append('title', title);
         formData.append('hiringManagers', JSON.stringify(selectedManagers));
         formData.append('instructions', instructions);
 
@@ -216,6 +217,7 @@ const JDUpload = () => {
           },
           body: JSON.stringify({
             role,
+            title,
             hiringManagers: selectedManagers,
             jobDescription: jdText,
             instructions
