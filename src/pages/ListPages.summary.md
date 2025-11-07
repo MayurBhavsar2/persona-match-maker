@@ -25,8 +25,8 @@
   - **Status**: Badge (draft/active/archived)
   - **Personas**: Count with icon
   - **Evaluations**: Count with icon
-  - **Created At**: Formatted date
-  - **Updated At**: Formatted date
+  - **Created On**: Formatted date
+  - **Updated On**: Formatted date
   - **Actions**: Edit & Delete buttons
 - **Features**:
   - Delete confirmation dialog
@@ -41,7 +41,7 @@
   - **Persona Name**: `name`
   - **Role Name**: `role_name` (with badge styling)
   - **Created By**: `created_by`
-  - **Created At**: `created_at` (formatted)
+  - **Created On**: `created_at` (formatted)
   - **Actions**: Edit & Delete buttons
 - **Features**:
   - Delete confirmation dialog

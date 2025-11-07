@@ -126,7 +126,7 @@ const JDList = ({ onEdit, onCreate, onDelete }: JDListProps) => {
       },
       {
         accessorKey: 'created_at',
-        header: 'Created At',
+        header: 'Created On',
         cell: (info) => (
           <div className="text-sm text-muted-foreground">
             {new Date(info.getValue() as string).toLocaleDateString('en-US', {

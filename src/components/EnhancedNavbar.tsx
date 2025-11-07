@@ -251,7 +251,7 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
   return (
     <>
       {/* Navbar */}
-      <header className="bg-background border-b border-gray-400 shadow-2xl h-18 sticky top-0 z-40">
+      <header className="bg-background border-b border-gray-400 shadow-xl h-18 sticky top-0 z-40">
         <div className="w-full px-5 py-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">

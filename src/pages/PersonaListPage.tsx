@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import BasicTable from '@/components/BasicTable';
@@ -18,6 +18,17 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/lib/utils';
 
+// Date formatting utility
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString().slice(-2);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
 // Types
 interface Persona {
   id: string;
@@ -32,31 +43,46 @@ interface Persona {
 }
 
 interface PersonaApiResponse {
-  data?: Persona[];
-  personas?: Persona[];
-  total?: number;
+  personas: Persona[];
+  total: number;
+  page: number;
+  size: number;
+  has_next: boolean;
+  has_prev: boolean;
 }
 
 const PersonaListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+  
+  // Pagination state
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
-  // Fetch personas using React Query with 30 minutes caching
+  // Fetch personas using React Query with server-side pagination
   const { data: apiResponse, isLoading, isError, error, refetch } = useQuery<PersonaApiResponse>({
-    queryKey: ['personas'],
+    queryKey: ['personas', pagination.pageIndex, pagination.pageSize],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/v1/persona/');
+      const response = await axiosInstance.get('/api/v1/persona/', {
+        params: {
+          page: pagination.pageIndex + 1, // API expects 1-based page numbers
+          size: pagination.pageSize,
+        },
+      });
       return response.data;
     },
     retry: 3,
-    staleTime: 30 * 60 * 1000, // 30 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    keepPreviousData: true, // Keep previous data while fetching new data
   });
 
   // Transform API data
   const personas = useMemo(() => {
-    const rawData = apiResponse?.data || apiResponse?.personas || apiResponse || [];
+    const rawData = apiResponse?.personas || [];
     if (!Array.isArray(rawData)) return [];
 
     return rawData.map((persona: any) => ({
@@ -72,27 +98,40 @@ const PersonaListPage: React.FC = () => {
     }));
   }, [apiResponse]);
 
+  // Calculate total page count for server-side pagination
+  const pageCount = useMemo(() => {
+    if (!apiResponse?.total || !pagination.pageSize) return 0;
+    return Math.ceil(apiResponse.total / pagination.pageSize);
+  }, [apiResponse?.total, pagination.pageSize]);
+
+  // Handle pagination changes
+  const handlePaginationChange = (updater: any) => {
+    const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
+    setPagination(newPagination);
+  };
+
   // Column definitions
   const columns = useMemo<ColumnDef<Persona>[]>(
     () => [
+        {
+            accessorKey: 'role_name',
+            header: 'Role Name',
+            cell: (info) => (
+              <span className="inline-flex items-center">
+                {info.getValue() as string}
+              </span>
+            ),
+          },
       {
         accessorKey: 'name',
         header: 'Persona Name',
         cell: (info) => (
-          <div className="font-medium text-gray-900">
+          <div className="text-gray-900">
             {info.getValue() as string}
           </div>
         ),
       },
-      {
-        accessorKey: 'role_name',
-        header: 'Role Name',
-        cell: (info) => (
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-            {info.getValue() as string}
-          </span>
-        ),
-      },
+      
       {
         accessorKey: 'created_by',
         header: 'Created By',
@@ -104,14 +143,10 @@ const PersonaListPage: React.FC = () => {
       },
       {
         accessorKey: 'created_at',
-        header: 'Created At',
+        header: 'Created On',
         cell: (info) => (
           <div className="text-sm text-gray-600">
-            {new Date(info.getValue() as string).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {formatDateTime(info.getValue() as string)}
           </div>
         ),
       },
@@ -126,7 +161,7 @@ const PersonaListPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleEdit(persona.id)}
-                className="h-8 w-8 p-0"
+                className="h-6 w-6 p-0"
                 title="Edit Persona"
               >
                 <Edit className="w-4 h-4" />
@@ -135,7 +170,7 @@ const PersonaListPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setDeleteConfirm({ id: persona.id, name: persona.name })}
-                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
                 title="Delete Persona"
               >
                 <Trash2 className="w-4 h-4" />
@@ -186,21 +221,26 @@ const PersonaListPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Personas</h1>
-            <p className="mt-2 text-gray-600">
-              Manage your evaluation personas and criteria
-            </p>
+      {/* Sticky Header */}
+      <div className="sticky top-[80px] z-30 bg-gray-50 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Personas</h1>
+              <p className="mt-2 text-gray-600">
+                Manage your evaluation personas and criteria
+              </p>
+            </div>
+            <Button onClick={handleCreate} className="flex items-center space-x-2">
+              <Plus className="w-4 h-4" />
+              <span>Create New Persona</span>
+            </Button>
           </div>
-          <Button onClick={handleCreate} className="flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Create New Persona</span>
-          </Button>
         </div>
+      </div>
 
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-8 py-4">
         {/* Table */}
         <BasicTable
           data={personas}
@@ -210,7 +250,7 @@ const PersonaListPage: React.FC = () => {
           error={error as Error}
           onRefresh={handleRefresh}
           title=""
-          description={`${personas.length} total personas`}
+          description={`Total: ${apiResponse?.total || 0} personas`}
           searchPlaceholder="Search personas..."
           enableSearch={true}
           enableSorting={true}
@@ -218,6 +258,9 @@ const PersonaListPage: React.FC = () => {
           enableRefresh={true}
           initialPageSize={10}
           pageSizeOptions={[10, 20, 30, 50]}
+          manualPagination={true}
+          pageCount={pageCount}
+          onPaginationChange={handlePaginationChange}
         />
 
         {/* Delete Confirmation Dialog */}

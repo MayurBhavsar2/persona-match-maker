@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
-import { Edit, Trash2, Users, Target, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus } from 'lucide-react';
 import BasicTable from '@/components/BasicTable';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +17,17 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/lib/utils';
+
+// Date formatting utility
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString().slice(-2);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
 
 // Types
 interface JD {
@@ -34,33 +44,47 @@ interface JD {
 }
 
 interface JDApiResponse {
-  job_descriptions?: JD[];
-  data?: JD[];
-  total?: number;
-  page?: number;
-  size?: number;
+  jds: JD[];
+  total: number;
+  page: number;
+  size: number;
+  has_next: boolean;
+  has_prev: boolean;
 }
 
 const JDListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; title: string } | null>(null);
+  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // Pagination state
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
-  // Fetch JDs using React Query with 30 minutes caching
+  // Fetch JDs using React Query with server-side pagination
   const { data: apiResponse, isLoading, isError, error, refetch } = useQuery<JDApiResponse>({
-    queryKey: ['jds'],
+    queryKey: ['jds', pagination.pageIndex, pagination.pageSize],
     queryFn: async () => {
-      const response = await axiosInstance.get('/api/v1/jd/');
+      const response = await axiosInstance.get('/api/v1/jd/', {
+        params: {
+          page: pagination.pageIndex + 1, // API expects 1-based page numbers
+          size: pagination.pageSize,
+        },
+      });
       return response.data;
     },
     retry: 3,
     staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
+    keepPreviousData: true, // Keep previous data while fetching new data
   });
 
   // Transform API data
   const jds = useMemo(() => {
-    const rawData = apiResponse?.job_descriptions || apiResponse?.data || apiResponse || [];
+    const rawData = apiResponse?.jds || [];
     if (!Array.isArray(rawData)) return [];
 
     return rawData.map((jd: any) => ({
@@ -78,47 +102,69 @@ const JDListPage: React.FC = () => {
     }));
   }, [apiResponse]);
 
+  // Calculate total page count for server-side pagination
+  const pageCount = useMemo(() => {
+    if (!apiResponse?.total || !pagination.pageSize) return 0;
+    return Math.ceil(apiResponse.total / pagination.pageSize);
+  }, [apiResponse?.total, pagination.pageSize]);
+
+  // Handle pagination changes
+  const handlePaginationChange = (updater: any) => {
+    const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
+    setPagination(newPagination);
+  };
+
   // Column definitions
   const columns = useMemo<ColumnDef<JD>[]>(
     () => [
       {
-        accessorKey: 'title',
-        header: 'Title & Role',
+        accessorKey: 'role_name',
+        header: 'Role',
         cell: (info) => {
           const jd = info.row.original;
           return (
             <div>
-              <div className="font-medium text-gray-900">{jd.title}</div>
-              <div className="text-sm text-gray-500">{jd.role_name}</div>
+              <div className="font-medium text-gray-900">{jd.role_name}</div>
             </div>
           );
         },
       },
       {
-        accessorKey: 'status',
-        header: 'Status',
+        accessorKey: 'title',
+        header: 'Title',
         cell: (info) => {
-          const status = info.getValue() as string;
-          const variants = {
-            draft: 'secondary',
-            active: 'default',
-            archived: 'outline'
-          } as const;
-
+          const jd = info.row.original;
           return (
-            <Badge variant={variants[status as keyof typeof variants] || 'secondary'}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </Badge>
+            <div>
+              <div className="font-medium text-gray-900">{jd.title}</div>
+            </div>
           );
         },
       },
+      // {
+      //   accessorKey: 'status',
+      //   header: 'Status',
+      //   cell: (info) => {
+      //     const status = info.getValue() as string;
+      //     const variants = {
+      //       draft: 'secondary',
+      //       active: 'default',
+      //       archived: 'outline'
+      //     } as const;
+
+      //     return (
+      //       <div>
+      //         {status.charAt(0).toUpperCase() + status.slice(1)}
+      //       </div>
+      //     );
+      //   },
+      // },
       {
         accessorKey: 'persona_count',
         header: 'Personas',
         cell: (info) => (
           <div className="flex items-center justify-center space-x-1">
-            <Users className="w-4 h-4 text-gray-400" />
-            <span className="font-medium">{info.getValue() as number}</span>
+            <span className="font-medium text-center">{info.getValue() as number}</span>
           </div>
         ),
         enableSorting: true,
@@ -145,30 +191,23 @@ const JDListPage: React.FC = () => {
       },
       {
         accessorKey: 'created_at',
-        header: 'Created At',
+        header: 'Created On',
         cell: (info) => (
           <div className="text-sm text-gray-600">
-            {new Date(info.getValue() as string).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {formatDateTime(info.getValue() as string)}
           </div>
         ),
       },
       {
         accessorKey: 'updated_at',
-        header: 'Updated At',
+        header: 'Updated On',
         cell: (info) => (
           <div className="text-sm text-gray-600">
-            {new Date(info.getValue() as string).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-            })}
+            {formatDateTime(info.getValue() as string)}
           </div>
         ),
       },
+
       {
         id: 'actions',
         header: 'Actions',
@@ -180,7 +219,7 @@ const JDListPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleEdit(jd.id)}
-                className="h-8 w-8 p-0"
+                className="h-6 w-6 p-0"
                 title="Edit JD"
               >
                 <Edit className="w-4 h-4" />
@@ -188,8 +227,9 @@ const JDListPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={userData?.role_name !== "Admin"}
                 onClick={() => setDeleteConfirm({ id: jd.id, title: jd.title })}
-                className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
                 title="Delete JD"
               >
                 <Trash2 className="w-4 h-4" />
@@ -240,21 +280,26 @@ const JDListPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Job Descriptions</h1>
-            <p className="mt-2 text-gray-600">
-              Manage your job descriptions and requirements
-            </p>
+      {/* Sticky Header */}
+      <div className="sticky top-[80px] z-30 bg-gray-50 border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Job Descriptions</h1>
+              <p className="mt-2 text-gray-600">
+                Manage your job descriptions and requirements
+              </p>
+            </div>
+            <Button onClick={handleCreate} className="flex items-center space-x-2">
+              <Plus className="w-4 h-4" />
+              <span>Create New JD</span>
+            </Button>
           </div>
-          <Button onClick={handleCreate} className="flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Create New JD</span>
-          </Button>
         </div>
+      </div>
 
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-8 py-4">
         {/* Table */}
         <BasicTable
           data={jds}
@@ -264,14 +309,17 @@ const JDListPage: React.FC = () => {
           error={error as Error}
           onRefresh={handleRefresh}
           title=""
-          description={`${jds.length} total job descriptions`}
+          description={`Total: ${apiResponse?.total || 0} job descriptions`}
           searchPlaceholder="Search job descriptions..."
-          enableSearch={true}
-          enableSorting={true}
+          enableSearch={true} // Enable client-side search within current page data
+          enableSorting={true} // Enable client-side sorting within current page data
           enablePagination={true}
           enableRefresh={true}
           initialPageSize={10}
           pageSizeOptions={[10, 20, 30, 50]}
+          manualPagination={true}
+          pageCount={pageCount}
+          onPaginationChange={handlePaginationChange}
         />
 
         {/* Delete Confirmation Dialog */}

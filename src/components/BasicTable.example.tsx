@@ -85,7 +85,7 @@ const BasicTableExample: React.FC = () => {
       },
       {
         accessorKey: 'createdAt',
-        header: 'Created At',
+        header: 'Created On',
         cell: (info) => (
           <div className="text-gray-600 text-sm">
             {new Date(info.getValue() as string).toLocaleDateString('en-US', {

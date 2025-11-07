@@ -118,7 +118,7 @@ function BasicTable<T>({
                 onClick={onRefresh}
                 variant="outline"
                 size="sm"
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5"
               >
                 <RefreshCw className="h-4 w-4" />
                 Refresh
@@ -161,17 +161,16 @@ function BasicTable<T>({
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id} className="border-b border-gray-300">
                     {headerGroup.headers.map((header, index) => (
-                      <TableHead 
-                        key={header.id} 
-                        className={`text-center align-middle border-r border-gray-300 ${
-                          index === headerGroup.headers.length - 1 ? 'border-r-0' : ''
-                        }`}
+                      <TableHead
+                        key={header.id}
+                        className={`text-center align-middle border-r border-gray-300 p-1.5 ${index === headerGroup.headers.length - 1 ? 'border-r-0' : ''
+                          }`}
                       >
                         {header.isPlaceholder ? null : (
                           <div
                             className={
                               enableSorting && header.column.getCanSort()
-                                ? 'flex items-center justify-center gap-2 cursor-pointer select-none'
+                                ? 'flex items-center justify-center gap-1.5 cursor-pointer select-none'
                                 : 'flex items-center justify-center'
                             }
                             onClick={
@@ -203,7 +202,7 @@ function BasicTable<T>({
               <TableBody>
                 {table.getRowModel().rows.length === 0 ? (
                   <TableRow className="border-b border-gray-300">
-                    <TableCell colSpan={columns.length} className="text-center align-middle py-8">
+                    <TableCell colSpan={columns.length} className="text-center align-middle py-8 p-1.5">
                       No data available
                     </TableCell>
                   </TableRow>
@@ -211,13 +210,12 @@ function BasicTable<T>({
                   table.getRowModel().rows.map((row) => (
                     <TableRow key={row.id} className="border-b border-gray-300">
                       {row.getVisibleCells().map((cell, index) => (
-                        <TableCell 
-                          key={cell.id} 
-                          className={`text-center align-middle border-r border-gray-300 ${
-                            index === row.getVisibleCells().length - 1 ? 'border-r-0' : ''
-                          }`}
+                        <TableCell
+                          key={cell.id}
+                          className={`border-r border-gray-300 p-1.5 px-2 ${index === row.getVisibleCells().length - 1 ? 'border-r-0' : ''
+                            }`}
                         >
-                          <div className="flex items-center justify-center min-h-[2.5rem]">
+                          <div className="flex items-center">
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </div>
                         </TableCell>
@@ -234,7 +232,7 @@ function BasicTable<T>({
       {/* Pagination */}
       {enablePagination && !isLoading && !isError && (
         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span className="text-sm text-gray-700">
               Page {pagination.pageIndex + 1} of {table.getPageCount()}
             </span>

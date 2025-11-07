@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 // Create axios instance with default config
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  timeout: 90000, // 90 seconds default timeout
+  timeout: 90000,
   headers: {
     'Content-Type': 'application/json',
   },

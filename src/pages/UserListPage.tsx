@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +6,16 @@ import { Plus } from 'lucide-react';
 import BasicTable from '@/components/BasicTable';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/lib/utils';
 
@@ -32,6 +42,7 @@ interface UsersApiResponse {
 const UserListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [deactivateConfirm, setDeactivateConfirm] = useState<{ id: string; name: string; currentStatus: boolean } | null>(null);
 
   // Fetch users using React Query with 30 minutes caching
   const { data: apiResponse, isLoading, isError, error, refetch } = useQuery<UsersApiResponse>({
@@ -65,9 +76,23 @@ const UserListPage: React.FC = () => {
   }, [apiResponse]);
 
   // Handle toggle change for user active status
-  const handleToggleChange = async (userId: string, newActiveStatus: boolean) => {
+  const handleToggleChange = (userId: string, newActiveStatus: boolean, userName: string) => {
+    // If user is being deactivated, show confirmation dialog
+    if (!newActiveStatus) {
+      setDeactivateConfirm({ 
+        id: userId, 
+        name: userName, 
+        currentStatus: !newActiveStatus 
+      });
+    } else {
+      // If user is being activated, proceed directly
+      performStatusUpdate(userId, newActiveStatus);
+    }
+  };
+
+  // Perform the actual status update
+  const performStatusUpdate = async (userId: string, newActiveStatus: boolean) => {
     try {
-      // TODO: Replace with actual API endpoint when available
       await axiosInstance.patch(`/api/v1/auth/users/${userId}`, {
         is_active: newActiveStatus
       });
@@ -87,6 +112,7 @@ const UserListPage: React.FC = () => {
         variant: "destructive",
       });
     }
+    setDeactivateConfirm(null);
   };
 
   // Column definitions
@@ -99,7 +125,7 @@ const UserListPage: React.FC = () => {
           const user = info.row.original;
           const fullName = `${user.first_name} ${user.last_name}`.trim();
           return (
-            <div className="font-medium text-gray-900">
+            <div className="font-medium text-gray-900 capitalize">
               {fullName || 'N/A'}
             </div>
           );
@@ -128,7 +154,7 @@ const UserListPage: React.FC = () => {
         accessorKey: 'role_name',
         header: 'Role',
         cell: (info) => (
-          <span className="inline-flex items-center capitalize px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          <span className="inline-flex items-center capitalize">
             {info.getValue() as string}
           </span>
         ),
@@ -142,12 +168,12 @@ const UserListPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Switch
                 checked={user.is_active}
-                onCheckedChange={(checked) => handleToggleChange(user.id, checked)}
+                onCheckedChange={(checked) => handleToggleChange(user.id, checked, `${user.first_name} ${user.last_name}`.trim())}
                 aria-label={`Toggle user ${user.first_name} ${user.last_name} status`}
               />
-              <span className={`text-sm ${user.is_active ? 'text-green-600' : 'text-red-600'}`}>
+              {/* <span className={`text-sm ${user.is_active ? 'text-green-600' : 'text-red-600'}`}>
                 {user.is_active ? 'Active' : 'Inactive'}
-              </span>
+              </span> */}
             </div>
           );
         },
@@ -168,21 +194,26 @@ const UserListPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-8">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Users</h1>
-            <p className="mt-2 text-gray-600">
-              Manage system users and their permissions
-            </p>
+      {/* Sticky Header */}
+      <div className="sticky top-[80px] z-30 bg-gray-50 border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Users</h1>
+              <p className="mt-2 text-gray-600">
+                Manage system users and their permissions
+              </p>
+            </div>
+            <Button onClick={handleCreate} className="flex items-center space-x-2">
+              <Plus className="w-4 h-4" />
+              <span>Add User</span>
+            </Button>
           </div>
-          <Button onClick={handleCreate} className="flex items-center space-x-2">
-            <Plus className="w-4 h-4" />
-            <span>Add User</span>
-          </Button>
         </div>
+      </div>
 
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-8 py-4">
         {/* Table */}
         <BasicTable
           data={users}
@@ -192,7 +223,7 @@ const UserListPage: React.FC = () => {
           error={error as Error}
           onRefresh={handleRefresh}
           title=""
-          description={`${users.length} total users`}
+          description={`Count: ${users.length}`}
           searchPlaceholder="Search users..."
           enableSearch={true}
           enableSorting={true}
@@ -201,6 +232,28 @@ const UserListPage: React.FC = () => {
           initialPageSize={10}
           pageSizeOptions={[10, 20, 30, 50]}
         />
+
+        {/* Deactivate Confirmation Dialog */}
+        <AlertDialog open={!!deactivateConfirm} onOpenChange={() => setDeactivateConfirm(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Deactivate User</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to deactivate "{deactivateConfirm?.name}"? 
+                This will prevent the user from accessing the system until they are reactivated.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deactivateConfirm && performStatusUpdate(deactivateConfirm.id, false)}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                Deactivate
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

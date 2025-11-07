@@ -133,8 +133,22 @@ const PersonaConfig = () => {
             );
 
             console.log(data);
-
-            // Use data here...
+            const normalizedCategories = (data.categories || []).map((cat: any) => ({
+              ...cat,
+              weight_percentage: Number(cat.weight_percentage) || 0,
+              range_min: Number(cat.range_min) || 0,
+              range_max: Number(cat.range_max) || 0,
+              subcategories: (cat.subcategories || []).map((sub: any) => ({
+                ...sub,
+                weight_percentage: Number(sub.weight_percentage) || 0,
+                level_id: String(sub.level_id || "3"),
+                skillset: sub.skillset || { technologies: [] },
+              })),
+            }));
+    
+            setCategories(normalizedCategories);
+            setPersonaName(data.name || "");
+            setPersonaNotes(data.persona_notes || "");
           } catch (error) {
             if (isAxiosError(error)) {
               if (error.code === "ECONNABORTED") {
