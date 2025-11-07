@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown, Edit3, CheckCircle, Sparkles, Undo2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -28,6 +29,13 @@ const JDUpload = () => {
   const [loadingManagers, setLoadingManagers] = useState(false);
   const [openManagerPopover, setOpenManagerPopover] = useState(false);
   const [title, setTitle] = useState("");
+  const [showComparison, setShowComparison] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<"original" | "ai" | null>(null);
+  const [isEditing, setIsEditing] = useState({ original: false, ai: false });
+  const [savedOriginalJD, setSavedOriginalJD] = useState("");
+  const [savedAiJD, setSavedAiJD] = useState("");
+  const [originalJD, setOriginalJD] = useState("");
+  const [aiGeneratedJD, setAiGeneratedJD] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -170,6 +178,8 @@ const JDUpload = () => {
     });
 
     try {
+      let extractedText = inputMethod === "text" ? jdText : "";
+      
       if (inputMethod === "upload" && file) {
         // TODO: Replace with your actual file upload API endpoint
         const formData = new FormData();
@@ -193,6 +203,7 @@ const JDUpload = () => {
         }
 
         const result = await response.json();
+        extractedText = result.extractedText || "Sample extracted text from file";
         
         // Store the API response data
         localStorage.setItem('jdData', JSON.stringify({
@@ -200,7 +211,7 @@ const JDUpload = () => {
           title,
           hiringManagers: selectedManagers,
           fileName: file.name,
-          jdContent: result.extractedText || null, // Assuming API returns extracted text
+          jdContent: extractedText,
           instructions,
           apiData: result,
           timestamp: Date.now()
@@ -243,34 +254,147 @@ const JDUpload = () => {
         }));
       }
 
-      // Navigate to comparison page
+      // Set original and AI-generated JDs
+      setOriginalJD(extractedText);
+      setAiGeneratedJD(generateAIEnhancedJD(extractedText, role));
+      
+      // Show comparison section
+      toast({
+        title: "Analysis complete",
+        description: "Scroll down to compare versions",
+      });
+      
       setTimeout(() => {
-        navigate('/jd-comparison');
-      }, 1500);
+        setShowComparison(true);
+      }, 500);
 
     } catch (error) {
       console.error('API Error:', error);
-      toast({
-        title: "Processing failed",
-        description: "There was an error processing your job description. Please try again.",
-        variant: "destructive",
-      });
       
-      // Fallback: Store data locally for demo purposes
+      // Fallback: Store data locally and show comparison with sample data
+      const fallbackJD = inputMethod === "text" ? jdText : `Position: ${role}\n\nJob Summary:\nSample job description content.`;
+      
       localStorage.setItem('jdData', JSON.stringify({
         role,
         title,
         hiringManagers: selectedManagers,
         fileName: inputMethod === "upload" ? file?.name : "Pasted Job Description",
-        jdContent: inputMethod === "text" ? jdText : null,
+        jdContent: fallbackJD,
         instructions,
         timestamp: Date.now()
       }));
       
+      setOriginalJD(fallbackJD);
+      setAiGeneratedJD(generateAIEnhancedJD(fallbackJD, role));
+      
+      toast({
+        title: "Using demo data",
+        description: "Scroll down to compare versions",
+      });
+      
       setTimeout(() => {
-        navigate('/jd-comparison');
-      }, 1500);
+        setShowComparison(true);
+      }, 500);
     }
+  };
+
+  const generateAIEnhancedJD = (originalText: string, role: string) => {
+    // This is a placeholder function that generates AI-enhanced JD
+    // In production, this would come from your API
+    return `Position: ${role} - Senior Level
+
+Job Summary:
+Enhanced and comprehensive job description with modern industry standards and best practices.
+
+Key Responsibilities:
+• Advanced technical implementations and architecture design
+• Cross-functional collaboration and team leadership
+• Strategic planning and project management
+• Continuous improvement and innovation initiatives
+
+Technical Requirements:
+• 5+ years of relevant experience
+• Expert-level proficiency in required technologies
+• Strong problem-solving and analytical skills
+• Experience with modern frameworks and tools
+
+Soft Skills:
+• Excellent communication and interpersonal abilities
+• Leadership and mentoring capabilities
+• Adaptability and continuous learning mindset
+• Strong attention to detail and quality focus
+
+Preferred Qualifications:
+• Industry certifications
+• Advanced degree or equivalent experience
+• Contribution to open-source projects`;
+  };
+
+  const toggleEdit = (version: "original" | "ai") => {
+    if (!isEditing[version]) {
+      if (version === "original") {
+        setSavedOriginalJD(originalJD);
+      } else {
+        setSavedAiJD(aiGeneratedJD);
+      }
+    }
+    setIsEditing(prev => ({ ...prev, [version]: !prev[version] }));
+  };
+
+  const handleUndo = (version: "original" | "ai") => {
+    if (version === "original") {
+      setOriginalJD(savedOriginalJD);
+    } else {
+      setAiGeneratedJD(savedAiJD);
+    }
+  };
+
+  const handleSelectVersion = async (version: "original" | "ai") => {
+    setSelectedVersion(version);
+    
+    const finalJD = version === "original" ? originalJD : aiGeneratedJD;
+    
+    try {
+      const response = await fetch('YOUR_API_ENDPOINT_FOR_JD_SELECTION', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          selectedVersion: version,
+          jobDescription: finalJD,
+          timestamp: Date.now()
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('JD selection API call failed');
+      }
+
+      const result = await response.json();
+      
+      localStorage.setItem('selectedJD', JSON.stringify({
+        version: version,
+        content: finalJD,
+        apiData: result,
+        timestamp: Date.now()
+      }));
+
+    } catch (error) {
+      console.error('API Error:', error);
+      localStorage.setItem('selectedJD', JSON.stringify({
+        version: version,
+        content: finalJD,
+        timestamp: Date.now()
+      }));
+    }
+
+    toast({
+      title: "Version selected",
+      description: `Proceeding to persona configuration with ${version === "original" ? "Original" : "AI Enhanced"} job description...`,
+    });
+
+    navigate('/persona-config');
   };
 
   return (
@@ -526,6 +650,196 @@ const JDUpload = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* JD Comparison Section - Only shown after analysis */}
+        {showComparison && (
+          <div className="space-y-8 pt-12 border-t border-border">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center gap-3">
+                <h2 className="text-3xl font-bold text-foreground">Job Description Comparison</h2>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-xl font-bold text-primary">{showCustomRole ? customRole : selectedRole}</span>
+              </div>
+              <p className="text-lg text-muted-foreground">
+                Compare your original JD with our AI-enhanced version and select the one that best fits your needs
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Original JD */}
+              <Card className={`shadow-card transition-all duration-300 ${
+                selectedVersion === "original" ? "ring-2 ring-primary border-primary" : ""
+              }`}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="w-5 h-5 text-muted-foreground" />
+                      <CardTitle>Original Job Description</CardTitle>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="secondary">Your Version</Badge>
+                      {selectedVersion === "original" && (
+                        <CheckCircle className="w-5 h-5 text-success" />
+                      )}
+                    </div>
+                  </div>
+                  <CardDescription>
+                    The job description you uploaded
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isEditing.original ? (
+                    <Textarea
+                      value={originalJD}
+                      onChange={(e) => setOriginalJD(e.target.value)}
+                      rows={20}
+                      className="font-mono text-sm"
+                    />
+                  ) : (
+                    <div className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto">
+                      <pre className="text-sm whitespace-pre-wrap font-sans">{originalJD}</pre>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => toggleEdit("original")}
+                        className="flex items-center space-x-1"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        <span>{isEditing.original ? "Save Changes" : "Edit"}</span>
+                      </Button>
+                      {isEditing.original && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleUndo("original")}
+                          className="flex items-center space-x-1"
+                        >
+                          <Undo2 className="w-4 h-4" />
+                          <span>Undo</span>
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant={selectedVersion === "original" ? "default" : "outline"}
+                      onClick={() => handleSelectVersion("original")}
+                    >
+                      {selectedVersion === "original" ? "Selected" : "Select This Version"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* AI Enhanced JD */}
+              <Card className={`shadow-card transition-all duration-300 ${
+                selectedVersion === "ai" ? "ring-2 ring-primary border-primary" : ""
+              }`}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Sparkles className="w-5 h-5 text-secondary" />
+                      <CardTitle>AI-Enhanced Job Description</CardTitle>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="bg-gradient-secondary text-secondary-foreground">
+                        AI Optimized
+                      </Badge>
+                      {selectedVersion === "ai" && (
+                        <CheckCircle className="w-5 h-5 text-success" />
+                      )}
+                    </div>
+                  </div>
+                  <CardDescription>
+                    Our AI-enhanced version with comprehensive requirements and modern standards
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isEditing.ai ? (
+                    <Textarea
+                      value={aiGeneratedJD}
+                      onChange={(e) => setAiGeneratedJD(e.target.value)}
+                      rows={20}
+                      className="font-mono text-sm"
+                    />
+                  ) : (
+                    <div className="bg-muted rounded-lg p-4 max-h-96 overflow-y-auto">
+                      <pre className="text-sm whitespace-pre-wrap font-sans">{aiGeneratedJD}</pre>
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => toggleEdit("ai")}
+                        className="flex items-center space-x-1"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        <span>{isEditing.ai ? "Save Changes" : "Edit"}</span>
+                      </Button>
+                      {isEditing.ai && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleUndo("ai")}
+                          className="flex items-center space-x-1"
+                        >
+                          <Undo2 className="w-4 h-4" />
+                          <span>Undo</span>
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant={selectedVersion === "ai" ? "default" : "outline"}
+                      onClick={() => handleSelectVersion("ai")}
+                      className="bg-gradient-primary hover:opacity-90"
+                    >
+                      {selectedVersion === "ai" ? "Selected" : "Select This Version"}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* AI Enhancement Highlights */}
+            <Card className="shadow-card bg-gradient-subtle">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Sparkles className="w-5 h-5 text-secondary" />
+                  <span>AI Enhancement Summary</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center p-4">
+                    <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-success font-bold">+85%</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground">More Comprehensive</h3>
+                    <p className="text-sm text-muted-foreground">Added detailed technical requirements and modern skills</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-primary font-bold">+12</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground">Additional Skills</h3>
+                    <p className="text-sm text-muted-foreground">Cloud platforms, AI/ML integration, and modern frameworks</p>
+                  </div>
+                  <div className="text-center p-4">
+                    <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <span className="text-secondary font-bold">+90%</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground">Better Structure</h3>
+                    <p className="text-sm text-muted-foreground">Improved formatting and industry-standard sections</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </Layout>
   );
