@@ -1,7 +1,7 @@
-import { ReactNode , useState,useEffect } from "react";
-import { useNavigate,useParams } from "react-router-dom";
+import { ReactNode, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Users, BarChart3, Settings, ArrowLeft, LogOut, User,Phone } from "lucide-react";
+import { Briefcase, Users, BarChart3, Settings, ArrowLeft, LogOut, User, Phone } from "lucide-react";
 import logoImage from "@/assets/logo.png";
 import {
   DropdownMenu,
@@ -25,30 +25,30 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
 
   const [user, setUser] = useState<{ name: string; email: string; role: string; phone: string } | null>(null);
 
-  
+
   // TODO: Replace with actual user data from your authentication system
-  
-   useEffect(() => {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        const normalizedUser = {
-          name: `${parsed.first_name || ""} ${parsed.last_name || ""}`.trim(),
-          email: parsed.email || "",
-          role: parsed.role_name || "N/A",
-          phone: parsed.phone || "N/A",
-        };
-        setUser(normalizedUser);
-      }
-}, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      const normalizedUser = {
+        name: `${parsed.first_name || ""} ${parsed.last_name || ""}`.trim(),
+        email: parsed.email || "",
+        role: parsed.role_name || "N/A",
+        phone: parsed.phone || "N/A",
+      };
+      setUser(normalizedUser);
+    }
+  }, []);
 
   const getInitials = (name?: string) => {
-  if (!name) return "U"; // Default initial if name is missing
-  const parts = name.trim().split(" ");
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    if (!name) return "U"; // Default initial if name is missing
+    const parts = name.trim().split(" ");
+    if (parts.length === 1) return parts[0][0].toUpperCase();
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   };
-  
+
   const handleLogout = () => {
     // TODO: Add actual logout logic here (clear tokens, session, etc.)
     toast({
@@ -60,7 +60,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
   if (!user) {
     return null; // or a loader if you want
   }
-  
+
   const steps = [
     { id: 1, title: "Job Description", icon: Briefcase },
     { id: 2, title: "Persona Configuration", icon: Users },
@@ -69,40 +69,40 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
   ];
 
   const handleBackClick = () => {
-  switch (currentStep) {
-    case 1:
-      navigate('/jd-upload');
-      break;
-    case 2:
-      navigate(jdId ? `/jd-comparison/${jdId}` : '/jd-comparison');
-      break;
-    case 3:
-      navigate(jdId ? `/persona-config/${jdId}` : '/persona-config');
-      break;
-    case 4:
-      navigate('/candidate-upload');
-      break;
-    case 5:
-      navigate('/results');
-      break;
-    default:
-      navigate('/');
-      break;
-  }
-};
+    switch (currentStep) {
+      case 1:
+        navigate('/jd-upload');
+        break;
+      case 2:
+        navigate(jdId ? `/jd-comparison/${jdId}` : '/jd-comparison');
+        break;
+      case 3:
+        navigate(jdId ? `/persona-config/${jdId}` : '/persona-config');
+        break;
+      case 4:
+        navigate('/candidate-upload');
+        break;
+      case 5:
+        navigate('/results');
+        break;
+      default:
+        navigate('/');
+        break;
+    }
+  };
 
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Progress Bar */}
       {currentStep && (
-        <div className="bg-background border-b border-border sticky top-0 z-40">
+        <div className="bg-background border-b border-border top-0 z-40">
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               {/* Back Button */}
               {currentStep && currentStep > 0 && (
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={handleBackClick}
                   className="mr-4 text-muted-foreground hover:text-foreground"
                 >
@@ -110,43 +110,39 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
                   Back
                 </Button>
               )}
-              
+
               <div className={`flex items-center justify-between ${currentStep && currentStep > 1 ? 'flex-1' : 'w-full'}`}>
                 {steps.map((step, index) => {
                   const IconComponent = step.icon;
                   const isActive = step.id === currentStep;
                   const isCompleted = step.id < currentStep;
-                  
+
                   return (
                     <div key={step.id} className="flex items-center">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-smooth ${
-                          isActive 
-                            ? 'bg-gradient-primary text-primary-foreground shadow-lg' 
-                            : isCompleted 
-                              ? 'bg-success text-success-foreground' 
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-smooth ${isActive
+                            ? 'bg-gradient-primary text-primary-foreground shadow-lg'
+                            : isCompleted
+                              ? 'bg-success text-success-foreground'
                               : 'bg-muted text-muted-foreground'
-                        }`}>
+                          }`}>
                           <IconComponent className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className={`text-sm font-medium ${
-                            isActive ? 'text-primary' : isCompleted ? 'text-success' : 'text-muted-foreground'
-                          }`}>
+                          <p className={`text-sm font-medium ${isActive ? 'text-primary' : isCompleted ? 'text-success' : 'text-muted-foreground'
+                            }`}>
                             Step {step.id}
                           </p>
-                          <p className={`text-xs ${
-                            isActive ? 'text-foreground' : 'text-muted-foreground'
-                          }`}>
+                          <p className={`text-xs ${isActive ? 'text-foreground' : 'text-muted-foreground'
+                            }`}>
                             {step.title}
                           </p>
                         </div>
                       </div>
-                      
+
                       {index < steps.length - 1 && (
-                        <div className={`h-0.5 w-16 mx-4 transition-smooth ${
-                          isCompleted ? 'bg-success' : 'bg-border'
-                        }`} />
+                        <div className={`h-0.5 w-16 mx-4 transition-smooth ${isCompleted ? 'bg-success' : 'bg-border'
+                          }`} />
                       )}
                     </div>
                   );

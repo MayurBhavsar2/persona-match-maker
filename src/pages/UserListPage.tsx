@@ -223,7 +223,7 @@ const UserListPage: React.FC = () => {
           error={error as Error}
           onRefresh={handleRefresh}
           title=""
-          description={`Count: ${users.length}`}
+          description={`${users.length || 0}`}
           searchPlaceholder="Search users..."
           enableSearch={true}
           enableSorting={true}

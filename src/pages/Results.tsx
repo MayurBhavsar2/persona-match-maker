@@ -690,4 +690,3 @@ const fetchPersonas = async () => {
 };
 
 export default Results;
-

@@ -110,7 +110,7 @@ function BasicTable<T>({
                 <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
               )}
               {description && (
-                <p className="mt-1 text-sm text-gray-500">{description}</p>
+                <p className="mt-1 text-sm text-gray-500">Count - <span className='text-base font-semibold text-black'>{description}</span></p>
               )}
             </div>
             {enableRefresh && onRefresh && (

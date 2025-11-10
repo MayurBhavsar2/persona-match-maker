@@ -15,6 +15,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useToast } from '@/components/ui/use-toast';
 import axiosInstance from '@/lib/utils';
 
@@ -30,15 +36,23 @@ const formatDateTime = (dateString: string) => {
 };
 
 // Types
+interface Persona {
+  id: string;
+  name: string;
+}
+
 interface JD {
   id: string;
   title: string;
   role: string;
   role_name: string;
   created_at: string;
+  created_by: string;
+  created_by_name: string;
   updated_at: string;
   status: 'draft' | 'active' | 'archived';
   persona_count?: number;
+  personas?: Persona[];
   evaluation_count?: number;
   description?: string;
 }
@@ -93,10 +107,12 @@ const JDListPage: React.FC = () => {
       role: jd.role || jd.role_name || 'Unknown Role',
       role_name: jd.role_name || jd.role || 'Unknown Role',
       created_by: jd.created_by || 'Unknown User',
+      created_by_name: jd.created_by_name || 'Unknown User',
       created_at: jd.created_at || new Date().toISOString(),
       updated_at: jd.updated_at || jd.created_at || new Date().toISOString(),
       status: jd.status || 'draft',
       persona_count: jd.persona_count || 0,
+      personas: jd.personas || [],
       evaluation_count: jd.evaluation_count || 0,
       description: jd.description || '',
     }));
@@ -131,7 +147,7 @@ const JDListPage: React.FC = () => {
       },
       {
         accessorKey: 'title',
-        header: 'Title',
+        header: 'JD Title',
         cell: (info) => {
           const jd = info.row.original;
           return (
@@ -160,14 +176,53 @@ const JDListPage: React.FC = () => {
       //   },
       // },
       {
-        accessorKey: 'persona_count',
+        id: 'personas',
         header: 'Personas',
-        cell: (info) => (
-          <div className="flex items-center justify-center space-x-1">
-            <span className="font-medium text-center">{info.getValue() as number}</span>
-          </div>
-        ),
+        cell: (info) => {
+          const jd = info.row.original;
+          const personaCount = jd.personas?.length || jd.persona_count || 0;
+          const personaNames = jd.personas?.map(p => p.persona_name) || [];
+          
+          return (
+            <div className="flex items-center justify-center">
+              {personaCount > 0 ? (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="font-medium text-blue-600 cursor-help">
+                        {personaCount}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="max-w-xs">
+                        <p className="font-semibold mb-1">Personas:</p>
+                        <ul className="text-sm">
+                          {personaNames.length > 0 ? (
+                            personaNames.map((name, index) => (
+                              <li key={index} className="truncate">
+                                • {name}
+                              </li>
+                            ))
+                          ) : (
+                            <li className="text-gray-500">No persona details available</li>
+                          )}
+                        </ul>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ) : (
+                <span className="font-medium text-gray-400">0</span>
+              )}
+            </div>
+          );
+        },
         enableSorting: true,
+        sortingFn: (rowA, rowB) => {
+          const aCount = rowA.original.personas?.length || rowA.original.persona_count || 0;
+          const bCount = rowB.original.personas?.length || rowB.original.persona_count || 0;
+          return aCount - bCount;
+        },
       },
       // {
       //   accessorKey: 'evaluation_count',
@@ -181,10 +236,10 @@ const JDListPage: React.FC = () => {
       //   enableSorting: true,
       // },
       {
-        accessorKey: 'created_by',
+        accessorKey: 'created_by_name',
         header: 'Created By',
         cell: (info) => (
-          <div className="text-gray-600">
+          <div className="text-gray-600 capitalize">
             {info.getValue() as string}
           </div>
         ),
@@ -309,7 +364,7 @@ const JDListPage: React.FC = () => {
           error={error as Error}
           onRefresh={handleRefresh}
           title=""
-          description={`Total: ${apiResponse?.total || 0} job descriptions`}
+          description={`${apiResponse?.total || 0}`}
           searchPlaceholder="Search job descriptions..."
           enableSearch={true} // Enable client-side search within current page data
           enableSorting={true} // Enable client-side sorting within current page data

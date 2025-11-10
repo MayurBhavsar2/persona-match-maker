@@ -24,6 +24,8 @@ import AddUser from "./pages/AddUser";
 import JDListPage from "./pages/JDListPage";
 import UserListPage from "./pages/UserListPage";
 import PersonaListPage from "./pages/PersonaListPage";
+import CandidateListPage from "./pages/CandidateListPage";
+import UpdatedJDUpload from "./pages/UpdatedJDUpload";
 
 const queryClient = new QueryClient();
 
@@ -39,76 +41,68 @@ const Layout: React.FC = () => {
 const App = () => {
   console.log("updated build: 29/10/2025 - contains persona input, role+persona value in results")
   return (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Routes WITHOUT Navbar */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Routes WITHOUT Navbar */}
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          {/* Routes WITH Navbar - wrapped in Layout */}
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            {/* Routes WITH Navbar - wrapped in Layout */}
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
 
-            {/* Legacy routes for backward compatibility */}
-            <Route path="/user-list" element={<UserList />} />
-            <Route path="/add-user" element={<AddUser />} />
-            <Route path="/jd-upload" element={<JDUpload />} />
-            <Route path="/jd-comparison" element={<JDComparison />} />
-            <Route path="/jd-comparison/:jdId" element={<JDComparison />} />
-            <Route path="/persona-config" element={<PersonaConfig />} />
-            <Route path="/persona-config/:jdId" element={<PersonaConfig />} />
-            <Route path="/candidate-upload" element={<CandidateUpload />} />
-            <Route path="/results" element={<Results />} />
-            <Route path="/configuration" element={<Configuration />} />
+              {/* Legacy routes for backward compatibility */}
+              <Route path="/user-list" element={<UserList />} />
+              <Route path="/add-user" element={<AddUser />} />
+              {/* <Route path="/jd-upload" element={<UpdatedJDUpload />} /> */}
+              <Route path="/jd-comparison" element={<JDComparison />} />
+              <Route path="/jd-comparison/:jdId" element={<JDComparison />} />
+              <Route path="/persona-config" element={<PersonaConfig />} />
+              <Route path="/persona-config/:jdId" element={<PersonaConfig />} />
+              <Route path="/candidate-upload" element={<CandidateUpload />} />
+              <Route path="/results" element={<Results />} />
+              <Route path="/configuration" element={<Configuration />} />
 
-            {/* New enhanced navigation routes */}
-            {/* Job Description routes */}
-            <Route path="/jd/create" element={<JDUpload />} />
-            <Route path="/jd/edit/:jdId" element={<JDUpload />} />
-            <Route path="/jd/list" element={
-             <JDListPage />
-            } />
-            <Route path="/users/list" element={
-             <UserListPage />
-            } />
+              {/* New enhanced navigation routes */}
+              {/* Job Description routes */}
+              <Route path="/jd/create" element={<UpdatedJDUpload />} />
+              <Route path="/jd/edit/:jdId" element={<JDUpload />} />
+              <Route path="/jd/list" element={
+                <JDListPage />
+              } />
+              <Route path="/users/list" element={
+                <UserListPage />
+              } />
 
-            {/* Persona Management routes */}
-            <Route path="/persona/create" element={<PersonaConfig />} />
-            <Route path="/persona/create/:jdId" element={<PersonaConfig />} />
-            <Route path="/persona/edit/:personaId" element={<PersonaConfig />} />
-            <Route path="/persona/list" element={<PersonaListPage />} />
+              {/* Persona Management routes */}
+              <Route path="/persona/create" element={<PersonaConfig />} />
+              <Route path="/persona/create/:jdId" element={<PersonaConfig />} />
+              <Route path="/persona/edit/:personaId" element={<PersonaConfig />} />
+              <Route path="/persona/list" element={<PersonaListPage />} />
 
-            {/* Candidate Processing routes */}
-            <Route path="/candidate/upload" element={<CandidateUpload />} />
-            <Route path="/candidate/list" element={
-              <PlaceholderPage
-                title="Candidate List"
-                description="Manage and view all your candidates"
-                backPath="/dashboard"
-                backLabel="Back to Dashboard"
-              />
-            } />
+              {/* Candidate Processing routes */}
+              <Route path="/candidate/upload" element={<CandidateUpload />} />
+              <Route path="/candidate/list" element={<CandidateListPage />} />
+              {/* Evaluation routes */}
+              <Route path="/evaluation" element={<Evaluation />} />
+              <Route path="/evaluation/start" element={<Evaluation />} />
+              <Route path="/evaluation/results" element={<Results />} />
+              <Route path="/evaluation/results/:evaluationId" element={<Results />} />
+            </Route>
 
-            {/* Evaluation routes */}
-            <Route path="/evaluation" element={<Evaluation />} />
-            <Route path="/evaluation/start" element={<Evaluation />} />
-            <Route path="/evaluation/results" element={<Results />} />
-            <Route path="/evaluation/results/:evaluationId" element={<Results />} />
-          </Route>
-
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   )
 }
 
