@@ -253,7 +253,6 @@ const fetchPersonas = async () => {
     console.log("candidates data received: ", candidates)
     if (!isLoading && evaluatedData) {
       setCandidates(evaluatedData?.candidates || []);
-      // Remove the handleScoreCandidates() call - candidates are already scored
     } else if (!isLoading && !evaluatedData) {
       navigate('/candidate-upload');
     }

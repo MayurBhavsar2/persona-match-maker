@@ -26,6 +26,7 @@ import UserListPage from "./pages/UserListPage";
 import PersonaListPage from "./pages/PersonaListPage";
 import CandidateListPage from "./pages/CandidateListPage";
 import UpdatedJDUpload from "./pages/UpdatedJDUpload";
+import ReusableJDUpload from "./pages/ReusableJDUpload";
 
 const queryClient = new QueryClient();
 
@@ -72,8 +73,8 @@ const App = () => {
 
               {/* New enhanced navigation routes */}
               {/* Job Description routes */}
-              <Route path="/jd/create" element={<UpdatedJDUpload />} />
-              <Route path="/jd/edit/:jdId" element={<JDUpload />} />
+              <Route path="/jd/create" element={<ReusableJDUpload />} />
+              <Route path="/jd/edit/:jdId" element={<ReusableJDUpload />} />
               <Route path="/jd/list" element={
                 <JDListPage />
               } />

@@ -13,14 +13,19 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { mockGenerateAIEnhancedJD } from "@/mocks/mockAiRefine";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Edit3, CheckCircle, Sparkles, Undo2 } from "lucide-react";
 
-const UpdatedJDUpload = () => {
+const ReusableJDUpload = () => {
     const navigate = useNavigate();
     const { toast } = useToast();
+    const { jdId } = useParams<{ jdId: string }>();
+    const location = useLocation();
+    
+    // Determine if we're in edit mode
+    const isEditMode = location.pathname.includes('/edit/') && !!jdId;
 
     // Form state
     const [title, setTitle] = useState("");
@@ -41,7 +46,7 @@ const UpdatedJDUpload = () => {
     const [openManagerPopover, setOpenManagerPopover] = useState(false);
 
     // Workflow state
-    const [currentJdId, setCurrentJdId] = useState<string | null>(null);
+    const [currentJdId, setCurrentJdId] = useState<string | null>(jdId || null);
     const [isFormDisabled, setIsFormDisabled] = useState(false);
     const [isCreatingJD, setIsCreatingJD] = useState(false);
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
@@ -49,6 +54,7 @@ const UpdatedJDUpload = () => {
     const [showSuccessDialog, setShowSuccessDialog] = useState(false);
     const [aiGenerationFailed, setAiGenerationFailed] = useState(false);
     const [aiRetryPayload, setAiRetryPayload] = useState<any>(null);
+    const [isLoadingJD, setIsLoadingJD] = useState(false);
 
     // Comparison state
     const [roleName, setRoleName] = useState("");
@@ -58,6 +64,10 @@ const UpdatedJDUpload = () => {
     const [isEditing, setIsEditing] = useState({ original: false, ai: false });
     const [originalJD, setOriginalJD] = useState<string>("");
     const [aiGeneratedJD, setAiGeneratedJD] = useState<string>("");
+    
+    // Track original JD content for change detection
+    const [initialJDContent, setInitialJDContent] = useState<string>("");
+    const [jdContentChanged, setJdContentChanged] = useState(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const loadingRef = useRef<HTMLDivElement>(null);
@@ -131,6 +141,80 @@ const UpdatedJDUpload = () => {
 
         fetchRoles();
     }, [page, size, activeOnly]);
+
+    // Fetch existing JD data when in edit mode
+    useEffect(() => {
+        if (!isEditMode || !jdId) return;
+
+        const fetchJDData = async () => {
+            setIsLoadingJD(true);
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${jdId}`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                });
+
+                if (!response.ok) {
+                    if (handle401Error(response)) return;
+                    throw new Error("Failed to fetch JD data");
+                }
+
+                const data = await response.json();
+                
+                // Pre-populate form fields
+                setTitle(data.title || "");
+                setSelectedRole(data.role_id || "");
+                setJdText(data.original_text || "");
+                setInstructions(data.notes || "");
+                setOriginalJD(data.original_text || "");
+                setRoleName(data.role_name || data.role || "");
+                
+                // Store initial JD content for change detection
+                setInitialJDContent(data.original_text || "");
+                
+                // Set input method based on available data
+                setInputMethod("text");
+                
+                // If there's a refined version, show it
+                if (data.refined_text) {
+                    setAiGeneratedJD(data.refined_text);
+                    setShowComparison(true);
+                }
+                
+                // Set selected version if available
+                if (data.selected_version) {
+                    setSelectedVersion(data.selected_version as "original" | "ai");
+                }
+
+                toast({
+                    title: "JD Loaded",
+                    description: "Job description data loaded successfully.",
+                });
+
+            } catch (error) {
+                console.error("Error fetching JD data:", error);
+                toast({
+                    title: "Error loading JD",
+                    description: "Could not load job description data. Please try again.",
+                    variant: "destructive",
+                });
+            } finally {
+                setIsLoadingJD(false);
+            }
+        };
+
+        fetchJDData();
+    }, [isEditMode, jdId]);
+
+    // Detect changes in JD content
+    useEffect(() => {
+        if (isEditMode && initialJDContent) {
+            setJdContentChanged(jdText !== initialJDContent);
+        }
+    }, [jdText, initialJDContent, isEditMode]);
 
     const generateAIEnhancedJD = async (jdData: any, jdId: string) => {
         setIsGeneratingAI(true);
@@ -256,7 +340,8 @@ const UpdatedJDUpload = () => {
         }
     };
 
-    const handleCreateJD = async () => {
+    // Update JD without regenerating AI (for metadata or content changes)
+    const handleUpdateJD = async () => {
         const selectedRoleObj = predefinedRoles.find(r => r.id === selectedRole);
         const roleId = selectedRoleObj ? selectedRoleObj.id : "";
         const roleNameValue = selectedRoleObj ? selectedRoleObj.name : customRole || "";
@@ -270,19 +355,77 @@ const UpdatedJDUpload = () => {
             return;
         }
 
-        if (selectedManagers.length === 0) {
+        if (!jdText.trim()) {
             toast({
-                title: "Hiring Manager required",
-                description: "Please select at least one hiring manager.",
+                title: "Job description required",
+                description: "Please enter the job description text.",
                 variant: "destructive",
             });
             return;
         }
 
-        if (inputMethod === "upload" && !file) {
+        if (!currentJdId) return;
+
+        setIsCreatingJD(true);
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${currentJdId}`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+                body: JSON.stringify({
+                    title: title || roleNameValue,
+                    role: roleNameValue,
+                    role_id: roleId,
+                    notes: instructions,
+                    original_text: jdText,
+                }),
+            });
+
+            if (!response.ok) {
+                if (handle401Error(response)) return;
+                const result = await response.json();
+                const errorMessage = result?.detail || response.statusText;
+                toast({
+                    title: "Update failed",
+                    description: errorMessage,
+                    variant: "destructive",
+                });
+                return;
+            }
+
+            // Update initial content to reflect the save
+            setInitialJDContent(jdText);
+            setJdContentChanged(false);
+
             toast({
-                title: "File required",
-                description: "Please upload a job description file.",
+                title: "JD Updated Successfully",
+                description: "Job description has been updated.",
+            });
+
+        } catch (error) {
+            console.error("API Error:", error);
+            toast({
+                title: "Update failed",
+                description: "There was an error updating the job description. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsCreatingJD(false);
+        }
+    };
+
+    const handleCreateJD = async () => {
+        const selectedRoleObj = predefinedRoles.find(r => r.id === selectedRole);
+        const roleId = selectedRoleObj ? selectedRoleObj.id : "";
+        const roleNameValue = selectedRoleObj ? selectedRoleObj.name : customRole || "";
+
+        if (!roleId && !roleNameValue) {
+            toast({
+                title: "Role required",
+                description: "Please select or enter a role.",
                 variant: "destructive",
             });
             return;
@@ -309,10 +452,53 @@ const UpdatedJDUpload = () => {
         }, 100);
 
         try {
-            let jdId: string | null = null;
+            let jdIdResult: string | null = null;
             let originalContent = "";
 
-            if (inputMethod === "upload" && file) {
+            // Edit mode - update existing JD
+            if (isEditMode && currentJdId) {
+                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${currentJdId}`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                    body: JSON.stringify({
+                        title: title || roleNameValue,
+                        role: roleNameValue,
+                        role_id: roleId,
+                        notes: instructions,
+                        original_text: jdText,
+                    }),
+                });
+
+                if (!response.ok) {
+                    if (handle401Error(response)) {
+                        setIsFormDisabled(false);
+                        return;
+                    }
+                    const result = await response.json();
+                    const errorMessage = result?.detail || response.statusText;
+                    toast({
+                        title: "Update failed",
+                        description: errorMessage,
+                        variant: "destructive",
+                    });
+                    setIsFormDisabled(false);
+                    return;
+                }
+
+                const result = await response.json();
+                jdIdResult = currentJdId;
+                originalContent = jdText;
+
+                toast({
+                    title: "JD Updated Successfully",
+                    description: "Now regenerating AI-enhanced version...",
+                });
+            }
+            // Create mode - create new JD
+            else if (inputMethod === "upload" && file) {
                 const formData = new FormData();
                 formData.append("file", file);
                 formData.append("role", roleNameValue);
@@ -354,7 +540,7 @@ const UpdatedJDUpload = () => {
                     return;
                 }
 
-                jdId = result.id;
+                jdIdResult = result.id;
                 originalContent = result.original_text || "";
             }
             else if (inputMethod === "text" && jdText.trim()) {
@@ -392,11 +578,11 @@ const UpdatedJDUpload = () => {
                     return;
                 }
 
-                jdId = result.id;
+                jdIdResult = result.id;
                 originalContent = jdText;
             }
 
-            if (!jdId) {
+            if (!jdIdResult) {
                 throw new Error("JD ID not returned from backend");
             }
 
@@ -414,17 +600,17 @@ const UpdatedJDUpload = () => {
                 })
             );
 
-            setCurrentJdId(jdId);
+            setCurrentJdId(jdIdResult);
             setRoleName(roleNameValue);
             setOriginalJD(originalContent);
 
             toast({
-                title: "JD Created Successfully",
+                title: isEditMode ? "JD Updated Successfully" : "JD Created Successfully",
                 description: "Now generating AI-enhanced version...",
             });
 
             // Generate AI-enhanced version
-            await generateAIEnhancedJD({ role: roleNameValue }, jdId);
+            await generateAIEnhancedJD({ role: roleNameValue }, jdIdResult);
 
         } catch (error) {
             console.error("API Error:", error);
@@ -441,15 +627,10 @@ const UpdatedJDUpload = () => {
 
     const handleSelect = async (version: "original" | "ai") => {
         try {
-            // If user is editing, turn off edit mode first
-            if (isEditing[version]) {
-                setIsEditing(prev => ({ ...prev, [version]: false }));
-            }
-
             setSelectedVersion(version);
-            const finalJD = version === "original" ? originalJD : aiGeneratedJD;
+            const selectedText = version === "original" ? originalJD : aiGeneratedJD;
 
-            // Single API call to update JD content with selected version
+            // Update JD with selected version using PATCH
             const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/${currentJdId}`, {
                 method: "PATCH",
                 headers: {
@@ -458,31 +639,42 @@ const UpdatedJDUpload = () => {
                 },
                 body: JSON.stringify({
                     selected_version: version,
-                    selected_text: finalJD,
-                    selected_edited: isEditing[version] // Track if it was edited
+                    selected_text: selectedText,
                 }),
             });
 
             if (!response.ok) {
-                if (handle401Error(response)) return; // Show 401 toast and exit
-                throw new Error("Failed to update JD content");
+                if (handle401Error(response)) return;
+                const result = await response.json();
+                const errorMessage = result?.detail || response.statusText;
+                toast({
+                    title: "Update failed",
+                    description: errorMessage,
+                    variant: "destructive",
+                });
+                return;
             }
 
             // Store selection locally
             localStorage.setItem('selectedJD', JSON.stringify({
                 jdId: currentJdId,
                 version,
-                content: finalJD,
+                content: selectedText,
                 timestamp: Date.now()
             }));
+
+            toast({
+                title: "Version Selected",
+                description: `${version === "original" ? "Original" : "AI-enhanced"} version has been selected.`,
+            });
 
             setShowSuccessDialog(true);
 
         } catch (error) {
-            console.error("Error updating JD content:", error);
+            console.error("Error updating JD selection:", error);
             toast({
                 title: "Update failed",
-                description: "Could not update JD content. Please try again.",
+                description: "Could not update JD selection. Please try again.",
                 variant: "destructive",
             });
         }
@@ -504,7 +696,6 @@ const UpdatedJDUpload = () => {
                         selected_edited: true
                     })
                 });
-
                 if (!response.ok) {
                     if (handle401Error(response)) return; // Show 401 toast and exit
                     throw new Error('Failed to save changes');
@@ -658,28 +849,56 @@ const UpdatedJDUpload = () => {
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="text-center space-y-4">
                     <h1 className="text-3xl font-bold text-foreground">
-                        {showComparison ? "Job Description Comparison" : "Upload Job Description"}
+                        {showComparison 
+                            ? "Job Description Comparison" 
+                            : isEditMode 
+                                ? "Edit Job Description" 
+                                : "Create Job Description"
+                        }
                     </h1>
                     <p className="text-lg text-muted-foreground">
                         {showComparison
                             ? "Compare your original JD with our AI-enhanced version and select the one that best fits your needs"
-                            : "Start by selecting a role and uploading your job description for AI analysis"
+                            : isEditMode
+                                ? "Update your job description details and regenerate AI-enhanced version"
+                                : "Start by selecting a role and uploading your job description for AI analysis"
                         }
                     </p>
                 </div>
 
+                {/* Loading JD Data */}
+                {isLoadingJD && (
+                    <Card className="shadow-card">
+                        <CardContent className="py-8">
+                            <div className="flex flex-col items-center space-y-4">
+                                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                                <div className="text-center">
+                                    <h3 className="text-lg font-semibold">Loading Job Description...</h3>
+                                    <p className="text-muted-foreground">
+                                        Fetching job description data...
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Form Section */}
-                <Card className="shadow-card">
-                    <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                            <FileText className="w-5 h-5 text-primary" />
-                            <span>Job Details</span>
-                        </CardTitle>
-                        <CardDescription>
-                            Provide the role information and upload your job description document
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
+                {!isLoadingJD && (
+                    <Card className="shadow-card">
+                        <CardHeader>
+                            <CardTitle className="flex items-center space-x-2">
+                                <FileText className="w-5 h-5 text-primary" />
+                                <span>Job Details</span>
+                            </CardTitle>
+                            <CardDescription>
+                                {isEditMode 
+                                    ? "Update the job description information below"
+                                    : "Provide the role information and upload your job description document"
+                                }
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
                         {/* Role Selection */}
                         <div className="space-y-3">
                             <div className="flex items-center gap-2">
@@ -720,7 +939,7 @@ const UpdatedJDUpload = () => {
                                                 disabled={loadingManagers || isFormDisabled}
                                             >
                                                 {selectedManagers.length > 0
-                                                    ? `${selectedManagers.length} manager${selectedManagers.length > 1 ? 's' : ''} selected`
+                                                    ? selectedManagers.join(", ")
                                                     : loadingManagers ? "Loading..." : "Select manager(s)..."}
                                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                                             </Button>
@@ -865,7 +1084,7 @@ const UpdatedJDUpload = () => {
                                                             {isCreatingJD ? (
                                                                 <>
                                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                                    Processing...
+                                                                    {isEditMode ? "Updating..." : "Processing..."}
                                                                 </>
                                                             ) : (
                                                                 "Proceed"
@@ -908,21 +1127,55 @@ const UpdatedJDUpload = () => {
                                         disabled={isFormDisabled}
                                     />
                                     {jdText.trim() && !isFormDisabled && (
-                                        <div className="flex justify-end">
-                                            <Button
-                                                onClick={handleCreateJD}
-                                                className="bg-gradient-primary hover:opacity-90 transition-smooth"
-                                                disabled={isCreatingJD}
-                                            >
-                                                {isCreatingJD ? (
-                                                    <>
-                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                        Processing...
-                                                    </>
+                                        <div className="flex justify-end space-x-2">
+                                            {isEditMode ? (
+                                                jdContentChanged ? (
+                                                    <Button
+                                                        onClick={handleCreateJD}
+                                                        className="bg-gradient-primary hover:opacity-90 transition-smooth"
+                                                        disabled={isCreatingJD || isGeneratingAI}
+                                                    >
+                                                        {isCreatingJD || isGeneratingAI ? (
+                                                            <>
+                                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                {isCreatingJD ? "Updating..." : "Generating AI..."}
+                                                            </>
+                                                        ) : (
+                                                            "Update & Regenerate AI"
+                                                        )}
+                                                    </Button>
                                                 ) : (
-                                                    "Save & Proceed"
-                                                )}
-                                            </Button>
+                                                    <Button
+                                                        onClick={handleUpdateJD}
+                                                        className="bg-gradient-primary hover:opacity-90 transition-smooth"
+                                                        disabled={isCreatingJD}
+                                                    >
+                                                        {isCreatingJD ? (
+                                                            <>
+                                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                                Updating...
+                                                            </>
+                                                        ) : (
+                                                            "Update JD"
+                                                        )}
+                                                    </Button>
+                                                )
+                                            ) : (
+                                                <Button
+                                                    onClick={handleCreateJD}
+                                                    className="bg-gradient-primary hover:opacity-90 transition-smooth"
+                                                    disabled={isCreatingJD || isGeneratingAI}
+                                                >
+                                                    {isCreatingJD || isGeneratingAI ? (
+                                                        <>
+                                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                            {isCreatingJD ? "Processing..." : "Generating AI..."}
+                                                        </>
+                                                    ) : (
+                                                        "Save & Proceed"
+                                                    )}
+                                                </Button>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -944,6 +1197,7 @@ const UpdatedJDUpload = () => {
                         </div>
                     </CardContent>
                 </Card>
+                )}
 
                 {/* Loading Indicators */}
                 {(isCreatingJD || isGeneratingAI) && (
@@ -953,7 +1207,10 @@ const UpdatedJDUpload = () => {
                                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
                                 <div className="text-center">
                                     <h3 className="text-lg font-semibold">
-                                        {isCreatingJD ? "Creating JD..." : "Generating AI refinement..."}
+                                        {isCreatingJD 
+                                            ? (isEditMode ? "Updating JD..." : "Creating JD...") 
+                                            : "Generating AI refinement..."
+                                        }
                                     </h3>
                                     <p className="text-muted-foreground">
                                         {isCreatingJD
@@ -1292,4 +1549,4 @@ const UpdatedJDUpload = () => {
     );
 };
 
-export default UpdatedJDUpload;
+export default ReusableJDUpload;

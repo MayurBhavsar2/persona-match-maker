@@ -300,11 +300,11 @@ const JDListPage: React.FC = () => {
 
   // Handlers
   const handleCreate = () => {
-    navigate('/jd-upload');
+    navigate('/jd/create');
   };
 
   const handleEdit = (jdId: string) => {
-    navigate(`/jd-upload?id=${jdId}`);
+    navigate(`/jd/edit/${jdId}`);
   };
 
   const handleDelete = async (jdId: string) => {
