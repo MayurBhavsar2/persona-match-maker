@@ -27,6 +27,7 @@ import PersonaListPage from "./pages/PersonaListPage";
 import CandidateListPage from "./pages/CandidateListPage";
 import UpdatedJDUpload from "./pages/UpdatedJDUpload";
 import ReusableJDUpload from "./pages/ReusableJDUpload";
+import ReusablePersonaConfig from "./pages/ReusablePersonaConfig2";
 
 const queryClient = new QueryClient();
 
@@ -66,7 +67,7 @@ const App = () => {
               <Route path="/jd-comparison" element={<JDComparison />} />
               <Route path="/jd-comparison/:jdId" element={<JDComparison />} />
               <Route path="/persona-config" element={<PersonaConfig />} />
-              <Route path="/persona-config/:jdId" element={<PersonaConfig />} />
+              {/* <Route path="/persona-config/:jdId" element={<PersonaConfig />} /> */}
               <Route path="/candidate-upload" element={<CandidateUpload />} />
               <Route path="/results" element={<Results />} />
               <Route path="/configuration" element={<Configuration />} />
@@ -83,9 +84,9 @@ const App = () => {
               } />
 
               {/* Persona Management routes */}
-              <Route path="/persona/create" element={<PersonaConfig />} />
-              <Route path="/persona/create/:jdId" element={<PersonaConfig />} />
-              <Route path="/persona/edit/:personaId" element={<PersonaConfig />} />
+              <Route path="/persona/create" element={<ReusablePersonaConfig />} />
+              <Route path="/persona/create/:jdId" element={<ReusablePersonaConfig />} />
+              <Route path="/persona/edit/:personaId" element={<ReusablePersonaConfig />} />
               <Route path="/persona/list" element={<PersonaListPage />} />
 
               {/* Candidate Processing routes */}

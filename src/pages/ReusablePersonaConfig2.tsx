@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/components/ui/use-toast";
 import { mockFetchPersona } from "@/mocks/mockAPI";
-import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import {
   AlertDialog,
@@ -60,6 +61,7 @@ import {
   Plus,
   Trash2,
   Info,
+  Sparkles,
 } from "lucide-react";
 import {
   Tooltip,
@@ -69,8 +71,98 @@ import {
 } from "@/components/ui/tooltip";
 import axiosInstance, { isAxiosError } from "@/lib/utils";
 
-const PersonaConfig = () => {
+// API Functions
+const fetchRoles = async () => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?page=1&size=100&active_only=true`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (!response.ok) {
+    if (response.status === 401) {
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please log in again.",
+        variant: "destructive",
+      });
+      throw new Error("Unauthorized");
+    }
+    throw new Error("Failed to fetch roles");
+  }
+  const data = await response.json();
+  return data.job_roles || data;
+};
+
+const fetchJDsByRole = async (roleId: string) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/?role_id=${roleId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (!response.ok) {
+    if (response.status === 401) {
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please log in again.",
+        variant: "destructive",
+      });
+      throw new Error("Unauthorized");
+    }
+    throw new Error("Failed to fetch JDs");
+  }
+  const data = await response.json();
+  return Array.isArray(data) ? data : (data.jds || data.items || data.results || []);
+};
+
+const generatePersona = async ({ roleId, jdId }: { roleId: string; jdId: string }) => {
+  const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === "true";
+  
+  if (USE_MOCK_API) {
+    const data = await mockFetchPersona(jdId);
+    return data;
+  }
+  
+  const { data } = await axiosInstance.post(
+    `/api/v1/persona/generate-from-jd/${jdId}`,
+    { job_description_id: jdId },
+    { timeout: 90000 }
+  );
+  return data;
+};
+
+const fetchPersona = async (personaId: string) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/${personaId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+  if (!response.ok) {
+    if (response.status === 401) {
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired. Please log in again.",
+        variant: "destructive",
+      });
+      throw new Error("Unauthorized");
+    }
+    throw new Error("Failed to fetch persona");
+  }
+  return response.json();
+};
+
+const ReusablePersonaConfig = () => {
   const navigate = useNavigate();
+  const { personaId, jdId } = useParams<{ personaId?: string; jdId?: string }>();
+  const location = useLocation();
+  const queryClient = useQueryClient();
+
+  // Determine mode
+  const isEditMode = location.pathname.includes('/edit/') && !!personaId;
+  const isFlowMode = !!jdId && !isEditMode;
+  const isStandaloneCreate = !isEditMode && !isFlowMode;
 
   // State
   const [categories, setCategories] = useState<any[]>([]);
@@ -86,192 +178,127 @@ const PersonaConfig = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
+  const [selectedJD, setSelectedJD] = useState("");
+  const [hasGeneratedPersona, setHasGeneratedPersona] = useState(false);
 
   const distributionRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  // Initialize
-  useEffect(() => {
-    const selectedJD = localStorage.getItem("selectedJD");
-    const storedJD = localStorage.getItem("jdData");
+  // Fetch roles for standalone mode
+  const { data: roles = [], isLoading: rolesLoading } = useQuery({
+    queryKey: ['roles'],
+    queryFn: fetchRoles,
+    enabled: isStandaloneCreate,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 45 * 60 * 1000,
+  });
 
-    if (storedJD) {
-      const parsed = JSON.parse(storedJD);
-      setRoleName(parsed.role || "Unknown Role");
-      setRoleId(parsed.id || "");
-    }
+  // Fetch JDs based on selected role
+  const { data: jdsData, isLoading: jdsLoading } = useQuery({
+    queryKey: ['jds', selectedRole],
+    queryFn: () => fetchJDsByRole(selectedRole),
+    enabled: isStandaloneCreate && !!selectedRole,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 45 * 60 * 1000,
+  });
 
-    if (!selectedJD) {
+  const jds = Array.isArray(jdsData) ? jdsData : [];
+
+  // Generate persona mutation
+  const generatePersonaMutation = useMutation({
+    mutationFn: generatePersona,
+    onSuccess: (data) => {
+      const normalizedCategories = (data.categories || []).map((cat: any) => ({
+        ...cat,
+        weight_percentage: Number(cat.weight_percentage) || 0,
+        range_min: Number(cat.range_min) || 0,
+        range_max: Number(cat.range_max) || 0,
+        subcategories: (cat.subcategories || []).map((sub: any) => ({
+          ...sub,
+          weight_percentage: Number(sub.weight_percentage) || 0,
+          level_id: String(sub.level_id || "3"),
+          skillset: sub.skillset || { technologies: [] },
+        })),
+      }));
+      
+      setCategories(normalizedCategories);
+      setPersonaName(data.name || "");
+      setPersonaNotes(data.persona_notes || "");
+      setHasGeneratedPersona(true);
+      setLoading(false);
+      
       toast({
-        title: "Error",
-        description: "Please select a JD version first.",
+        title: "Persona Generated",
+        description: "AI has generated the persona successfully. You can now review and modify it.",
+      });
+    },
+    onError: (error: any) => {
+      setLoading(false);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate persona. Please try again.",
         variant: "destructive",
       });
-      navigate("/jd-comparison");
-      return;
+    },
+  });
+
+  // Fetch existing persona for edit mode
+  const { data: existingPersona, isLoading: personaLoading } = useQuery({
+    queryKey: ['persona', personaId],
+    queryFn: () => fetchPersona(personaId!),
+    enabled: isEditMode && !!personaId,
+    staleTime: 30 * 60 * 1000,
+    gcTime: 45 * 60 * 1000,
+  });
+
+  // Load persona data in edit mode
+  useEffect(() => {
+    if (existingPersona) {
+      const normalizedCategories = (existingPersona.categories || []).map((cat: any) => ({
+        ...cat,
+        weight_percentage: Number(cat.weight_percentage) || 0,
+        range_min: Number(cat.range_min) || 0,
+        range_max: Number(cat.range_max) || 0,
+        subcategories: (cat.subcategories || []).map((sub: any) => ({
+          ...sub,
+          weight_percentage: Number(sub.weight_percentage) || 0,
+          level_id: String(sub.level_id || "3"),
+          skillset: sub.skillset || { technologies: [] },
+        })),
+      }));
+      
+      setCategories(normalizedCategories);
+      setPersonaName(existingPersona.name || "");
+      setPersonaNotes(existingPersona.persona_notes || existingPersona.notes || "");
+      setRoleName(existingPersona.role_name || "");
+      setRoleId(existingPersona.role_id || "");
+      setHasGeneratedPersona(true);
+      setLoading(false);
     }
+  }, [existingPersona]);
 
-    const { jdId } = JSON.parse(selectedJD);
-    const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === "true";
-
-    // const fetchPersona = async () => {
-    //   try {
-    //     setLoading(true);
-
-    //     let data;
-    //     if (USE_MOCK_API) {
-    //       data = await mockFetchPersona(jdId);
-    //     } else {
-    //       try {
-    //         const { data } = await axiosInstance.post(
-    //           `/api/v1/persona/generate-from-jd/${jdId}`,
-    //           { job_description_id: jdId },
-    //           {
-    //             timeout: 90000,
-    //           }
-    //         );
-
-    //         console.log(data);
-    //         const normalizedCategories = (data.categories || []).map((cat: any) => ({
-    //           ...cat,
-    //           weight_percentage: Number(cat.weight_percentage) || 0,
-    //           range_min: Number(cat.range_min) || 0,
-    //           range_max: Number(cat.range_max) || 0,
-    //           subcategories: (cat.subcategories || []).map((sub: any) => ({
-    //             ...sub,
-    //             weight_percentage: Number(sub.weight_percentage) || 0,
-    //             level_id: String(sub.level_id || "3"),
-    //             skillset: sub.skillset || { technologies: [] },
-    //           })),
-    //         }));
-    
-    //         setCategories(normalizedCategories);
-    //         setPersonaName(data.name || "");
-    //         setPersonaNotes(data.persona_notes || "");
-    //       } catch (error) {
-    //         if (isAxiosError(error)) {
-    //           if (error.code === "ECONNABORTED") {
-    //             throw new Error("Request timeout - please try again");
-    //           }
-    //           throw new Error(
-    //             error.response?.data?.message || "Failed to fetch persona"
-    //           );
-    //         }
-    //         throw error;
-    //       }
-    //     }
-
-    //     // Normalize data to ensure consistent types
-    //     const normalizedCategories = (data.categories || []).map(
-    //       (cat: any) => ({
-    //         ...cat,
-    //         weight_percentage: Number(cat.weight_percentage) || 0,
-    //         range_min: Number(cat.range_min) || 0,
-    //         range_max: Number(cat.range_max) || 0,
-    //         subcategories: (cat.subcategories || []).map((sub: any) => ({
-    //           ...sub,
-    //           weight_percentage: Number(sub.weight_percentage) || 0,
-    //           level_id: String(sub.level_id || "3"),
-    //           skillset: sub.skillset || { technologies: [] },
-    //         })),
-    //       })
-    //     );
-
-    //     setCategories(normalizedCategories);
-    //     setPersonaName(data.name || "");
-    //     setPersonaNotes(data.persona_notes || "");
-    //   } catch (error) {
-    //     console.error(error);
-    //     toast({
-    //       title: "Error",
-    //       description: "Failed to load persona data. Please try again.",
-    //       variant: "destructive",
-    //     });
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-
-    const fetchPersona = async () => {
-      try {
-        setLoading(true);
+  // Load from localStorage in flow mode
+  useEffect(() => {
+    if (isFlowMode && jdId) {
+      const storedJD = localStorage.getItem("jdData");
+      if (storedJD) {
+        const parsed = JSON.parse(storedJD);
+        setRoleName(parsed.role || "Unknown Role");
+        setRoleId(parsed.roleId || parsed.id || "");
+        setSelectedRole(parsed.roleId || parsed.id || "");
+        setSelectedJD(jdId);
         
-        if (USE_MOCK_API) {
-          const data = await mockFetchPersona(jdId);
-          
-          // Normalize mock data
-          const normalizedCategories = (data.categories || []).map((cat: any) => ({
-            ...cat,
-            weight_percentage: Number(cat.weight_percentage) || 0,
-            range_min: Number(cat.range_min) || 0,
-            range_max: Number(cat.range_max) || 0,
-            subcategories: (cat.subcategories || []).map((sub: any) => ({
-              ...sub,
-              weight_percentage: Number(sub.weight_percentage) || 0,
-              level_id: String(sub.level_id || "3"),
-              skillset: sub.skillset || { technologies: [] },
-            })),
-          }));
-          
-          setCategories(normalizedCategories);
-          setPersonaName(data.name || "");
-          setPersonaNotes(data.persona_notes || "");
-        } else {
-          const { data } = await axiosInstance.post(
-            `/api/v1/persona/generate-from-jd/${jdId}`,
-            { job_description_id: jdId },
-            {
-              timeout: 90000,
-            }
-          );
-          
-          console.log(data);
-          
-          // Normalize API data
-          const normalizedCategories = (data.categories || []).map((cat: any) => ({
-            ...cat,
-            weight_percentage: Number(cat.weight_percentage) || 0,
-            range_min: Number(cat.range_min) || 0,
-            range_max: Number(cat.range_max) || 0,
-            subcategories: (cat.subcategories || []).map((sub: any) => ({
-              ...sub,
-              weight_percentage: Number(sub.weight_percentage) || 0,
-              level_id: String(sub.level_id || "3"),
-              skillset: sub.skillset || { technologies: [] },
-            })),
-          }));
-          
-          setCategories(normalizedCategories);
-          setPersonaName(data.name || "");
-          setPersonaNotes(data.persona_notes || "");
-        }
-      } catch (error) {
-        console.error(error);
-        if (isAxiosError(error)) {
-          if (error.code === "ECONNABORTED") {
-            toast({
-              title: "Error",
-              description: "Request timeout - please try again",
-              variant: "destructive",
-            });
-            return;
-          }
-        }
-        toast({
-          title: "Error",
-          description: "Failed to load persona data. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+        // Auto-generate persona in flow mode
+        setLoading(true);
+        generatePersonaMutation.mutate({ roleId: parsed.roleId || parsed.id, jdId });
       }
-    };
-    
-    fetchPersona();
-  }, [navigate]);
+    } else if (isStandaloneCreate) {
+      setLoading(false);
+    }
+  }, [isFlowMode, jdId]);
 
-  // Helpers
+  // Helper functions
   const getTotalWeight = () =>
     categories.reduce(
       (acc, cat) => acc + Number(cat.weight_percentage || 0),
@@ -332,10 +359,7 @@ const PersonaConfig = () => {
 
   const scrollToSection = (value: string) => {
     setActiveTab(value);
-
-    // Adjust this number based on your sticky header height
     const headerOffset = 133;
-
     const ref =
       value === "distribution"
         ? distributionRef.current
@@ -346,7 +370,6 @@ const PersonaConfig = () => {
     if (ref) {
       const elementPosition = ref.getBoundingClientRect().top + window.scrollY;
       const offsetPosition = elementPosition - headerOffset;
-
       window.scrollTo({
         top: offsetPosition,
         behavior: "smooth",
@@ -354,11 +377,10 @@ const PersonaConfig = () => {
     }
   };
 
-  const addSkillToCategory = (categoryPosition) => {
+  const addSkillToCategory = (categoryPosition: number) => {
     setCategories((prev) =>
       prev.map((cat) => {
         if (cat.position === categoryPosition) {
-          // ✅ Only modify the matching category
           return {
             ...cat,
             subcategories: [
@@ -373,7 +395,7 @@ const PersonaConfig = () => {
             ],
           };
         }
-        return cat; // 🔹 Leave other categories unchanged
+        return cat;
       })
     );
   };
@@ -408,6 +430,20 @@ const PersonaConfig = () => {
   const canSave =
     validation.totalValid && validation.categoriesValid && validation.hasName;
 
+  const handleGeneratePersona = () => {
+    if (!selectedRole || !selectedJD) {
+      toast({
+        title: "Missing Information",
+        description: "Please select both role and JD to generate persona.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    generatePersonaMutation.mutate({ roleId: selectedRole, jdId: selectedJD });
+  };
+
   const handleSavePersona = () => {
     if (!canSave) {
       toast({
@@ -416,34 +452,24 @@ const PersonaConfig = () => {
         variant: "destructive",
       });
       return;
+    }
+    
+    if (isEditMode) {
+      // In edit mode, save directly without dialog
+      confirmSavePersona();
     } else {
-      setPersonaName("");
-      setError("");
       setShowSaveDialog(true);
     }
-    setShowSaveDialog(true);
   };
 
   const confirmSavePersona = async () => {
     if (!canSave) return;
 
-    const selectedJD = localStorage.getItem("selectedJD");
-    if (!selectedJD) {
-      toast({
-        title: "Error",
-        description: "No job description selected.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { jdId } = JSON.parse(selectedJD);
-
     const payload = {
       name: personaName.trim(),
       role_name: roleName,
       role_id: roleId,
-      job_description_id: jdId,
+      job_description_id: selectedJD || jdId,
       persona_notes: personaNotes.trim(),
       categories: categories.map((cat) => ({
         id: cat.id,
@@ -469,39 +495,33 @@ const PersonaConfig = () => {
       })),
     };
 
-    console.log("Payload being sent:", JSON.stringify(payload, null, 2));
-
     try {
       setSaving(true);
-      console.log("persona save try block");
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/v1/persona/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const url = isEditMode 
+        ? `${import.meta.env.VITE_API_URL}/api/v1/persona/${personaId}`
+        : `${import.meta.env.VITE_API_URL}/api/v1/persona/`;
+      
+      const method = isEditMode ? "PATCH" : "POST";
+      
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         let errorMessage = "Failed to save persona";
         try {
           const errorData = await response.json();
-          console.error("API Error Response:", errorData);
-
-          // Handle different error response formats
           if (typeof errorData === "string") {
             errorMessage = errorData;
           } else if (errorData.detail) {
-            // Handle FastAPI validation errors
             if (Array.isArray(errorData.detail)) {
               errorMessage = errorData.detail
-                .map(
-                  (err: any) => `${err.loc?.join(".") || "Field"}: ${err.msg}`
-                )
+                .map((err: any) => `${err.loc?.join(".") || "Field"}: ${err.msg}`)
                 .join("; ");
             } else if (typeof errorData.detail === "string") {
               errorMessage = errorData.detail;
@@ -516,39 +536,45 @@ const PersonaConfig = () => {
         } catch (parseError) {
           errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         }
-
         throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log("Save successful:", data);
 
-      localStorage.setItem(
-        "savedPersona",
-        JSON.stringify({
-          id: data.id,
-          name: data.name,
-          apiData: data,
-        })
-      );
+      if (!isEditMode) {
+        localStorage.setItem(
+          "savedPersona",
+          JSON.stringify({
+            id: data.id,
+            name: data.name,
+            apiData: data,
+          })
+        );
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['personas'] });
+      queryClient.invalidateQueries({ queryKey: ['persona', personaId] });
 
       toast({
         title: "Success",
-        description: `Persona "${personaName}" saved successfully!`,
+        description: `Persona "${personaName}" ${isEditMode ? 'updated' : 'saved'} successfully!`,
       });
 
       setShowSaveDialog(false);
-      navigate("/candidate-upload");
+      
+      if (isFlowMode) {
+        navigate("/candidate-upload");
+      } else if (isEditMode) {
+        navigate("/persona/list");
+      } else {
+        navigate("/persona/list");
+      }
     } catch (error) {
       console.error("Save error:", error);
-
       let errorDescription = "Failed to save persona. Please try again.";
       if (error instanceof Error) {
         errorDescription = error.message;
-      } else if (typeof error === "string") {
-        errorDescription = error;
       }
-
       toast({
         title: "Error",
         description: errorDescription,
@@ -559,53 +585,191 @@ const PersonaConfig = () => {
     }
   };
 
-  if (loading) {
+  // Loading states
+  if (loading || personaLoading) {
     return (
-      <Layout>
+      <Layout currentStep={isFlowMode ? 2 : undefined}>
         <div className="flex flex-col items-center justify-center h-screen space-y-4">
           <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
           <p className="text-lg font-semibold text-gray-600">
-            Loading Persona Configuration...
+            {personaLoading ? "Loading Persona Configuration..." : "Generating Persona..."}
           </p>
         </div>
       </Layout>
     );
   }
 
+  // Get the selected role name for display
+  const getSelectedRoleName = () => {
+    if (isStandaloneCreate && selectedRole) {
+      const role = roles.find((r: any) => r.id === selectedRole);
+      return role?.name || "Unknown Role";
+    }
+    return roleName;
+  };
+
+  // Main UI - Same as PersonaConfig
   return (
-    <Layout currentStep={2}>
+    <Layout currentStep={isFlowMode ? 2 : undefined}>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex items-baseline justify-center gap-3">
             <h1 className="text-3xl font-bold text-foreground">
-              Configure Ideal Persona
+              {isEditMode ? "Edit Persona" : isStandaloneCreate ? "Create Persona" : "Configure Ideal Persona"}
             </h1>
-            <span className="text-muted-foreground">Role:</span>
-            <span className="text-xl font-bold text-primary">{roleName}</span>
+            {!isStandaloneCreate && (
+              <>
+                <span className="text-muted-foreground">Role:</span>
+                <span className="text-xl font-bold text-primary">{roleName}</span>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Sticky Tabs */}
-        <div className="bg-background border-b border-border sticky top-16 z-30 -mx-6 px-6 py-3">
-          <Tabs
-            value={activeTab}
-            onValueChange={scrollToSection}
-            className="w-full max-w-6xl mx-auto"
-          >
-            <TabsList className="grid w-full grid-cols-2 h-10 bg-muted">
-              <TabsTrigger value="distribution" className="text-sm font-medium">
-                Table of Distribution
-              </TabsTrigger>
-              <TabsTrigger value="summary" className="text-sm font-medium">
-                Summary
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+        {/* Standalone Mode: Role and JD Selection above table */}
+        {isStandaloneCreate && (
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Select Role and Job Description</CardTitle>
+              <CardDescription>
+                Choose a role and its corresponding job description to generate a persona
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role *</Label>
+                  <Select value={selectedRole} onValueChange={(value) => {
+                    setSelectedRole(value);
+                    setSelectedJD(""); // Reset JD when role changes
+                    const role = roles.find((r: any) => r.id === value);
+                    if (role) {
+                      setRoleName(role.name);
+                      setRoleId(value);
+                    }
+                  }}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rolesLoading ? (
+                        <SelectItem value="loading" disabled>Loading roles...</SelectItem>
+                      ) : (
+                        roles.map((role: any) => (
+                          <SelectItem key={role.id} value={role.id}>
+                            {role.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-        {/* Distribution Section */}
-        <div ref={distributionRef} className="space-y-6 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="jd">Job Description *</Label>
+                  <Select 
+                    value={selectedJD} 
+                    onValueChange={setSelectedJD}
+                    disabled={!selectedRole}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={selectedRole ? "Select a JD..." : "Select a role first"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {jdsLoading ? (
+                        <SelectItem value="loading" disabled>Loading JDs...</SelectItem>
+                      ) : jds?.length === 0 ? (
+                        <SelectItem value="none" disabled>No JDs found for this role</SelectItem>
+                      ) : (
+                        jds?.map((jd: any) => (
+                          <SelectItem key={jd.id} value={jd.id}>
+                            {jd.title || jd.role}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleGeneratePersona}
+                  disabled={!selectedRole || !selectedJD || generatePersonaMutation.isPending}
+                  className="bg-gradient-primary hover:opacity-90"
+                >
+                  {generatePersonaMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating Persona...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generate Persona
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Only show the rest if persona data is available */}
+        {hasGeneratedPersona && categories.length > 0 && (
+          <>
+            {/* Edit Mode: Show editable name and notes fields above table */}
+            {isEditMode && (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Persona Details</CardTitle>
+                  <CardDescription>Update the persona name and notes</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="persona-name-edit">Persona Name</Label>
+                    <Input
+                      id="persona-name-edit"
+                      value={personaName}
+                      onChange={(e) => setPersonaName(e.target.value)}
+                      placeholder="Enter persona name"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="persona-notes-edit">Persona Notes</Label>
+                    <Textarea
+                      id="persona-notes-edit"
+                      value={personaNotes}
+                      onChange={(e) => setPersonaNotes(e.target.value)}
+                      placeholder="Add any additional notes or comments..."
+                      className="min-h-[80px] resize-none"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sticky Tabs */}
+            <div className="bg-background border-b border-border sticky top-16 z-30 -mx-6 px-6 py-3">
+              <Tabs
+                value={activeTab}
+                onValueChange={scrollToSection}
+                className="w-full max-w-6xl mx-auto"
+              >
+                <TabsList className="grid w-full grid-cols-2 h-10 bg-muted">
+                  <TabsTrigger value="distribution" className="text-sm font-medium">
+                    Table of Distribution
+                  </TabsTrigger>
+                  <TabsTrigger value="summary" className="text-sm font-medium">
+                    Summary
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Distribution Section */}
+            <div ref={distributionRef} className="space-y-6 mt-6">
           <TooltipProvider>
             <Accordion type="multiple" className="space-y-0">
               {categories.map((cat) => {
@@ -712,27 +876,15 @@ const PersonaConfig = () => {
                                       </TooltipTrigger>
                                       <TooltipContent>
                                         <div className="grid grid-cols-2 gap-x-3 text-sm text-center">
-                                          <p className="text-right font-medium">
-                                            Level 1
-                                          </p>
+                                          <p className="text-right font-medium">Level 1</p>
                                           <p className="text-left">Basic</p>
-                                          <p className="text-right font-medium">
-                                            Level 2
-                                          </p>
+                                          <p className="text-right font-medium">Level 2</p>
                                           <p className="text-left">Working</p>
-                                          <p className="text-right font-medium">
-                                            Level 3
-                                          </p>
-                                          <p className="text-left">
-                                            Proficient
-                                          </p>
-                                          <p className="text-right font-medium">
-                                            Level 4
-                                          </p>
+                                          <p className="text-right font-medium">Level 3</p>
+                                          <p className="text-left">Proficient</p>
+                                          <p className="text-right font-medium">Level 4</p>
                                           <p className="text-left">Advanced</p>
-                                          <p className="text-right font-medium">
-                                            Level 5
-                                          </p>
+                                          <p className="text-right font-medium">Level 5</p>
                                           <p className="text-left">Expert</p>
                                         </div>
                                       </TooltipContent>
@@ -760,7 +912,7 @@ const PersonaConfig = () => {
 
                               <TableBody className="text-[14.9px]">
                                 {cat.subcategories.map(
-                                  (sub: any, subIndex: number) => (
+                                  (sub: any) => (
                                     <TableRow
                                       key={sub.position}
                                       className="hover:bg-muted/30 border-b h-9"
@@ -937,33 +1089,35 @@ const PersonaConfig = () => {
                   Category weights must total exactly 100%
                 </p>
               )}
-
-              {/* Persona Notes Section */}
             </CardContent>
           </Card>
-          <div className="pt-3 border-t border-border/50">
-            <Label
-              htmlFor="persona-notes"
-              className="text-sm font-medium mb-2 block"
-            >
-              Persona Notes
-            </Label>
-            <Textarea
-              id="persona-notes"
-              placeholder="Add any additional notes or comments about this persona configuration..."
-              value={personaNotes}
-              onChange={(e) => setPersonaNotes(e.target.value)}
-              className="min-h-[40px] text-sm resize-none border border-gray-400"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              Optional: Add context, assumptions, or special considerations for
-              this persona
-            </p>
-          </div>
-        </div>
+          
+              {/* Persona Notes Section - Only show in non-edit mode */}
+              {!isEditMode && (
+                <div className="pt-3 border-t border-border/50">
+                  <Label
+                    htmlFor="persona-notes"
+                    className="text-sm font-medium mb-2 block"
+                  >
+                    Persona Notes
+                  </Label>
+                  <Textarea
+                    id="persona-notes"
+                    placeholder="Add any additional notes or comments about this persona configuration..."
+                    value={personaNotes}
+                    onChange={(e) => setPersonaNotes(e.target.value)}
+                    className="min-h-[40px] text-sm resize-none border border-gray-400"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optional: Add context, assumptions, or special considerations for
+                    this persona
+                  </p>
+                </div>
+              )}
+            </div>
 
-        {/* Summary Section */}
-        <div ref={summaryRef} className="space-y-6 mt-6">
+            {/* Summary Section */}
+            <div ref={summaryRef} className="space-y-6 mt-6">
           <Card className="shadow-card bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -1020,7 +1174,7 @@ const PersonaConfig = () => {
                                 {Number(sub.weight_percentage).toFixed(1)}%
                               </span>
                               <span className="font-mono bg-primary/10 px-1.5 py-0.5 rounded text-primary">
-                                L{sub.level_id}
+                                L{sub.level?.position}
                               </span>
                             </div>
                           </div>
@@ -1101,81 +1255,83 @@ const PersonaConfig = () => {
               )}
             </CardContent>
           </Card>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end mt-6">
-          <Button
-            onClick={handleSavePersona}
-            disabled={!canSave || saving}
-            className="flex items-center space-x-2"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Saving...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                <span>Save Persona</span>
-              </>
-            )}
-          </Button>
-        </div>
-
-        {/* Save Dialog */}
-        <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Save Persona</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label
-                  htmlFor="persona-name"
-                  className="text-sm font-medium mb-2 block"
-                >
-                  Persona Name
-                </Label>
-                <Input
-                  id="persona-name"
-                  placeholder="persona-<position>-<username>-<date-time>"
-                  value={personaName}
-                  onChange={(e) => setPersonaName(e.target.value)}
-                  className="w-full"
-                />
-                {!validation.hasName && (
-                  <p className="text-xs text-destructive mt-1">
-                    Persona name is required
-                  </p>
-                )}
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowSaveDialog(false)}
-                  disabled={saving}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={confirmSavePersona}
-                  disabled={!canSave || saving}
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                      Saving...
-                    </>
-                  ) : (
-                    "Confirm Save"
-                  )}
-                </Button>
-              </div>
             </div>
-          </DialogContent>
-        </Dialog>
+            <div className="flex justify-end mt-6">
+              <Button
+                onClick={handleSavePersona}
+                disabled={!canSave || saving}
+                className="flex items-center space-x-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>{isEditMode ? "Update Persona" : "Save Persona"}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Save Dialog - Only for non-edit mode */}
+            {!isEditMode && (
+              <Dialog open={showSaveDialog} onOpenChange={setShowSaveDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Confirm Save Persona</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label
+                        htmlFor="persona-name"
+                        className="text-sm font-medium mb-2 block"
+                      >
+                        Persona Name
+                      </Label>
+                      <Input
+                        id="persona-name"
+                        placeholder="persona-<position>-<username>-<date-time>"
+                        value={personaName}
+                        onChange={(e) => setPersonaName(e.target.value)}
+                        className="w-full"
+                      />
+                      {!validation.hasName && (
+                        <p className="text-xs text-destructive mt-1">
+                          Persona name is required
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowSaveDialog(false)}
+                        disabled={saving}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={confirmSavePersona}
+                        disabled={!canSave || saving}
+                      >
+                        {saving ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Confirm Save"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}
@@ -1213,4 +1369,4 @@ const PersonaConfig = () => {
   );
 };
 
-export default PersonaConfig;
+export default ReusablePersonaConfig;
