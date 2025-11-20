@@ -2,34 +2,20 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Search, Target, Users, FileText, Play, AlertCircle } from "lucide-react";
+import { Target, Users, FileText, Play, AlertCircle, Briefcase } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-interface JDOption {
-  id: string;
-  title: string;
-  role_name: string;
-  persona_count: number;
-}
-
-interface PersonaOption {
-  id: string;
-  name: string;
-  jd_id: string;
-  role_name: string;
-}
+import { fetchAllRoles, fetchJDsByRole, fetchAllPersonas, type RoleOption, type JDOption, type PersonaOption } from "@/lib/helper";
+import InfiniteScrollCandidateList from "@/components/InfiniteScrollCandidateList";
+import SearchableDropdown from "@/components/SearchableDropdown";
 
 interface CandidateOption {
   id: string;
-  name: string;
-  file_name: string;
-  uploaded_at: string;
-  status: string;
+  full_name: string;
+  email: string;
+  created_at: string;
+  personas: Array<{ persona_id: string; persona_name: string }>;
 }
 
 interface EvaluationParams {
@@ -38,120 +24,378 @@ interface EvaluationParams {
   candidateIds: string[];
 }
 
+interface FlowModeJD {
+  id: string;
+  title: string;
+  role_name: string;
+}
+
+interface FlowModePersona {
+  id: string;
+  name: string;
+}
+
 interface EvaluationSelectorProps {
+  mode: 'start' | 'flow';
+  preselectedJD?: FlowModeJD | null;
+  preselectedPersona?: FlowModePersona | null;
   onEvaluate: (params: EvaluationParams) => void;
   onCancel?: () => void;
 }
 
-const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) => {
+const EvaluationSelector = ({ 
+  mode, 
+  preselectedJD, 
+  preselectedPersona, 
+  onEvaluate, 
+  onCancel 
+}: EvaluationSelectorProps) => {
   const { toast } = useToast();
   
   // State for dropdowns
+  const [roles, setRoles] = useState<RoleOption[]>([]);
   const [jds, setJds] = useState<JDOption[]>([]);
   const [personas, setPersonas] = useState<PersonaOption[]>([]);
   const [candidates, setCandidates] = useState<CandidateOption[]>([]);
   
   // State for selections
+  const [selectedRole, setSelectedRole] = useState<string>("");
   const [selectedJD, setSelectedJD] = useState<string>("");
   const [selectedPersona, setSelectedPersona] = useState<string>("");
   const [selectedCandidates, setSelectedCandidates] = useState<string[]>([]);
   
   // State for UI
   const [loading, setLoading] = useState(true);
+  const [loadingRoles, setLoadingRoles] = useState(false);
+  const [loadingJDs, setLoadingJDs] = useState(false);
+  const [loadingPersonas, setLoadingPersonas] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
+  // State for error handling
+  const [roleError, setRoleError] = useState<string | null>(null);
+  const [jdError, setJdError] = useState<string | null>(null);
+  const [personaError, setPersonaError] = useState<string | null>(null);
+  const [candidateError, setCandidateError] = useState<string | null>(null);
+  
+  // State for candidate pagination
+  const [candidatePage, setCandidatePage] = useState<number>(1);
+  const [hasMoreCandidates, setHasMoreCandidates] = useState<boolean>(true);
+  const [loadingMoreCandidates, setLoadingMoreCandidates] = useState<boolean>(false);
 
-  // Fetch JDs on component mount
+  // Task 9.1: Debounced search handler (300ms delay)
   useEffect(() => {
-    const fetchJDs = async () => {
+    // Don't search if term is empty
+    if (!searchTerm) {
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      // Task 9.3: Call searchCandidates when search term changes
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (!response.ok) throw new Error(`Failed to fetch JDs: ${response.status}`);
-
-        const data = await response.json();
-        const transformedJDs: JDOption[] = (data.job_descriptions || data || []).map((jd: any) => ({
-          id: jd.id,
-          title: jd.title || jd.role || 'Untitled JD',
-          role_name: jd.role || jd.role_name || 'Unknown Role',
-          persona_count: jd.persona_count || 0,
-        }));
-
-        setJds(transformedJDs);
+        const searchResults = await searchCandidates(searchTerm);
+        setCandidates(searchResults);
+        setIsSearching(false);
       } catch (error) {
-        console.error("Error fetching JDs:", error);
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Initialize state with preselected values in flow mode
+  useEffect(() => {
+    if (mode === 'flow' && preselectedJD && preselectedPersona) {
+      // Extract role from preselected JD (assuming role_name contains role info)
+      setSelectedRole(preselectedJD.role_name); // This might need adjustment based on actual data structure
+      setSelectedJD(preselectedJD.id);
+      setSelectedPersona(preselectedPersona.id);
+      
+      // Set arrays with preselected values for display
+      setRoles([{
+        id: preselectedJD.role_name,
+        name: preselectedJD.role_name,
+      }]);
+      
+      setJds([{
+        id: preselectedJD.id,
+        title: preselectedJD.title,
+        role_name: preselectedJD.role_name,
+        persona_count: 1,
+      }]);
+      
+      setPersonas([{
+        id: preselectedPersona.id,
+        name: preselectedPersona.name,
+        jd_id: preselectedJD.id,
+        role_name: preselectedJD.role_name,
+      }]);
+    }
+  }, [mode, preselectedJD, preselectedPersona]);
+
+  // Fetch Roles on component mount (only in start mode)
+  useEffect(() => {
+    if (mode !== 'start') return;
+    
+    const loadRoles = async () => {
+      try {
+        setLoadingRoles(true);
+        setRoleError(null);
+        const allRoles = await fetchAllRoles();
+        setRoles(allRoles);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Could not load roles. Please try again.";
+        setRoleError(errorMessage);
+        console.error("Error fetching roles:", error);
         toast({
-          title: "Error fetching Job Descriptions",
-          description: "Could not load JDs. Please try again later.",
+          title: "Error fetching Roles",
+          description: errorMessage,
           variant: "destructive",
         });
+      } finally {
+        setLoadingRoles(false);
       }
     };
 
-    fetchJDs();
-  }, [toast]);
+    loadRoles();
+  }, [mode, toast]);
 
-  // Fetch personas when JD is selected
+  // Fetch JDs when role is selected (only in start mode)
   useEffect(() => {
-    const fetchPersonas = async () => {
-      if (!selectedJD) {
+    if (mode !== 'start') return;
+    
+    const loadJDs = async () => {
+      if (!selectedRole) {
+        setJds([]);
+        setSelectedJD("");
         setPersonas([]);
         setSelectedPersona("");
+        setJdError(null);
         return;
       }
 
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+        setLoadingJDs(true);
+        setJdError(null);
+        const roleJDs = await fetchJDsByRole(selectedRole);
+        setJds(roleJDs);
+        setSelectedJD(""); // Reset JD selection when role changes
+        setPersonas([]);
+        setSelectedPersona("");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Could not load JDs for selected role.";
+        setJdError(errorMessage);
+        console.error("Error fetching JDs:", error);
+        toast({
+          title: "Error fetching Job Descriptions",
+          description: errorMessage,
+          variant: "destructive",
         });
+      } finally {
+        setLoadingJDs(false);
+      }
+    };
 
-        if (!response.ok) throw new Error(`Failed to fetch personas: ${response.status}`);
+    loadJDs();
+  }, [mode, selectedRole, toast]);
+  
+  // Retry function for Roles
+  const retryLoadRoles = async () => {
+    if (mode !== 'start') return;
+    
+    try {
+      setLoadingRoles(true);
+      setRoleError(null);
+      const allRoles = await fetchAllRoles();
+      setRoles(allRoles);
+      toast({
+        title: "Success",
+        description: "Roles loaded successfully.",
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Could not load roles. Please try again.";
+      setRoleError(errorMessage);
+      toast({
+        title: "Error fetching Roles",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingRoles(false);
+    }
+  };
 
-        const data = await response.json();
-        const allPersonas = data.personas || data || [];
+  // Retry function for JDs
+  const retryLoadJDs = async () => {
+    if (mode !== 'start' || !selectedRole) return;
+    
+    try {
+      setLoadingJDs(true);
+      setJdError(null);
+      const roleJDs = await fetchJDsByRole(selectedRole);
+      setJds(roleJDs);
+      toast({
+        title: "Success",
+        description: "Job Descriptions loaded successfully.",
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Could not load JDs. Please try again.";
+      setJdError(errorMessage);
+      toast({
+        title: "Error fetching Job Descriptions",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingJDs(false);
+    }
+  };
+
+  // Fetch personas when JD is selected (only in start mode)
+  useEffect(() => {
+    if (mode !== 'start') return;
+    
+    const loadPersonas = async () => {
+      if (!selectedJD) {
+        setPersonas([]);
+        setSelectedPersona("");
+        setPersonaError(null);
+        return;
+      }
+
+      try {
+        setLoadingPersonas(true);
+        setPersonaError(null);
+        // Fetch all personas with pagination
+        const allPersonas = await fetchAllPersonas();
         
-        // Filter personas by selected JD
-        const filteredPersonas: PersonaOption[] = allPersonas
-          .filter((persona: any) => persona.job_description_id === selectedJD)
-          .map((persona: any) => ({
-            id: persona.id,
-            name: persona.name || 'Unnamed Persona',
-            jd_id: persona.job_description_id,
-            role_name: persona.role_name || 'Unknown Role',
-          }));
+        // Filter personas by selected JD ID
+        const filteredPersonas = allPersonas.filter(
+          persona => persona.jd_id === selectedJD
+        );
 
         setPersonas(filteredPersonas);
         setSelectedPersona(""); // Reset persona selection when JD changes
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Could not load personas for selected JD.";
+        setPersonaError(errorMessage);
         console.error("Error fetching personas:", error);
         toast({
           title: "Error fetching personas",
-          description: "Could not load personas for selected JD.",
+          description: errorMessage,
           variant: "destructive",
         });
+      } finally {
+        setLoadingPersonas(false);
       }
     };
 
-    fetchPersonas();
-  }, [selectedJD, toast]);
+    loadPersonas();
+  }, [mode, selectedJD, toast]);
+  
+  // Retry function for personas
+  const retryLoadPersonas = async () => {
+    if (mode !== 'start' || !selectedJD) return;
+    
+    try {
+      setPersonaError(null);
+      const allPersonas = await fetchAllPersonas();
+      const filteredPersonas = allPersonas.filter(
+        persona => persona.jd_id === selectedJD
+      );
+      setPersonas(filteredPersonas);
+      toast({
+        title: "Success",
+        description: "Personas loaded successfully.",
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Could not load personas for selected JD.";
+      setPersonaError(errorMessage);
+      toast({
+        title: "Error fetching personas",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    }
+  };
 
-  // Fetch candidates on component mount
-  useEffect(() => {
-    const fetchCandidates = async () => {
+  // Fetch candidates page function
+  const fetchCandidatesPage = async (page: number) => {
+    // Prevent concurrent requests
+    if (loadingMoreCandidates) {
+      return [];
+    }
+
+    try {
+      setLoadingMoreCandidates(true);
+      setCandidateError(null);
+      
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=${page}&size=10`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      // Handle 401 errors with redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        throw new Error('Session expired. Please login again.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch candidates: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Transform API response to CandidateOption format
+      const transformedCandidates: CandidateOption[] = (data.candidates || []).map((candidate: any) => ({
+        id: candidate.id,
+        full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+        email: candidate.email || '',
+        created_at: candidate.created_at || new Date().toISOString(),
+        personas: candidate.personas || [],
+      }));
+
+      // Update hasMore flag based on has_next field
+      setHasMoreCandidates(data.has_next || false);
+      
+      return transformedCandidates;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Could not load candidates. Please try again.";
+      console.error("Error fetching candidates page:", error);
+      setCandidateError(errorMessage);
+      toast({
+        title: "Error fetching candidates",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    } finally {
+      setLoadingMoreCandidates(false);
+    }
+  };
+
+  // Task 9.2: Create searchCandidates function
+  const searchCandidates = async (query: string): Promise<CandidateOption[]> => {
+    try {
+      // First, try the search endpoint
+      const searchUrl = `${import.meta.env.VITE_API_URL}/api/v1/candidate/search?q=${encodeURIComponent(query)}`;
+      
       try {
-        setLoading(true);
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/candidate/`, {
+        const response = await fetch(searchUrl, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -159,38 +403,151 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
           },
         });
 
-        if (!response.ok) throw new Error(`Failed to fetch candidates: ${response.status}`);
+        // Handle 401 errors with redirect to login
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          throw new Error('Session expired. Please login again.');
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Transform API response to CandidateOption format
+          const transformedCandidates: CandidateOption[] = (data.candidates || []).map((candidate: any) => ({
+            id: candidate.id,
+            full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+            email: candidate.email || '',
+            created_at: candidate.created_at || new Date().toISOString(),
+            personas: candidate.personas || [],
+          }));
+          
+          return transformedCandidates;
+        }
+      } catch (searchError) {
+        console.log("Search endpoint not available, falling back to client-side filtering");
+      }
+
+      // Fallback: Fetch all candidates and filter client-side
+      const allCandidates: CandidateOption[] = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=${page}&size=50`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        // Handle 401 errors with redirect to login
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          throw new Error('Session expired. Please login again.');
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `Failed to fetch candidates: ${response.status}`);
+        }
 
         const data = await response.json();
-        const transformedCandidates: CandidateOption[] = (data.candidates || data || []).map((candidate: any) => ({
+        
+        // Transform and add to results
+        const transformedCandidates: CandidateOption[] = (data.candidates || []).map((candidate: any) => ({
           id: candidate.id,
-          name: candidate.name || candidate.file_name?.replace(/\.[^/.]+$/, "") || 'Unknown Candidate',
-          file_name: candidate.file_name || 'unknown.pdf',
-          uploaded_at: candidate.uploaded_at || candidate.created_at || new Date().toISOString(),
-          status: candidate.status || 'processed',
+          full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+          email: candidate.email || '',
+          created_at: candidate.created_at || new Date().toISOString(),
+          personas: candidate.personas || [],
         }));
+        
+        allCandidates.push(...transformedCandidates);
+        hasMore = data.has_next || false;
+        page++;
+      }
 
-        setCandidates(transformedCandidates);
+      // Filter candidates client-side
+      const lowerQuery = query.toLowerCase();
+      return allCandidates.filter(candidate => 
+        candidate.full_name.toLowerCase().includes(lowerQuery) ||
+        candidate.email.toLowerCase().includes(lowerQuery)
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Could not search candidates. Please try again.";
+      console.error("Error searching candidates:", error);
+      toast({
+        title: "Error searching candidates",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
+  // Fetch initial candidates on component mount
+  useEffect(() => {
+    const loadInitialCandidates = async () => {
+      try {
+        setLoading(true);
+        setCandidateError(null);
+        const initialCandidates = await fetchCandidatesPage(1);
+        setCandidates(initialCandidates);
       } catch (error) {
-        console.error("Error fetching candidates:", error);
-        toast({
-          title: "Error fetching candidates",
-          description: "Could not load candidates. Please try again later.",
-          variant: "destructive",
-        });
+        const errorMessage = error instanceof Error ? error.message : "Could not load candidates.";
+        setCandidateError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCandidates();
+    loadInitialCandidates();
   }, [toast]);
+  
+  // Retry function for candidates
+  const retryLoadCandidates = async () => {
+    try {
+      setLoading(true);
+      setCandidateError(null);
+      setCandidatePage(1);
+      const initialCandidates = await fetchCandidatesPage(1);
+      setCandidates(initialCandidates);
+      toast({
+        title: "Success",
+        description: "Candidates loaded successfully.",
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Could not load candidates.";
+      setCandidateError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Filter candidates based on search term
-  const filteredCandidates = candidates.filter(candidate =>
-    candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    candidate.file_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Load more handler with guards to prevent duplicate calls
+  const handleLoadMore = async () => {
+    // Comprehensive guards to prevent duplicate calls
+    if (loadingMoreCandidates || !hasMoreCandidates || searchTerm || isSearching) {
+      return;
+    }
+
+    try {
+      const nextPage = candidatePage + 1;
+      const newCandidates = await fetchCandidatesPage(nextPage);
+      
+      // Append new candidates to existing list
+      setCandidates(prev => [...prev, ...newCandidates]);
+      setCandidatePage(nextPage);
+    } catch (error) {
+      // Error already handled in fetchCandidatesPage
+    }
+  };
 
   // Handle candidate selection
   const handleCandidateToggle = (candidateId: string) => {
@@ -201,18 +558,43 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
     );
   };
 
-  // Select all candidates
+  // Select all visible candidates
   const handleSelectAll = () => {
-    if (selectedCandidates.length === filteredCandidates.length) {
+    if (selectedCandidates.length === candidates.length) {
       setSelectedCandidates([]);
     } else {
-      setSelectedCandidates(filteredCandidates.map(c => c.id));
+      setSelectedCandidates(candidates.map(c => c.id));
+    }
+  };
+
+  // Task 9.3: Handle search term change and restore pagination when cleared
+  const handleSearchChange = async (term: string) => {
+    setSearchTerm(term);
+    
+    // If search is cleared, restore pagination
+    if (!term) {
+      try {
+        setLoading(true);
+        setCandidateError(null);
+        setCandidatePage(1);
+        const initialCandidates = await fetchCandidatesPage(1);
+        setCandidates(initialCandidates);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Could not load candidates.";
+        setCandidateError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   // Validate selections before starting evaluation
   const validateSelections = (): string[] => {
     const errors: string[] = [];
+    
+    if (!selectedRole) {
+      errors.push("Please select a Role");
+    }
     
     if (!selectedJD) {
       errors.push("Please select a Job Description");
@@ -261,14 +643,6 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
   const selectedJDDetails = jds.find(jd => jd.id === selectedJD);
   const selectedPersonaDetails = personas.find(p => p.id === selectedPersona);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
   if (loading) {
     return (
       <Card className="shadow-card">
@@ -287,8 +661,14 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">Start New Evaluation</h2>
-          <p className="text-muted-foreground">Select job description, persona, and candidates to evaluate</p>
+          <h2 className="text-2xl font-bold text-foreground">
+            {mode === 'flow' ? 'Continue Evaluation' : 'Start New Evaluation'}
+          </h2>
+          <p className="text-muted-foreground">
+            {mode === 'flow' 
+              ? 'Select candidates to evaluate with your chosen job description and persona' 
+              : 'Select job description, persona, and candidates to evaluate'}
+          </p>
         </div>
         {onCancel && (
           <Button variant="outline" onClick={onCancel}>
@@ -299,40 +679,94 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
 
       {/* Selection Form */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* JD and Persona Selection */}
+        {/* Role, JD and Persona Selection */}
         <Card className="shadow-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <FileText className="w-5 h-5 text-primary" />
-              <span>Job Description & Persona</span>
+              <Briefcase className="w-5 h-5 text-primary" />
+              <span>Role, Job Description & Persona</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Role <span className="text-destructive">*</span>
+              </label>
+              <SearchableDropdown
+                options={roles.map(role => ({
+                  id: role.id,
+                  label: role.name,
+                  sublabel: role.description,
+                }))}
+                value={selectedRole}
+                onChange={setSelectedRole}
+                placeholder="Select a role..."
+                searchPlaceholder="Search roles..."
+                emptyMessage="No roles found"
+                disabled={mode === 'flow'}
+                loading={loadingRoles}
+                className={validationErrors.includes("Please select a Role") ? "border-destructive" : ""}
+              />
+              
+              {/* Role Error Display with Retry */}
+              {roleError && mode === 'start' && (
+                <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />
+                    <span className="text-sm text-destructive">{roleError}</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={retryLoadRoles}
+                    disabled={loadingRoles}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
+            </div>
+
             {/* JD Selection */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">
                 Job Description <span className="text-destructive">*</span>
               </label>
-              <Select value={selectedJD} onValueChange={setSelectedJD}>
-                <SelectTrigger className={validationErrors.includes("Please select a Job Description") ? "border-destructive" : ""}>
-                  <SelectValue placeholder="Select a job description" />
-                </SelectTrigger>
-                <SelectContent>
-                  {jds.map((jd) => (
-                    <SelectItem key={jd.id} value={jd.id}>
-                      <div className="flex items-center justify-between w-full">
-                        <div>
-                          <div className="font-medium">{jd.title}</div>
-                          <div className="text-sm text-muted-foreground">{jd.role_name}</div>
-                        </div>
-                        <Badge variant="secondary" className="ml-2">
-                          {jd.persona_count} personas
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableDropdown
+                options={jds.map(jd => ({
+                  id: jd.id,
+                  label: jd.title,
+                  sublabel: jd.role_name,
+                  badge: `${jd.persona_count} personas`,
+                }))}
+                value={selectedJD}
+                onChange={setSelectedJD}
+                placeholder={!selectedRole ? "Select a role first" : "Select a job description..."}
+                searchPlaceholder="Search job descriptions..."
+                emptyMessage="No job descriptions found"
+                disabled={mode === 'flow' || !selectedRole}
+                loading={loadingJDs}
+                className={validationErrors.includes("Please select a Job Description") ? "border-destructive" : ""}
+              />
+              
+              {/* JD Error Display with Retry */}
+              {jdError && mode === 'start' && selectedRole && (
+                <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />
+                    <span className="text-sm text-destructive">{jdError}</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={retryLoadJDs}
+                    disabled={loadingJDs}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Persona Selection */}
@@ -340,38 +774,47 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
               <label className="text-sm font-medium text-foreground">
                 Persona <span className="text-destructive">*</span>
               </label>
-              <Select 
-                value={selectedPersona} 
-                onValueChange={setSelectedPersona}
-                disabled={!selectedJD || personas.length === 0}
-              >
-                <SelectTrigger className={validationErrors.includes("Please select a Persona") ? "border-destructive" : ""}>
-                  <SelectValue placeholder={
-                    !selectedJD ? "Select a JD first" : 
-                    personas.length === 0 ? "No personas available" : 
-                    "Select a persona"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {personas.map((persona) => (
-                    <SelectItem key={persona.id} value={persona.id}>
-                      <div>
-                        <div className="font-medium">{persona.name}</div>
-                        <div className="text-sm text-muted-foreground">{persona.role_name}</div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableDropdown
+                options={personas.map(persona => ({
+                  id: persona.id,
+                  label: persona.name,
+                  sublabel: persona.role_name,
+                }))}
+                value={selectedPersona}
+                onChange={setSelectedPersona}
+                placeholder={!selectedJD ? "Select a JD first" : "Select a persona..."}
+                searchPlaceholder="Search personas..."
+                emptyMessage="No personas found"
+                disabled={mode === 'flow' || !selectedJD}
+                loading={loadingPersonas}
+                className={validationErrors.includes("Please select a Persona") ? "border-destructive" : ""}
+              />
+              
+              {/* Persona Error Display with Retry */}
+              {personaError && mode === 'start' && selectedJD && (
+                <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />
+                    <span className="text-sm text-destructive">{personaError}</span>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={retryLoadPersonas}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Selection Summary */}
-            {selectedJDDetails && selectedPersonaDetails && (
+            {selectedRole && selectedJDDetails && selectedPersonaDetails && (
               <div className="mt-4 p-3 bg-muted rounded-lg">
                 <h4 className="text-sm font-medium text-foreground mb-2">Selection Summary</h4>
                 <div className="space-y-1 text-sm">
+                  <div><span className="font-medium">Role:</span> {roles.find(r => r.id === selectedRole)?.name || selectedRole}</div>
                   <div><span className="font-medium">JD:</span> {selectedJDDetails.title}</div>
-                  <div><span className="font-medium">Role:</span> {selectedJDDetails.role_name}</div>
                   <div><span className="font-medium">Persona:</span> {selectedPersonaDetails.name}</div>
                 </div>
               </div>
@@ -382,73 +825,45 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
         {/* Candidate Selection */}
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Users className="w-5 h-5 text-primary" />
-                <span>Candidates ({selectedCandidates.length} selected)</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                disabled={filteredCandidates.length === 0}
-              >
-                {selectedCandidates.length === filteredCandidates.length ? "Deselect All" : "Select All"}
-              </Button>
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-primary" />
+              <span>Candidates ({selectedCandidates.length} selected)</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search candidates..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Candidate List */}
-            <div className="max-h-96 overflow-y-auto">
-              {filteredCandidates.length === 0 ? (
-                <div className="text-center py-8">
-                  <Users className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {candidates.length === 0 ? "No candidates available" : "No matching candidates"}
-                  </p>
+          <CardContent>
+            <InfiniteScrollCandidateList
+              candidates={candidates}
+              selectedCandidates={selectedCandidates}
+              onToggleCandidate={handleCandidateToggle}
+              onSelectAll={handleSelectAll}
+              onLoadMore={handleLoadMore}
+              hasMore={searchTerm ? false : hasMoreCandidates}
+              loading={isSearching || loadingMoreCandidates}
+              searchTerm={searchTerm}
+              onSearchChange={handleSearchChange}
+            />
+            
+            {/* Candidate Error Display with Retry */}
+            {candidateError && (
+              <div className="flex items-center justify-between p-3 bg-destructive/10 border border-destructive/20 rounded-md mt-4">
+                <div className="flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 text-destructive mt-0.5" />
+                  <span className="text-sm text-destructive">{candidateError}</span>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {filteredCandidates.map((candidate) => (
-                    <div
-                      key={candidate.id}
-                      className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                      onClick={() => handleCandidateToggle(candidate.id)}
-                    >
-                      <Checkbox
-                        checked={selectedCandidates.includes(candidate.id)}
-                        onChange={() => handleCandidateToggle(candidate.id)}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-foreground truncate">{candidate.name}</div>
-                        <div className="text-sm text-muted-foreground truncate">{candidate.file_name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          Uploaded: {formatDate(candidate.uploaded_at)}
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {candidate.status}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={retryLoadCandidates}
+                  disabled={loading}
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
+            
             {/* Validation Error */}
             {validationErrors.includes("Please select at least one candidate") && (
-              <div className="flex items-center space-x-2 text-destructive text-sm">
+              <div className="flex items-center space-x-2 text-destructive text-sm mt-4">
                 <AlertCircle className="w-4 h-4" />
                 <span>Please select at least one candidate</span>
               </div>
@@ -480,7 +895,7 @@ const EvaluationSelector = ({ onEvaluate, onCancel }: EvaluationSelectorProps) =
       <div className="flex items-center justify-end space-x-4">
         <Button
           onClick={handleStartEvaluation}
-          disabled={validationErrors.length > 0}
+          disabled={validationErrors.length > 0 || loadingRoles || loadingJDs || loadingPersonas || isSearching || loadingMoreCandidates}
           className="flex items-center space-x-2"
         >
           <Target className="w-4 h-4" />

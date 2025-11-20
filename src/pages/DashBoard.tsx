@@ -45,6 +45,13 @@ const Dashboard: React.FC = () => {
             color: "bg-purple-500"
         },
         {
+            title: "Start Evaluation",
+            description: "Evaluate candidates against personas",
+            icon: PlayCircle,
+            path: "/evaluation/start",
+            color: "bg-indigo-500"
+        },
+        {
             title: "Evaluation Results",
             description: "View and analyze evaluations",
             icon: BarChart3,

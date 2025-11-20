@@ -95,6 +95,7 @@ const App = () => {
               {/* Evaluation routes */}
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/evaluation/start" element={<Evaluation />} />
+              <Route path="/evaluation/flow" element={<Evaluation />} />
               <Route path="/evaluation/results" element={<Results />} />
               <Route path="/evaluation/results/:evaluationId" element={<Results />} />
             </Route>

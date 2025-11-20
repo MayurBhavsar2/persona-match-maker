@@ -95,7 +95,7 @@ const fetchRoles = async () => {
 };
 
 const fetchJDsByRole = async (roleId: string) => {
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/?role_id=${roleId}`, {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/by-role/${roleId}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -563,7 +563,24 @@ const ReusablePersonaConfig = () => {
       setShowSaveDialog(false);
       
       if (isFlowMode) {
-        navigate("/candidate-upload");
+        // Store JD and persona data in localStorage for evaluation flow
+        // Get JD title from the jds array if available, otherwise use role name
+        const selectedJdData = jds?.find((jd: any) => jd.id === (selectedJD || jdId));
+        const jdData = {
+          id: selectedJD || jdId,
+          title: selectedJdData?.title || selectedJdData?.role || roleName,
+          role_name: roleName,
+        };
+        const personaData = {
+          id: data.id,
+          name: data.name,
+        };
+        
+        localStorage.setItem('evaluation_flow_jd', JSON.stringify(jdData));
+        localStorage.setItem('evaluation_flow_persona', JSON.stringify(personaData));
+        
+        // Navigate to evaluation flow route
+        navigate("/evaluation/flow");
       } else if (isEditMode) {
         navigate("/persona/list");
       } else {

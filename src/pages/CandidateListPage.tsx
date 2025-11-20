@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, PlayCircle } from 'lucide-react';
 import BasicTable from '@/components/BasicTable';
 import { Button } from '@/components/ui/button';
 import {
@@ -268,6 +268,10 @@ const CandidateListPage: React.FC = () => {
     navigate(`/candidate-upload?id=${candidateId}`);
   };
 
+  const handleStartEvaluation = () => {
+    navigate('/evaluation/start');
+  };
+
   const handleDelete = async (candidateId: string) => {
     try {
       await axiosInstance.delete(`/api/v1/candidate/${candidateId}`);
@@ -306,10 +310,16 @@ const CandidateListPage: React.FC = () => {
                 Manage candidate profiles and evaluations
               </p>
             </div>
-            <Button onClick={handleCreate} className="flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>Add Candidate</span>
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button onClick={handleStartEvaluation} variant="outline" className="flex items-center space-x-2">
+                <PlayCircle className="w-4 h-4" />
+                <span>Start Evaluation</span>
+              </Button>
+              <Button onClick={handleCreate} className="flex items-center space-x-2">
+                <Plus className="w-4 h-4" />
+                <span>Add Candidate</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

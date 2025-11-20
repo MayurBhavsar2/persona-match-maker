@@ -12,6 +12,83 @@ export interface UploadedCandidate {
   cv_text: string;
 }
 
+// types/jd.ts
+export interface JDOption {
+  id: string;
+  title: string;
+  role_name: string;
+  persona_count: number;
+}
+
+// types/persona.ts
+export interface PersonaOption {
+  id: string;
+  name: string;
+  jd_id: string;
+  role_name: string;
+}
+
+// types/role.ts
+export interface RoleOption {
+  id: string;
+  name: string;
+  description?: string;
+}
+
+interface JDListResponse {
+  jds: Array<{
+    id: string;
+    title: string;
+    company_id: string | null;
+    created_at: string;
+    created_by: string;
+    created_by_name: string;
+    document_character_count: string;
+    document_word_count: string;
+    notes: string | null;
+    original_document_extension: string;
+    original_document_filename: string;
+    original_document_size: string;
+    personas: Array<{
+      persona_id: string;
+      persona_name: string;
+    }>;
+    role_id: string;
+    role_name: string;
+    selected_edited: boolean;
+    selected_version: string;
+    tags: string[];
+    updated_at: string;
+    updated_by: string;
+    updated_by_name: string;
+  }>;
+  has_next: boolean;
+  has_prev: boolean;
+  page: number;
+  size: number;
+  total: number;
+}
+
+interface PersonaListResponse {
+  personas: Array<{
+    id: string;
+    name: string;
+    job_description_id: string;
+    role_name: string;
+    created_at: string;
+    created_by: string;
+    created_by_name: string;
+    updated_at: string;
+    updated_by: string;
+    updated_by_name: string;
+  }>;
+  has_next: boolean;
+  has_prev: boolean;
+  page: number;
+  size: number;
+  total: number;
+}
+
 export interface ScoreResponse {
   score_id: string;
   candidate_id: string;
@@ -336,4 +413,201 @@ export const useEvaluatedCandidates = () => {
     },
     staleTime: Infinity,
   });
+};
+
+// Fetch all JDs with pagination
+export const fetchAllJDs = async (): Promise<JDOption[]> => {
+  const allJDs: JDOption[] = [];
+  let page = 1;
+  let hasMore = true;
+  const API_URL = import.meta.env.VITE_API_URL;
+  
+  try {
+    while (hasMore) {
+      const response = await fetch(
+        `${API_URL}/api/v1/jd/?page=${page}&size=50`,
+        {
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      // Handle 401 errors with redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        throw new Error('Session expired. Please login again.');
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch JDs: ${response.status}`);
+      }
+      
+      const data: JDListResponse = await response.json();
+      
+      // Transform API response to JDOption format
+      const transformedJDs = data.jds.map(jd => ({
+        id: jd.id,
+        title: jd.title,
+        role_name: jd.role_name,
+        persona_count: jd.personas.length,
+      }));
+      
+      allJDs.push(...transformedJDs);
+      
+      hasMore = data.has_next;
+      page++;
+    }
+    
+    return allJDs;
+  } catch (error) {
+    console.error('Error fetching all JDs:', error);
+    throw error;
+  }
+};
+
+// Fetch all Personas with pagination
+export const fetchAllPersonas = async (): Promise<PersonaOption[]> => {
+  const allPersonas: PersonaOption[] = [];
+  let page = 1;
+  let hasMore = true;
+  const API_URL = import.meta.env.VITE_API_URL;
+  
+  try {
+    while (hasMore) {
+      const response = await fetch(
+        `${API_URL}/api/v1/persona/?page=${page}&size=50`,
+        {
+          method: "GET",
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      
+      // Handle 401 errors with redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+        throw new Error('Session expired. Please login again.');
+      }
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch personas: ${response.status}`);
+      }
+      
+      const data: PersonaListResponse = await response.json();
+      
+      // Transform API response to PersonaOption format
+      const transformedPersonas = data.personas.map(persona => ({
+        id: persona.id,
+        name: persona.name || 'Unnamed Persona',
+        jd_id: persona.job_description_id,
+        role_name: persona.role_name || 'Unknown Role',
+      }));
+      
+      allPersonas.push(...transformedPersonas);
+      
+      hasMore = data.has_next;
+      page++;
+    }
+    
+    return allPersonas;
+  } catch (error) {
+    console.error('Error fetching all personas:', error);
+    throw error;
+  }
+};
+
+// Fetch all Roles
+export const fetchAllRoles = async (): Promise<RoleOption[]> => {
+  const API_URL = import.meta.env.VITE_API_URL;
+  
+  try {
+    const response = await fetch(
+      `${API_URL}/api/v1/job-role/?page=1&size=100&active_only=true`,
+      {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    // Handle 401 errors with redirect to login
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      throw new Error('Session expired. Please login again.');
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to fetch roles: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const roles = data.job_roles || data;
+    
+    // Transform API response to RoleOption format
+    return roles.map((role: any) => ({
+      id: role.id,
+      name: role.name,
+      description: role.description,
+    }));
+  } catch (error) {
+    console.error('Error fetching roles:', error);
+    throw error;
+  }
+};
+
+// Fetch JDs by Role ID
+export const fetchJDsByRole = async (roleId: string): Promise<JDOption[]> => {
+  const API_URL = import.meta.env.VITE_API_URL;
+  
+  try {
+    const response = await fetch(
+      `${API_URL}/api/v1/jd/by-role/${roleId}`,
+      {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    
+    // Handle 401 errors with redirect to login
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      throw new Error('Session expired. Please login again.');
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to fetch JDs: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    const jds = Array.isArray(data) ? data : (data.jds || data.items || data.results || []);
+    
+    // Transform API response to JDOption format
+    return jds.map((jd: any) => ({
+      id: jd.id,
+      title: jd.title || jd.role,
+      role_name: jd.role_name || jd.role || '',
+      persona_count: jd.personas?.length || 0,
+    }));
+  } catch (error) {
+    console.error('Error fetching JDs by role:', error);
+    throw error;
+  }
 };
