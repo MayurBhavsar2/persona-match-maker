@@ -1,10 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Target, Users, FileText, Play, AlertCircle, Briefcase } from "lucide-react";
+import { Target, Users, Play, AlertCircle, Briefcase } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { fetchAllRoles, fetchJDsByRole, fetchAllPersonas, type RoleOption, type JDOption, type PersonaOption } from "@/lib/helper";
 import InfiniteScrollCandidateList from "@/components/InfiniteScrollCandidateList";
@@ -84,29 +82,34 @@ const EvaluationSelector = ({
   const [candidatePage, setCandidatePage] = useState<number>(1);
   const [hasMoreCandidates, setHasMoreCandidates] = useState<boolean>(true);
   const [loadingMoreCandidates, setLoadingMoreCandidates] = useState<boolean>(false);
+  
+  // Refs to prevent stale closures and unnecessary re-renders
+  const loadingMoreRef = useRef(false);
+  const candidatePageRef = useRef(1);
+  const hasMoreCandidatesRef = useRef(true);
+  const searchTermRef = useRef("");
+  const isSearchingRef = useRef(false);
 
-  // Task 9.1: Debounced search handler (300ms delay)
+  // Update refs to keep them in sync
   useEffect(() => {
-    // Don't search if term is empty
-    if (!searchTerm) {
-      setIsSearching(false);
-      return;
-    }
-
-    setIsSearching(true);
-    const timer = setTimeout(async () => {
-      // Task 9.3: Call searchCandidates when search term changes
-      try {
-        const searchResults = await searchCandidates(searchTerm);
-        setCandidates(searchResults);
-        setIsSearching(false);
-      } catch (error) {
-        setIsSearching(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(timer);
+    loadingMoreRef.current = loadingMoreCandidates;
+  }, [loadingMoreCandidates]);
+  
+  useEffect(() => {
+    candidatePageRef.current = candidatePage;
+  }, [candidatePage]);
+  
+  useEffect(() => {
+    hasMoreCandidatesRef.current = hasMoreCandidates;
+  }, [hasMoreCandidates]);
+  
+  useEffect(() => {
+    searchTermRef.current = searchTerm;
   }, [searchTerm]);
+  
+  useEffect(() => {
+    isSearchingRef.current = isSearching;
+  }, [isSearching]);
 
   // Initialize state with preselected values in flow mode
   useEffect(() => {
@@ -163,7 +166,8 @@ const EvaluationSelector = ({
     };
 
     loadRoles();
-  }, [mode, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]); // Only run when mode changes
 
   // Fetch JDs when role is selected (only in start mode)
   useEffect(() => {
@@ -202,7 +206,8 @@ const EvaluationSelector = ({
     };
 
     loadJDs();
-  }, [mode, selectedRole, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, selectedRole]); // toast is stable, no need to include
   
   // Retry function for Roles
   const retryLoadRoles = async () => {
@@ -296,7 +301,8 @@ const EvaluationSelector = ({
     };
 
     loadPersonas();
-  }, [mode, selectedJD, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, selectedJD]); // toast is stable, no need to include
   
   // Retry function for personas
   const retryLoadPersonas = async () => {
@@ -324,10 +330,75 @@ const EvaluationSelector = ({
     }
   };
 
-  // Fetch candidates page function
-  const fetchCandidatesPage = async (page: number) => {
-    // Prevent concurrent requests
-    if (loadingMoreCandidates) {
+  // Fetch candidates page function - wrapped in useCallback
+  // const fetchCandidatesPage = useCallback(async (page: number) => {
+  //   // Prevent concurrent requests using ref
+  //   if (loadingMoreRef.current) {
+  //     return [];
+  //   }
+
+  //   try {
+  //     setLoadingMoreCandidates(true);
+  //     setCandidateError(null);
+      
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=${page}&size=10`,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //       }
+  //     );
+
+  //     // Handle 401 errors with redirect to login
+  //     if (response.status === 401) {
+  //       localStorage.removeItem('token');
+  //       window.location.href = '/login';
+  //       throw new Error('Session expired. Please login again.');
+  //     }
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json().catch(() => ({}));
+  //       throw new Error(errorData.message || `Failed to fetch candidates: ${response.status}`);
+  //     }
+
+  //     const data = await response.json();
+      
+  //     // Transform API response to CandidateOption format
+  //     const transformedCandidates: CandidateOption[] = (data.candidates || []).map((candidate: any) => ({
+  //       id: candidate.id,
+  //       full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+  //       email: candidate.email || '',
+  //       created_at: candidate.created_at || new Date().toISOString(),
+  //       personas: candidate.personas || [],
+  //     }));
+
+  //     // Update hasMore flag based on has_next field
+  //     setHasMoreCandidates(data.has_next || false);
+      
+  //     return transformedCandidates;
+  //   } catch (error) {
+  //     const errorMessage = error instanceof Error ? error.message : "Could not load candidates. Please try again.";
+  //     console.error("Error fetching candidates page:", error);
+  //     setCandidateError(errorMessage);
+  //     toast({
+  //       title: "Error fetching candidates",
+  //       description: errorMessage,
+  //       variant: "destructive",
+  //     });
+  //     throw error;
+  //   } finally {
+  //     setLoadingMoreCandidates(false);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []); // toast is stable, fetchCandidatesPage is memoized
+
+
+    const fetchCandidatesPage = useCallback(async (page: number) => {
+    // Prevent concurrent requests using ref
+    if (loadingMoreRef.current) {
       return [];
     }
 
@@ -386,10 +457,11 @@ const EvaluationSelector = ({
     } finally {
       setLoadingMoreCandidates(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Task 9.2: Create searchCandidates function
-  const searchCandidates = async (query: string): Promise<CandidateOption[]> => {
+  // Search candidates function - wrapped in useCallback
+  const searchCandidates = useCallback(async (query: string): Promise<CandidateOption[]> => {
     try {
       // First, try the search endpoint
       const searchUrl = `${import.meta.env.VITE_API_URL}/api/v1/candidate/search?q=${encodeURIComponent(query)}`;
@@ -489,26 +561,75 @@ const EvaluationSelector = ({
       });
       throw error;
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // toast is stable, no dependencies needed
 
-  // Fetch initial candidates on component mount
+  // Fetch initial candidates on component mount - only once
   useEffect(() => {
+    let isMounted = true;
+    
     const loadInitialCandidates = async () => {
+      if (loadingMoreRef.current) return; // Prevent duplicate calls
+      
       try {
         setLoading(true);
+        setLoadingMoreCandidates(true);
         setCandidateError(null);
-        const initialCandidates = await fetchCandidatesPage(1);
-        setCandidates(initialCandidates);
+        
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=1&size=10`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch candidates');
+        }
+
+        const data = await response.json();
+        
+        if (!isMounted) return;
+        
+        const transformedCandidates: CandidateOption[] = (data.candidates || []).map((candidate: any) => ({
+          id: candidate.id,
+          full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+          email: candidate.email || '',
+          created_at: candidate.created_at || new Date().toISOString(),
+          personas: candidate.personas || [],
+        }));
+
+        setCandidates(transformedCandidates);
+        setHasMoreCandidates(data.has_next || false);
       } catch (error) {
+        if (!isMounted) return;
         const errorMessage = error instanceof Error ? error.message : "Could not load candidates.";
         setCandidateError(errorMessage);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+          setLoadingMoreCandidates(false);
+        }
       }
     };
 
     loadInitialCandidates();
-  }, [toast]);
+    
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
   
   // Retry function for candidates
   const retryLoadCandidates = async () => {
@@ -530,63 +651,167 @@ const EvaluationSelector = ({
     }
   };
 
-  // Load more handler with guards to prevent duplicate calls
-  const handleLoadMore = async () => {
-    // Comprehensive guards to prevent duplicate calls
-    if (loadingMoreCandidates || !hasMoreCandidates || searchTerm || isSearching) {
-      return;
-    }
+  // Load more handler - wrapped in useCallback with NO dependencies (uses refs)
+  // const handleLoadMore = useCallback(async () => {
+  //   // Comprehensive guards to prevent duplicate calls using refs
+  //   if (loadingMoreRef.current || !hasMoreCandidatesRef.current || searchTermRef.current || isSearchingRef.current) {
+  //     return;
+  //   }
 
-    try {
-      const nextPage = candidatePage + 1;
-      const newCandidates = await fetchCandidatesPage(nextPage);
+  //   try {
+  //     const nextPage = candidatePageRef.current + 1;
+  //     const newCandidates = await fetchCandidatesPage(nextPage);
       
-      // Append new candidates to existing list
+  //     // Append new candidates to existing list
+  //     setCandidates(prev => [...prev, ...newCandidates]);
+  //     setCandidatePage(nextPage);
+  //   } catch (error) {
+  //     // Error already handled in fetchCandidatesPage
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []); // No dependencies - uses refs for all checks
+
+  const handleLoadMore = useCallback(async () => {
+  // Keep lightweight: rely on fetchCandidatesPage to guard duplicates
+  try {
+    const nextPage = candidatePageRef.current + 1;
+    const newCandidates = await fetchCandidatesPage(nextPage);
+
+    if (newCandidates.length > 0) {
+      // Append and advance page
       setCandidates(prev => [...prev, ...newCandidates]);
       setCandidatePage(nextPage);
-    } catch (error) {
-      // Error already handled in fetchCandidatesPage
+    } else {
+      // if fetch returned empty and hasMoreRef says no more, do nothing
+      console.debug("handleLoadMore: no new candidates returned");
     }
-  };
+  } catch (err) {
+    // fetchCandidatesPage already handles toast & error state; nothing else to do
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [fetchCandidatesPage]);
 
-  // Handle candidate selection
-  const handleCandidateToggle = (candidateId: string) => {
+//   const handleLoadMore = useCallback(async () => {
+//   // Fast synchronous guards using refs to avoid race windows
+//   if (loadingMoreRef.current || !hasMoreCandidatesRef.current || searchTermRef.current || isSearchingRef.current) {
+//     return;
+//   }
+
+//   // Acquire mutex synchronously — THIS is the important bit
+//   loadingMoreRef.current = true;
+//   setLoadingMoreCandidates(true); // optimistic state update
+
+//   try {
+//     const nextPage = candidatePageRef.current + 1;
+//     const newCandidates = await fetchCandidatesPage(nextPage);
+
+//     // Append new candidates to existing list
+//     setCandidates(prev => [...prev, ...newCandidates]);
+//     setCandidatePage(nextPage);
+//   } catch (error) {
+//     // Error handled inside fetchCandidatesPage (toast, setCandidateError)
+//   } finally {
+//     // Release mutex synchronously first so other callers see it cleared immediately
+//     loadingMoreRef.current = false;
+//     // Then update React state (may be async)
+//     setLoadingMoreCandidates(false);
+//   }
+// }, []);
+
+  // Handle candidate selection - wrapped in useCallback
+  const handleCandidateToggle = useCallback((candidateId: string) => {
     setSelectedCandidates(prev => 
       prev.includes(candidateId)
         ? prev.filter(id => id !== candidateId)
         : [...prev, candidateId]
     );
-  };
+  }, []);
 
-  // Select all visible candidates
-  const handleSelectAll = () => {
-    if (selectedCandidates.length === candidates.length) {
-      setSelectedCandidates([]);
-    } else {
-      setSelectedCandidates(candidates.map(c => c.id));
-    }
-  };
+  // Select all visible candidates - wrapped in useCallback
+  const handleSelectAll = useCallback(() => {
+    setSelectedCandidates(prev => {
+      if (prev.length === candidates.length) {
+        return [];
+      } else {
+        return candidates.map(c => c.id);
+      }
+    });
+  }, [candidates]);
 
-  // Task 9.3: Handle search term change and restore pagination when cleared
-  const handleSearchChange = async (term: string) => {
+  // Handle search term change - wrapped in useCallback
+  const handleSearchChange = useCallback(async (term: string) => {
     setSearchTerm(term);
     
     // If search is cleared, restore pagination
     if (!term) {
       try {
         setLoading(true);
+        setLoadingMoreCandidates(true);
         setCandidateError(null);
         setCandidatePage(1);
-        const initialCandidates = await fetchCandidatesPage(1);
-        setCandidates(initialCandidates);
+        
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=1&size=10`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          const transformedCandidates: CandidateOption[] = (data.candidates || []).map((candidate: any) => ({
+            id: candidate.id,
+            full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+            email: candidate.email || '',
+            created_at: candidate.created_at || new Date().toISOString(),
+            personas: candidate.personas || [],
+          }));
+          
+          setCandidates(transformedCandidates);
+          setHasMoreCandidates(data.has_next || false);
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Could not load candidates.";
         setCandidateError(errorMessage);
       } finally {
         setLoading(false);
+        setLoadingMoreCandidates(false);
       }
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // No dependencies - completely stable
+  
+  // Debounced search handler (300ms delay)
+  useEffect(() => {
+    // Don't search if term is empty
+    if (!searchTerm) {
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const searchResults = await searchCandidates(searchTerm);
+        setCandidates(searchResults);
+        setIsSearching(false);
+      } catch (error) {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchCandidates]);
 
   // Validate selections before starting evaluation
   const validateSelections = (): string[] => {
