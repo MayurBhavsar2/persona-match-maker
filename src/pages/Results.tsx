@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect,useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+
+import { ColumnDef, PaginationState } from '@tanstack/react-table';
+import BasicTable from '@/components/BasicTable';
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,6 +25,9 @@ export interface CandidateData {
   is_new_candidate: boolean;
   is_new_cv: boolean;
   cv_text: string;
+
+  score?: ScoreResponse | null;
+  overallScore?: number; // You are using this in filtering
 }
 
 export interface ScoreRequest {
@@ -37,11 +43,14 @@ export interface ScoreResponse {
   persona_id: string;
   final_score: number;
   match_status: string;
+  final_decision:string;
+  scored_at:string;
   pipeline_stage_reached: number;
   candidate_name: string;
   file_name: string;
   persona_name: string;
   role_name: string;
+  is_selected:number;
 }
 
 // hooks/useCandidateScoring.ts
@@ -261,6 +270,103 @@ const fetchPersonas = async () => {
   useEffect(() => {
     fetchPersonas();
   }, []);
+
+  // Candidate Table Columns
+const candidateColumns = useMemo<ColumnDef<CandidateData>[]>(
+  () => [
+    {
+      accessorKey: "candidate_name",
+      header: "Candidate",
+      cell: (info) => {
+        const row = info.row.original;
+
+        return (
+          <div className="flex flex-col">
+            <button
+              className="font-medium text-blue-600 underline-offset-4 underline text-left cursor-pointer  "
+              onClick={() => {
+                setSidebarCandidate(row);
+                setSidebarOpen(true);
+              }}
+            >
+              {row?.score?.candidate_name ||
+          
+                `Candidate ID: ${row.candidate_id}`}
+            </button>
+
+            <span className="text-sm text-gray-500">
+              {row.file_name}
+            </span>
+          </div>
+        );
+      }
+    },
+
+    {
+      accessorKey: "final_score",
+      header: "Overall Score",
+      cell: (info) => {
+        const row = info.row.original;
+        const score = row.score?.final_score || row.overallScore;
+
+        return (
+          <span className={`font-medium ${getScoreColor(score)}`}>
+            {score ? `${score}%` : "N/A"}
+          </span>
+        );
+      },
+      enableSorting: true
+    },
+
+    {
+      accessorKey: "is_selected",
+      header: "Status",
+      cell: (info) => {
+        const row = info.row.original;
+        const isSelected = row.score?.is_selected;
+
+        let statusText = "Pending";
+        let badgeColor = "text-gray-500";
+
+      if (isSelected === 1) {
+        statusText = "Selected";
+        badgeColor = "text-green-600";
+      } else if (isSelected === 0) {
+        statusText = "Rejected";
+        badgeColor = "text-red-600";
+      }
+       return (
+        <span className={`font-medium ${badgeColor}`}>
+          {statusText}
+        </span>
+      );
+      },
+      enableSorting: true
+    },
+
+    {
+      accessorKey: "scored_at",
+      header: "Application Date",
+      cell: (info) => {
+         const row = info.row.original;
+         const dateValue = row.score?.scored_at; // <-- Use interface field
+        return (
+        <div className="flex items-center space-x-1">
+          <Calendar className="w-4 h-4 text-gray-400" />
+          <span className="text-sm text-gray-600">
+            {dateValue ? new Date(dateValue).toLocaleDateString() : "N/A"}
+          </span>
+        </div>
+      );
+      },
+      enableSorting: true
+    },
+
+    
+  ],
+  []
+);
+
 
 
   const generateDetailedEvaluation = (candidate: any): any[] => {
@@ -514,49 +620,49 @@ const fetchPersonas = async () => {
     .filter((candidate) => showAllCandidates ? true : candidate.overallScore >= 80)
     .sort((a, b) => b.overallScore - a.overallScore);
 
-  return (
-    <Layout currentStep={4}>
-      <div className="max-w-7xl mx-auto space-y-8">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-bold text-foreground">Candidate Results</h1>
+    return (
+      <Layout currentStep={4}>
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-3xl font-bold text-foreground">Candidate Results</h1>
 
-        <div className="flex items-center gap-6">
-  <div className="flex items-center gap-3">
-    <label className="text-sm font-medium text-foreground">Role:</label>
-    <Select value={selectedRole} onValueChange={handleRoleChange}>
-      <SelectTrigger className="w-[250px] bg-background border-border">
-        <SelectValue placeholder="Select a role" />
-      </SelectTrigger>
-      <SelectContent className="bg-background border-border z-50">
-        {roles.map((role) => (
-          <SelectItem key={role.id} value={role.id}>
-            {role.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">Role:</label>
+              <Select value={selectedRole} onValueChange={handleRoleChange}>
+                <SelectTrigger className="w-[250px] bg-background border-border">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border z-50">
+                  {roles.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-  <div className="flex items-center gap-3">
-    <label className="text-sm font-medium text-foreground">Persona:</label>
-    <Select 
-      value={selectedPersona} 
-      onValueChange={handlePersonaChange}
-      disabled={!selectedRole} // Disable until role is selected
-    >
-      <SelectTrigger className="w-[350px] bg-background border-border">
-        <SelectValue placeholder="Select a persona" />
-      </SelectTrigger>
-      <SelectContent className="bg-background border-border z-50">
-        {getPersonasForRole(selectedRole).map((persona) => (
-          <SelectItem key={persona.id} value={persona.id}>
-            {persona.name || persona.persona_name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  </div>
-</div>
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-foreground">Persona:</label>
+              <Select 
+                value={selectedPersona} 
+                onValueChange={handlePersonaChange}
+                disabled={!selectedRole} // Disable until role is selected
+              >
+                <SelectTrigger className="w-[350px] bg-background border-border">
+                  <SelectValue placeholder="Select a persona" />
+                </SelectTrigger>
+                <SelectContent className="bg-background border-border z-50">
+                  {getPersonasForRole(selectedRole).map((persona) => (
+                    <SelectItem key={persona.id} value={persona.id}>
+                      {persona.name || persona.persona_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
           {/* <div className="flex items-center gap-6">
             <div className="flex items-center gap-3">
               <label className="text-sm font-medium text-foreground">Role:</label>
@@ -592,33 +698,54 @@ const fetchPersonas = async () => {
           </div> */}
 
           <div className="inline-flex rounded-md shadow-sm" role="group">
-  <Button
-    variant={showAllCandidates ? "outline" : "default"}
-    size="sm"
-    onClick={() => setShowAllCandidates(false)}
-    className={`rounded-r-none border-r-0 ${
-      !showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""
-    }`}
-  >
-    Perfect Fit
-  </Button>
-  <Button
-    variant={!showAllCandidates ? "outline" : "default"}
-    size="sm"
-    onClick={() => setShowAllCandidates(true)}
-    className={`rounded-l-none ${
-      showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""
-    }`}
-  >
-    All
-  </Button>
-</div>
+            <Button
+              variant={showAllCandidates ? "outline" : "default"}
+              size="sm"
+              onClick={() => setShowAllCandidates(false)}
+              className={`rounded-r-none border-r-0 ${
+                !showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""
+              }`}
+            >
+              Perfect Fit
+            </Button>
+            <Button
+              variant={!showAllCandidates ? "outline" : "default"}
+              size="sm"
+              onClick={() => setShowAllCandidates(true)}
+              className={`rounded-l-none ${
+                showAllCandidates ? "bg-blue-500 text-white hover:bg-blue-600" : ""
+              }`}
+            >
+              All
+            </Button>
+          </div>
         </div>
 
 
 
         {/* Results Table */}
-        <Card className="shadow-card">
+        
+        <BasicTable
+          data={filteredCandidates as CandidateData[]}
+          columns={candidateColumns}
+          isLoading={isLoading}
+          isError={isError}
+          // error={error as Error}
+          // onRefresh={handleRefresh}
+          title=""
+          //description={`${filteredCandidates?.length || 0} Candidates`}
+          searchPlaceholder="Search candidates..."
+          enableSearch={true}
+          enableSorting={true}
+          enablePagination={true}
+          enableRefresh={true}
+          initialPageSize={10}
+          pageSizeOptions={[10, 20, 30, 50]}
+          manualPagination={false}
+        />
+
+
+        {/* <Card className="shadow-card">
           <CardContent className="p-0">
             <div className="rounded-md border">
               <Table>
@@ -675,7 +802,7 @@ const fetchPersonas = async () => {
               </div>
             )}
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       {/* Candidate Details Sidebar */}

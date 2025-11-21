@@ -211,8 +211,12 @@ const CandidateDetailsSidebar = ({
                               Status
                             </TableHead>
                             <TableHead className="text-center py-2 px-3">
+                              Results
+                            </TableHead>
+                            <TableHead className="text-center py-2 px-3">
                               Date
                             </TableHead>
+                            
                             {/* <TableHead className="w-12 py-2 px-3"></TableHead> */}
                           </TableRow>
                         </TableHeader>
@@ -247,6 +251,15 @@ const CandidateDetailsSidebar = ({
         {score.final_decision?.replace("_", " ")}
       </TableCell>
       <TableCell className="text-center py-2 px-3">
+        {score.is_selected === 1 ? (
+          <span className="text-green-600 font-semibold">Selected</span>
+        ) : score.is_selected === 0 ? (
+          <span className="text-red-600 font-semibold">Rejected</span>
+        ) : (
+          <span className="text-gray-500 font-semibold">Not Evaluated</span>
+        )}
+      </TableCell>
+      <TableCell className="text-center py-2 px-3">
         {new Date(score.scored_at).toLocaleString('en-US', {
   year: 'numeric',
   month: '2-digit',
@@ -255,7 +268,10 @@ const CandidateDetailsSidebar = ({
   minute: '2-digit',
   hour12: false
 }).replace(',', ' -')}
-      </TableCell>
+  </TableCell>
+      
+
+
       {/* <TableCell className="py-2 px-3 text-right">
         <Button
           variant="ghost"
