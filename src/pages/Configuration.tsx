@@ -142,7 +142,7 @@ const Configuration = () => {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Basic Information */}
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base">Company Name *</Label>
                 <Input
@@ -266,37 +266,39 @@ const Configuration = () => {
             <div className="space-y-4">
               <h3 className="text-base font-medium text-foreground">Social Media Links</h3>
               
-              <div className="space-y-2">
-                <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
-                <Input
-                  id="twitter_link"
-                  type="url"
-                  placeholder="https://twitter.com/yourcompany"
-                  value={formData.social_media.twitter_link}
-                  onChange={(e) => handleInputChange('social_media.twitter_link', e.target.value)}
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
+                  <Input
+                    id="twitter_link"
+                    type="url"
+                    placeholder="https://twitter.com/yourcompany"
+                    value={formData.social_media.twitter_link}
+                    onChange={(e) => handleInputChange('social_media.twitter_link', e.target.value)}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
-                <Input
-                  id="instagram_link"
-                  type="url"
-                  placeholder="https://instagram.com/yourcompany"
-                  value={formData.social_media.instagram_link}
-                  onChange={(e) => handleInputChange('social_media.instagram_link', e.target.value)}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
+                  <Input
+                    id="instagram_link"
+                    type="url"
+                    placeholder="https://instagram.com/yourcompany"
+                    value={formData.social_media.instagram_link}
+                    onChange={(e) => handleInputChange('social_media.instagram_link', e.target.value)}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
-                <Input
-                  id="facebook_link"
-                  type="url"
-                  placeholder="https://facebook.com/yourcompany"
-                  value={formData.social_media.facebook_link}
-                  onChange={(e) => handleInputChange('social_media.facebook_link', e.target.value)}
-                />
+                <div className="space-y-2">
+                  <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
+                  <Input
+                    id="facebook_link"
+                    type="url"
+                    placeholder="https://facebook.com/yourcompany"
+                    value={formData.social_media.facebook_link}
+                    onChange={(e) => handleInputChange('social_media.facebook_link', e.target.value)}
+                  />
+                </div>
               </div>
             </div>
 
