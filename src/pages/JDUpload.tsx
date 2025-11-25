@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown, Edit3, CheckCircle, Sparkles, Undo2, Building2, MapPin, Globe, Save } from "lucide-react";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown, Edit3, CheckCircle, Sparkles, Undo2, Building2, MapPin, Globe, Save, Phone, Mail } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -926,96 +926,97 @@ Preferred Qualifications:
               </DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-6 mt-4">
-              {/* Company Basic Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Building2 className="w-5 h-5 text-primary" />
-                    <span>Company Information</span>
-                  </CardTitle>
-                  <CardDescription>Enter your company's basic details</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="company_name" className="text-base">Company Name*</Label>
+            <Card className="shadow-card border-0">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-lg">
+                  <Building2 className="w-4 h-4 text-primary" />
+                  <span>Company Information</span>
+                </CardTitle>
+                <CardDescription>
+                  Enter your company details and contact information
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Basic Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-base">Company Name *</Label>
+                    <Input
+                      id="name"
+                      placeholder="Enter company name..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="website_url" className="text-base">Company Website URL</Label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        id="company_name"
-                        placeholder="Enter company name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="company_website" className="text-base">Website URL</Label>
-                      <Input
-                        id="company_website"
+                        id="website_url"
                         type="url"
                         placeholder="https://www.example.com"
+                        className="pl-10"
                       />
                     </div>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="contact_number" className="text-base">Contact Number</Label>
+                </div>
+
+                {/* Contact Information */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contact_number" className="text-base">Contact Number</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="contact_number"
                         type="tel"
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="+1 (555) 123-4567"
+                        className="pl-10"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email_address" className="text-base">Email Address*</Label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email_address" className="text-base">Email Address *</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="email_address"
                         type="email"
                         placeholder="contact@example.com"
+                        className="pl-10"
                       />
                     </div>
                   </div>
+                </div>
 
+                {/* Address */}
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="about_company" className="text-base">About Company</Label>
-                    <Textarea
-                      id="about_company"
-                      placeholder="Describe your company..."
-                      rows={4}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Company Address */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <span>Company Address</span>
-                  </CardTitle>
-                  <CardDescription>Enter your company's physical location</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="street" className="text-base">Street Address</Label>
+                    <Label htmlFor="street" className="text-base flex items-center space-x-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <span>Street Address</span>
+                    </Label>
                     <Input
                       id="street"
                       placeholder="123 Main Street"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="city" className="text-base">City</Label>
                       <Input
                         id="city"
-                        placeholder="San Francisco"
+                        placeholder="City name"
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="state" className="text-base">State/Province</Label>
+                      <Label htmlFor="state" className="text-base">State</Label>
                       <Input
                         id="state"
-                        placeholder="California"
+                        placeholder="State/Province"
                       />
                     </div>
                   </div>
@@ -1025,90 +1026,95 @@ Preferred Qualifications:
                       <Label htmlFor="country" className="text-base">Country</Label>
                       <Input
                         id="country"
-                        placeholder="United States"
+                        placeholder="Country name"
                       />
                     </div>
+
                     <div className="space-y-2">
-                      <Label htmlFor="pincode" className="text-base">Postal Code</Label>
+                      <Label htmlFor="pincode" className="text-base">Pincode</Label>
                       <Input
                         id="pincode"
-                        placeholder="94102"
+                        placeholder="123456"
                       />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Social Media Links */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Globe className="w-5 h-5 text-primary" />
-                    <span>Social Media</span>
-                  </CardTitle>
-                  <CardDescription>Connect your company's social media profiles</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <h3 className="text-base font-medium text-foreground">Social Media Links</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
-                        <Input
-                          id="twitter_link"
-                          type="url"
-                          placeholder="https://twitter.com/yourcompany"
-                        />
-                      </div>
+                {/* Social Media Links */}
+                <div className="space-y-4">
+                  <h3 className="text-base font-medium text-foreground">Social Media Links</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
+                      <Input
+                        id="twitter_link"
+                        type="url"
+                        placeholder="https://twitter.com/yourcompany"
+                      />
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
-                        <Input
-                          id="instagram_link"
-                          type="url"
-                          placeholder="https://instagram.com/yourcompany"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
+                      <Input
+                        id="instagram_link"
+                        type="url"
+                        placeholder="https://instagram.com/yourcompany"
+                      />
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
-                        <Input
-                          id="facebook_link"
-                          type="url"
-                          placeholder="https://facebook.com/yourcompany"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
+                      <Input
+                        id="facebook_link"
+                        type="url"
+                        placeholder="https://facebook.com/yourcompany"
+                      />
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="linkedin_link" className="text-base">LinkedIn Link</Label>
-                        <Input
-                          id="linkedin_link"
-                          type="url"
-                          placeholder="https://linkedin.com/company/yourcompany"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin_link" className="text-base">LinkedIn Link</Label>
+                      <Input
+                        id="linkedin_link"
+                        type="url"
+                        placeholder="https://linkedin.com/company/yourcompany"
+                      />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              <div className="flex justify-end">
-                <Button
-                  onClick={() => {
-                    toast({
-                      title: "Company saved",
-                      description: "Company information has been saved successfully.",
-                    });
-                    setOpenCompanyDialog(false);
-                  }}
-                  className="w-full md:w-auto"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Configuration
-                </Button>
-              </div>
-            </div>
+                {/* About Company */}
+                <div className="space-y-2">
+                  <Label htmlFor="about_company" className="text-base">About Company</Label>
+                  <Textarea
+                    id="about_company"
+                    placeholder="Tell us about your company, its mission, values, and culture..."
+                    rows={6}
+                    className="resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Provide a brief description of your company that will be used in communications and reports.
+                  </p>
+                </div>
+
+                {/* Submit Button */}
+                <div className="flex justify-end pt-4">
+                  <Button
+                    onClick={() => {
+                      toast({
+                        title: "Company saved",
+                        description: "Company information has been saved successfully.",
+                      });
+                      setOpenCompanyDialog(false);
+                    }}
+                    className="flex items-center space-x-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save Configuration</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </DialogContent>
         </Dialog>
       </div>
