@@ -28,6 +28,7 @@ const Configuration = () => {
       twitter_link: "",
       instagram_link: "",
       facebook_link: "",
+      linkedin_link: "",
     },
   });
 
@@ -76,10 +77,11 @@ const Configuration = () => {
 
     try {
       // TODO: Replace with your actual API endpoint for saving company configuration
-      const response = await fetch('YOUR_API_ENDPOINT_FOR_CONFIGURATION', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/company/`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
           // Add any required headers (authorization, etc.)
           // 'Authorization': 'Bearer YOUR_API_KEY',
         },
@@ -87,8 +89,17 @@ const Configuration = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Configuration save failed');
+        const errorData = await response.json(); // read API error
+
+        toast({
+          title: "Save failed",
+          description: errorData.detail || errorData.error || "Something went wrong.",
+          variant: "destructive",
+        });
+
+        return; // stop execution
       }
+
 
       const result = await response.json();
 
@@ -99,8 +110,7 @@ const Configuration = () => {
 
       // Store the configuration data locally if needed
       localStorage.setItem('companyConfig', JSON.stringify({
-        ...formData,
-        apiData: result,
+        company_id: result.id,
         timestamp: Date.now()
       }));
 
@@ -112,11 +122,6 @@ const Configuration = () => {
         variant: "destructive",
       });
 
-      // Fallback: Store data locally for demo purposes
-      localStorage.setItem('companyConfig', JSON.stringify({
-        ...formData,
-        timestamp: Date.now()
-      }));
     }
   };
 
@@ -141,8 +146,9 @@ const Configuration = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+           
             {/* Basic Information */}
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-base">Company Name *</Label>
                 <Input
@@ -266,38 +272,50 @@ const Configuration = () => {
             <div className="space-y-4">
               <h3 className="text-base font-medium text-foreground">Social Media Links</h3>
               
-              <div className="space-y-2">
-                <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
-                <Input
-                  id="twitter_link"
-                  type="url"
-                  placeholder="https://twitter.com/yourcompany"
-                  value={formData.social_media.twitter_link}
-                  onChange={(e) => handleInputChange('social_media.twitter_link', e.target.value)}
-                />
-              </div>
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
+                  <Input
+                    id="twitter_link"
+                    type="url"
+                    placeholder="https://twitter.com/yourcompany"
+                    value={formData.social_media.twitter_link}
+                    onChange={(e) => handleInputChange('social_media.twitter_link', e.target.value)}
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
-                <Input
-                  id="instagram_link"
-                  type="url"
-                  placeholder="https://instagram.com/yourcompany"
-                  value={formData.social_media.instagram_link}
-                  onChange={(e) => handleInputChange('social_media.instagram_link', e.target.value)}
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
+                  <Input
+                    id="instagram_link"
+                    type="url"
+                    placeholder="https://instagram.com/yourcompany"
+                    value={formData.social_media.instagram_link}
+                    onChange={(e) => handleInputChange('social_media.instagram_link', e.target.value)}
+                  />
+                </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
+                  <Input
+                    id="facebook_link"
+                    type="url"
+                    placeholder="https://facebook.com/yourcompany"
+                    value={formData.social_media.facebook_link}
+                    onChange={(e) => handleInputChange('social_media.facebook_link', e.target.value)}
+                  />
+                </div>
               <div className="space-y-2">
-                <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
+                <Label htmlFor="linkedin_link" className="text-base">LinkedIn Link</Label>
                 <Input
-                  id="facebook_link"
+                  id="linkedin_link"
                   type="url"
-                  placeholder="https://facebook.com/yourcompany"
-                  value={formData.social_media.facebook_link}
-                  onChange={(e) => handleInputChange('social_media.facebook_link', e.target.value)}
+                  placeholder="https://linkedIn.com/yourcompany"
+                  value={formData.social_media.linkedin_link}
+                  onChange={(e) => handleInputChange('social_media.linkedin_link', e.target.value)}
                 />
               </div>
+            </div>
             </div>
 
             {/* About Company */}
