@@ -12,7 +12,6 @@ import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpD
 import { useToast } from "@/components/ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const JDUpload = () => {
@@ -40,7 +39,7 @@ const JDUpload = () => {
   const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedCompany, setSelectedCompany] = useState("");
   const [loadingCompanies, setLoadingCompanies] = useState(false);
-  const [openCompanyDialog, setOpenCompanyDialog] = useState(false);
+  const [showCompanyConfig, setShowCompanyConfig] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -452,12 +451,14 @@ Preferred Qualifications:
   return (
     <Layout currentStep={1}>
       <div className="max-w-4xl mx-auto space-y-8">
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold text-foreground">Upload Job Description</h1>
-          <p className="text-lg text-muted-foreground">
-            Start by selecting a role and uploading your job description for AI analysis
-          </p>
-        </div>
+        {!showCompanyConfig ? (
+          <>
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl font-bold text-foreground">Upload Job Description</h1>
+              <p className="text-lg text-muted-foreground">
+                Start by selecting a role and uploading your job description for AI analysis
+              </p>
+            </div>
 
         <Card className="shadow-card">
           <CardHeader>
@@ -605,7 +606,7 @@ Preferred Qualifications:
 
                 <Button
                   variant="outline"
-                  onClick={() => setOpenCompanyDialog(true)}
+                  onClick={() => setShowCompanyConfig(true)}
                   className="flex items-center space-x-1"
                 >
                   <Plus className="w-4 h-4" />
@@ -915,18 +916,24 @@ Preferred Qualifications:
             </Card>
           </div>
         )}
+          </>
+        ) : (
+          <>
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl font-bold text-foreground">Company Configuration</h1>
+              <p className="text-lg text-muted-foreground">
+                Add your company details
+              </p>
+            </div>
 
-        {/* Add Company Dialog */}
-        <Dialog open={openCompanyDialog} onOpenChange={setOpenCompanyDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
-                <Building2 className="w-5 h-5 text-primary" />
-                <span>Company Configuration</span>
-              </DialogTitle>
-            </DialogHeader>
-            
-            <div className="space-y-6 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowCompanyConfig(false)}
+              className="mb-4"
+            >
+              <ChevronRight className="w-4 h-4 mr-2 rotate-180" />
+              Back to Job Upload
+            </Button>
               {/* Company Basic Information */}
               <Card>
                 <CardHeader>
@@ -1100,7 +1107,7 @@ Preferred Qualifications:
                       title: "Company saved",
                       description: "Company information has been saved successfully.",
                     });
-                    setOpenCompanyDialog(false);
+                    setShowCompanyConfig(false);
                   }}
                   className="w-full md:w-auto"
                 >
@@ -1108,9 +1115,8 @@ Preferred Qualifications:
                   Save Configuration
                 </Button>
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+          </>
+        )}
       </div>
     </Layout>
   );
