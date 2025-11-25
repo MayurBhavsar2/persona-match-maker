@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown, Edit3, CheckCircle, Sparkles, Undo2 } from "lucide-react";
+import { Upload, FileText, Plus, ChevronRight, Type, File, X, Check, ChevronsUpDown, Edit3, CheckCircle, Sparkles, Undo2, Building2, MapPin, Globe, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 const JDUpload = () => {
@@ -36,6 +37,10 @@ const JDUpload = () => {
   const [savedAiJD, setSavedAiJD] = useState("");
   const [originalJD, setOriginalJD] = useState("");
   const [aiGeneratedJD, setAiGeneratedJD] = useState("");
+  const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [openCompanyDialog, setOpenCompanyDialog] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,6 +102,53 @@ const JDUpload = () => {
     };
 
     fetchHiringManagers();
+  }, []);
+
+  // Fetch companies from API
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      setLoadingCompanies(true);
+      try {
+        // TODO: Replace with your actual API endpoint for fetching companies
+        const response = await fetch('YOUR_API_ENDPOINT_FOR_COMPANIES', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            // Add any required headers (authorization, etc.)
+            // 'Authorization': 'Bearer YOUR_API_KEY',
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch companies');
+        }
+
+        const data = await response.json();
+        
+        // TODO: Adjust based on your API response structure
+        // Expected format: [{ id: "1", name: "Company A" }, { id: "2", name: "Company B" }]
+        setCompanies(data.companies || data);
+        
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+        toast({
+          title: "Failed to load companies",
+          description: "Using default list. Please check your API connection.",
+          variant: "destructive",
+        });
+        
+        // Fallback: Demo data for testing
+        setCompanies([
+          { id: "1", name: "Tech Corp" },
+          { id: "2", name: "Innovation Labs" },
+          { id: "3", name: "Digital Solutions" }
+        ]);
+      } finally {
+        setLoadingCompanies(false);
+      }
+    };
+
+    fetchCompanies();
   }, []);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -523,19 +575,42 @@ Preferred Qualifications:
               )}
               </div>
 
-              {/* Title Input */}
+              {/* Title, Company, and Add Company Button */}
               <div className="flex items-center gap-2">
                 <Label htmlFor="title" className="text-base whitespace-nowrap">Title</Label>
-                <div className="flex-1 flex gap-2">
+                <div className="flex-1">
                   <Input
                     id="title"
                     placeholder="Enter job title..."
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="flex-1"
                   />
-                  <div className="flex-1" />
                 </div>
+                
+                <Label htmlFor="company" className="text-base whitespace-nowrap">Company</Label>
+                <div className="flex-1">
+                  <Select value={selectedCompany} onValueChange={setSelectedCompany} disabled={loadingCompanies}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingCompanies ? "Loading..." : "Select company..."} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setOpenCompanyDialog(true)}
+                  className="flex items-center space-x-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Company</span>
+                </Button>
               </div>
             </div>
 
@@ -840,6 +915,202 @@ Preferred Qualifications:
             </Card>
           </div>
         )}
+
+        {/* Add Company Dialog */}
+        <Dialog open={openCompanyDialog} onOpenChange={setOpenCompanyDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <Building2 className="w-5 h-5 text-primary" />
+                <span>Company Configuration</span>
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6 mt-4">
+              {/* Company Basic Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Building2 className="w-5 h-5 text-primary" />
+                    <span>Company Information</span>
+                  </CardTitle>
+                  <CardDescription>Enter your company's basic details</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_name" className="text-base">Company Name*</Label>
+                      <Input
+                        id="company_name"
+                        placeholder="Enter company name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="company_website" className="text-base">Website URL</Label>
+                      <Input
+                        id="company_website"
+                        type="url"
+                        placeholder="https://www.example.com"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contact_number" className="text-base">Contact Number</Label>
+                      <Input
+                        id="contact_number"
+                        type="tel"
+                        placeholder="+1 (555) 000-0000"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email_address" className="text-base">Email Address*</Label>
+                      <Input
+                        id="email_address"
+                        type="email"
+                        placeholder="contact@example.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="about_company" className="text-base">About Company</Label>
+                    <Textarea
+                      id="about_company"
+                      placeholder="Describe your company..."
+                      rows={4}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Company Address */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <span>Company Address</span>
+                  </CardTitle>
+                  <CardDescription>Enter your company's physical location</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="street" className="text-base">Street Address</Label>
+                    <Input
+                      id="street"
+                      placeholder="123 Main Street"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="text-base">City</Label>
+                      <Input
+                        id="city"
+                        placeholder="San Francisco"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="state" className="text-base">State/Province</Label>
+                      <Input
+                        id="state"
+                        placeholder="California"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="country" className="text-base">Country</Label>
+                      <Input
+                        id="country"
+                        placeholder="United States"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="pincode" className="text-base">Postal Code</Label>
+                      <Input
+                        id="pincode"
+                        placeholder="94102"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Social Media Links */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Globe className="w-5 h-5 text-primary" />
+                    <span>Social Media</span>
+                  </CardTitle>
+                  <CardDescription>Connect your company's social media profiles</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <h3 className="text-base font-medium text-foreground">Social Media Links</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="twitter_link" className="text-base">Twitter Link</Label>
+                        <Input
+                          id="twitter_link"
+                          type="url"
+                          placeholder="https://twitter.com/yourcompany"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="instagram_link" className="text-base">Instagram Link</Label>
+                        <Input
+                          id="instagram_link"
+                          type="url"
+                          placeholder="https://instagram.com/yourcompany"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="facebook_link" className="text-base">Facebook Link</Label>
+                        <Input
+                          id="facebook_link"
+                          type="url"
+                          placeholder="https://facebook.com/yourcompany"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin_link" className="text-base">LinkedIn Link</Label>
+                        <Input
+                          id="linkedin_link"
+                          type="url"
+                          placeholder="https://linkedin.com/company/yourcompany"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    toast({
+                      title: "Company saved",
+                      description: "Company information has been saved successfully.",
+                    });
+                    setOpenCompanyDialog(false);
+                  }}
+                  className="w-full md:w-auto"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Configuration
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
