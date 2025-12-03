@@ -11,12 +11,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { formatDateTime } from "@/lib/helper";
 
 interface SearchableDropdownOption {
   id: string;
   label: string;
   sublabel?: string;
   badge?: string;
+  created_by_name?: string;
+  created_at?: string;
 }
 
 interface SearchableDropdownProps {
@@ -24,6 +27,7 @@ interface SearchableDropdownProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  created_by: boolean;
   disabled?: boolean;
   loading?: boolean;
   searchPlaceholder?: string;
@@ -36,6 +40,7 @@ export const SearchableDropdown = ({
   value,
   onChange,
   placeholder,
+  created_by = false,
   disabled = false,
   loading = false,
   searchPlaceholder = "Search...",
@@ -104,17 +109,13 @@ export const SearchableDropdown = ({
           <div className="flex items-center justify-between w-full">
             <div className="flex-1 text-left">
               <div className="font-medium">{selectedOption.label}</div>
-              {selectedOption.sublabel && (
+              {/* {created_by && (selectedOption.created_by_name || selectedOption.created_at) && (
                 <div className="text-sm text-muted-foreground">
-                  {selectedOption.sublabel}
+                  {selectedOption.created_by_name && `Created by ${selectedOption.created_by_name}`}
+                  {selectedOption.created_at && ` • ${selectedOption.created_at}`}
                 </div>
-              )}
+              )} */}
             </div>
-            {selectedOption.badge && (
-              <span className="ml-2 px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded">
-                {selectedOption.badge}
-              </span>
-            )}
           </div>
         ) : (
           <SelectValue placeholder={placeholder} />
@@ -152,17 +153,13 @@ export const SearchableDropdown = ({
                 <div className="flex items-center justify-between w-full">
                   <div className="flex-1">
                     <div className="font-medium">{option.label}</div>
-                    {option.sublabel && (
-                      <div className="text-sm text-muted-foreground">
-                        {option.sublabel}
+                    {created_by && (option.created_by_name || option.created_at) && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        {option.created_by_name && <p>Created by <span className="capitalize">{option.created_by_name?.split(" ")?.[0]}</span></p>}
+                        {option.created_at && <p> • {formatDateTime(option.created_at)}</p>}
                       </div>
                     )}
                   </div>
-                  {option.badge && (
-                    <span className="ml-2 px-2 py-0.5 text-xs bg-secondary text-secondary-foreground rounded">
-                      {option.badge}
-                    </span>
-                  )}
                 </div>
               </SelectItem>
             ))

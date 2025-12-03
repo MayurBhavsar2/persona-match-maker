@@ -90,6 +90,8 @@ const CandidateDetailsSidebar = ({
     ? evaluationData?.scores
     : scoresData?.scores || [];
 
+    console.log("candidate details of the candidate: ", candidate)
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -104,7 +106,7 @@ const CandidateDetailsSidebar = ({
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center overflow-hidden">
                     <span className="text-lg font-semibold text-muted-foreground">
-                      {candidate?.score?.candidate_name
+                      {candidate?.candidate_name
                         ?.split(" ")
                         ?.map((n) => n[0])
                         .join("") ||
@@ -116,7 +118,7 @@ const CandidateDetailsSidebar = ({
                   </div>
                   <div className="flex items-center gap-2 text-base">
                     <span className="font-semibold text-foreground">
-                      {candidate.score?.candidate_name ??
+                      {candidate.candidate_name ??
                         candidate.candidate_id}
                     </span>
                     <span className="text-muted-foreground">|</span>
@@ -208,11 +210,15 @@ const CandidateDetailsSidebar = ({
                               Overall Score
                             </TableHead>
                             <TableHead className="text-center py-2 px-3">
-                              Status
-                            </TableHead>
-                            <TableHead className="text-center py-2 px-3">
                               Date
                             </TableHead>
+                            <TableHead className="text-center py-2 px-3">
+                             Evaluation Status
+                            </TableHead>
+                            <TableHead className="text-center py-2 px-3">
+                             Interview Status
+                            </TableHead>
+                            
                             {/* <TableHead className="w-12 py-2 px-3"></TableHead> */}
                           </TableRow>
                         </TableHeader>
@@ -234,7 +240,7 @@ const CandidateDetailsSidebar = ({
         <Button
           variant="link"
           className={`font-bold text-lg p-0 h-auto ${getScoreColor(
-            score.final_score
+            parseFloat(score.final_score)
           )}`}
           onClick={() => {
             toggleScoreDetails(index);
@@ -242,9 +248,6 @@ const CandidateDetailsSidebar = ({
         >
           {score.final_score}%
         </Button>
-      </TableCell>
-      <TableCell className="text-center py-2 px-3">
-        {score.final_decision?.replace("_", " ")}
       </TableCell>
       <TableCell className="text-center py-2 px-3">
         {new Date(score.scored_at).toLocaleString('en-US', {
@@ -256,6 +259,13 @@ const CandidateDetailsSidebar = ({
   hour12: false
 }).replace(',', ' -')}
       </TableCell>
+      <TableCell className="text-center py-2 px-3 capitalize">
+        {score.final_decision?.replace("_", " ")?.toLowerCase()}
+      </TableCell>
+      <TableCell className="text-center py-2 px-3 capitalize">
+        {score.current_status?.replace("_", " ") ?? "Evaluated"}
+      </TableCell>
+      
       {/* <TableCell className="py-2 px-3 text-right">
         <Button
           variant="ghost"

@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress";
 import { Upload, FileText, X, CheckCircle, ArrowRight, Users, Edit, Eye, Trash2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useUploadCandidates, useScoreCandidates } from "@/lib/helper";
+import { useUploadCandidates } from "@/lib/helper";
+import { useScoreCandidates } from "@/lib/hooks";
 import type { UploadedCandidate } from "@/lib/helper";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Layout from "../Layout";
 
 interface UploadedFile {
   id: string;

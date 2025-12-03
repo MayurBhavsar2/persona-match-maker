@@ -42,11 +42,48 @@ interface EnhancedNavbarProps {
   onSectionChange?: (section: string) => void;
 }
 
-const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({ 
+// Create a context to share sidebar state
+const SidebarContext = React.createContext<{
+  isSidebarOpen: boolean;
+  toggleSidebar: () => void;
+} | null>(null);
+
+export const useSidebar = () => {
+  const context = React.useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within SidebarProvider');
+  }
+  return context;
+};
+
+// Provider component that wraps the entire layout
+export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const toggleSidebar = () => {
+    console.log('Toggle sidebar called, current state:', isSidebarOpen);
+    setIsSidebarOpen(prev => {
+      console.log('Changing from', prev, 'to', !prev);
+      return !prev;
+    });
+  };
+
+  console.log('SidebarProvider render, isSidebarOpen:', isSidebarOpen);
+
+  return (
+    <SidebarContext.Provider value={{ isSidebarOpen, toggleSidebar }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
+
+const PersistentNavbar: React.FC<EnhancedNavbarProps> = ({ 
   currentSection, 
-  onSectionChange 
+  onSectionChange
 }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  console.log('EnhancedNavbar render, isSidebarOpen:', isSidebarOpen);
+  
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [user, setUser] = useState<{ name: string; email: string; role: string; phone: string; isAdmin: boolean } | null>(null);
   const navigate = useNavigate();
@@ -157,10 +194,6 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
     }
   ];
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   const toggleSection = (sectionId: string) => {
     setExpandedSections(prev => 
       prev.includes(sectionId) 
@@ -192,7 +225,6 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
 
   const handleNavigation = (path: string, sectionId?: string) => {
     navigate(path);
-    setIsSidebarOpen(false);
     if (sectionId && onSectionChange) {
       onSectionChange(sectionId);
     }
@@ -215,11 +247,9 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
 
   // Filter navigation items based on user role
   const filteredNavigationItems = navigationItems.filter(item => {
-    // Show Users menu only for Admin users
     if (item.id === 'users') {
       return user?.isAdmin === true;
     }
-    // Show all other menu items for all users
     return true;
   });
 
@@ -313,15 +343,7 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
         </div>
       </header>
 
-      {/* Overlay */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-[50] transition-opacity duration-300"
-          onClick={toggleSidebar}
-        />
-      )}
-
-      {/* Enhanced Sidebar */}
+      {/* Persistent Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-slate-800 border-r border-slate-700 z-50 transform transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -353,7 +375,6 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
                 return (
                   <li key={item.id}>
                     {item.subItems ? (
-                      // Section with submenu
                       <>
                         <button
                           onClick={() => toggleSection(item.id)}
@@ -374,7 +395,6 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
                           )}
                         </button>
                         
-                        {/* Submenu */}
                         <div
                           className={`overflow-hidden transition-all duration-300 ${
                             isExpanded ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'
@@ -405,7 +425,6 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
                         </div>
                       </>
                     ) : (
-                      // Direct navigation item
                       <button
                         onClick={() => item.path && handleNavigation(item.path, item.id)}
                         className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group ${
@@ -431,4 +450,23 @@ const EnhancedNavbar: React.FC<EnhancedNavbarProps> = ({
   );
 };
 
-export default EnhancedNavbar;
+// Content wrapper component to handle margin
+export const SidebarContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isSidebarOpen } = useSidebar();
+  
+  console.log('SidebarContent render, isSidebarOpen:', isSidebarOpen);
+  
+  return (
+    <div 
+      className="transition-all duration-300"
+      style={{
+        marginLeft: isSidebarOpen ? '256px' : '0',
+        width: '100%'
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+export default PersistentNavbar;

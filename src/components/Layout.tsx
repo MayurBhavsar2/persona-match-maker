@@ -16,10 +16,11 @@ import { toast } from "@/components/ui/use-toast";
 interface LayoutProps {
   children: ReactNode;
   currentStep?: number;
+  isModal?: boolean
 }
 
 
-const Layout = ({ children, currentStep }: LayoutProps) => {
+const Layout = ({ children, currentStep, isModal }: LayoutProps) => {
   const navigate = useNavigate();
   const { jdId } = useParams();
 
@@ -80,7 +81,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
         navigate(jdId ? `/persona-config/${jdId}` : '/persona-config');
         break;
       case 4:
-        navigate('/candidate-upload');
+        navigate('/evaluation');
         break;
       case 5:
         navigate('/results');
@@ -93,7 +94,7 @@ const Layout = ({ children, currentStep }: LayoutProps) => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className={`${isModal ? 'max-h-fit' : 'min-h-screen'}  bg-gradient-subtle`}>
       {/* Progress Bar */}
       {currentStep && (
         <div className="bg-background border-b border-border top-0 z-40">

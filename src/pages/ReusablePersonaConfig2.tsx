@@ -181,6 +181,13 @@ const ReusablePersonaConfig = () => {
   const [selectedRole, setSelectedRole] = useState("");
   const [selectedJD, setSelectedJD] = useState("");
   const [hasGeneratedPersona, setHasGeneratedPersona] = useState(false);
+  const [categoryWarnings, setCategoryWarnings] = useState<{[key: number]: string}>({});
+  const [hasRangeViolations, setHasRangeViolations] = useState(false);
+  const [showRangeWarningDialog, setShowRangeWarningDialog] = useState(false);
+  const [originalCategoryWeights, setOriginalCategoryWeights] = useState<{[key: number]: number}>({});
+
+
+
 
   const distributionRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -210,23 +217,29 @@ const ReusablePersonaConfig = () => {
     mutationFn: generatePersona,
     onSuccess: (data) => {
       const normalizedCategories = (data.categories || []).map((cat: any) => ({
-        ...cat,
-        weight_percentage: Number(cat.weight_percentage) || 0,
-        range_min: Number(cat.range_min) || 0,
-        range_max: Number(cat.range_max) || 0,
-        subcategories: (cat.subcategories || []).map((sub: any) => ({
-          ...sub,
-          weight_percentage: Number(sub.weight_percentage) || 0,
-          level_id: String(sub.level_id || "3"),
-          skillset: sub.skillset || { technologies: [] },
-        })),
-      }));
+    ...cat,
+    weight_percentage: Number(cat.weight_percentage) || 0,
+    range_min: Number(cat.range_min) || 0,
+    range_max: Number(cat.range_max) || 0,
+    subcategories: (cat.subcategories || []).map((sub: any) => ({
+      ...sub,
+      weight_percentage: Number(sub.weight_percentage) || 0,
+      level_id: String(sub.level_id || "3"),
+      skillset: sub.skillset || { technologies: [] },
+    })),
+  }));
       
-      setCategories(normalizedCategories);
-      setPersonaName(data.name || "");
-      setPersonaNotes(data.persona_notes || "");
-      setHasGeneratedPersona(true);
-      setLoading(false);
+      const originalWeights: {[key: number]: number} = {};
+  normalizedCategories.forEach((cat: any) => {
+    originalWeights[cat.position] = Number(cat.weight_percentage);
+  });
+  setOriginalCategoryWeights(originalWeights);
+  
+  setCategories(normalizedCategories);
+  setPersonaName(data.name || "");
+  setPersonaNotes(data.persona_notes || "");
+  setHasGeneratedPersona(true);
+  setLoading(false);
       
       toast({
         title: "Persona Generated",
@@ -255,27 +268,34 @@ const ReusablePersonaConfig = () => {
   // Load persona data in edit mode
   useEffect(() => {
     if (existingPersona) {
-      const normalizedCategories = (existingPersona.categories || []).map((cat: any) => ({
-        ...cat,
-        weight_percentage: Number(cat.weight_percentage) || 0,
-        range_min: Number(cat.range_min) || 0,
-        range_max: Number(cat.range_max) || 0,
-        subcategories: (cat.subcategories || []).map((sub: any) => ({
-          ...sub,
-          weight_percentage: Number(sub.weight_percentage) || 0,
-          level_id: String(sub.level_id || "3"),
-          skillset: sub.skillset || { technologies: [] },
-        })),
-      }));
-      
-      setCategories(normalizedCategories);
-      setPersonaName(existingPersona.name || "");
-      setPersonaNotes(existingPersona.persona_notes || existingPersona.notes || "");
-      setRoleName(existingPersona.role_name || "");
-      setRoleId(existingPersona.role_id || "");
-      setHasGeneratedPersona(true);
-      setLoading(false);
-    }
+    const normalizedCategories = (existingPersona.categories || []).map((cat: any) => ({
+      ...cat,
+      weight_percentage: Number(cat.weight_percentage) || 0,
+      range_min: Number(cat.range_min) || 0,
+      range_max: Number(cat.range_max) || 0,
+      subcategories: (cat.subcategories || []).map((sub: any) => ({
+        ...sub,
+        weight_percentage: Number(sub.weight_percentage) || 0,
+        level_id: String(sub.level_id || "3"),
+        skillset: sub.skillset || { technologies: [] },
+      })),
+    }));
+    
+    // ADD THIS: Store original weights
+    const originalWeights: {[key: number]: number} = {};
+    normalizedCategories.forEach((cat: any) => {
+      originalWeights[cat.position] = Number(cat.weight_percentage);
+    });
+    setOriginalCategoryWeights(originalWeights);
+    
+    setCategories(normalizedCategories);
+    setPersonaName(existingPersona.name || "");
+    setPersonaNotes(existingPersona.persona_notes || existingPersona.notes || "");
+    setRoleName(existingPersona.role_name || "");
+    setRoleId(existingPersona.role_id || "");
+    setHasGeneratedPersona(true);
+    setLoading(false);
+  }
   }, [existingPersona]);
 
   // Load from localStorage in flow mode
@@ -311,21 +331,94 @@ const ReusablePersonaConfig = () => {
       0
     ) || 0;
 
-  const updateCategory = (catPos: number, updatedFields: any) => {
-    setCategories((prev) =>
-      prev.map((cat) =>
-        cat.position === catPos
-          ? {
-              ...cat,
-              ...updatedFields,
-              weight_percentage: Number(
-                updatedFields.weight_percentage || cat.weight_percentage
-              ),
-            }
-          : cat
-      )
+//     const validateCategoryRange = (catPos: number, newWeight: number) => {
+//   const category = categories.find(cat => cat.position === catPos);
+//   if (!category) return { valid: true, message: "" };
+  
+//   const minAllowed = Number(category.weight_percentage) + Number(category.range_min || 0);
+//   const maxAllowed = Number(category.weight_percentage) + Number(category.range_max || 0);
+  
+//   if (newWeight < minAllowed || newWeight > maxAllowed) {
+//     return {
+//       valid: false,
+//       message: `Weight must be between ${minAllowed}% and ${maxAllowed}% (base: ${category.weight_percentage}%, range: ${category.range_min} to +${category.range_max})`
+//     };
+//   }
+  
+//   return { valid: true, message: "" };
+// };
+
+
+const validateCategoryRange = (catPos: number, newWeight: number) => {
+  const category = categories.find(cat => cat.position === catPos);
+  if (!category) return { valid: true, message: "" };
+  
+  // Use ORIGINAL weight from API, not current weight
+  const originalWeight = originalCategoryWeights[catPos];
+  if (originalWeight === undefined) return { valid: true, message: "" };
+  
+  const minAllowed = originalWeight + Number(category.range_min || 0);
+  const maxAllowed = originalWeight + Number(category.range_max || 0);
+  
+  if (newWeight < minAllowed || newWeight > maxAllowed) {
+    return {
+      valid: false,
+      message: `Ideal weightage must be between ${minAllowed}% and ${maxAllowed}%`
+    };
+  }
+  
+  return { valid: true, message: "" };
+};
+
+const updateCategory = (catPos: number, updatedFields: any) => {
+  if (updatedFields.weight_percentage !== undefined) {
+    const validation = validateCategoryRange(catPos, updatedFields.weight_percentage);
+    
+    setCategoryWarnings(prev => {
+      const updated = { ...prev };
+      if (!validation.valid) {
+        updated[catPos] = validation.message;
+      } else {
+        delete updated[catPos];
+      }
+      return updated;
+    });
+    
+    setHasRangeViolations(!validation.valid || 
+      Object.keys(categoryWarnings).filter(k => Number(k) !== catPos).length > 0
     );
-  };
+  }
+  
+  setCategories((prev) =>
+    prev.map((cat) =>
+      cat.position === catPos
+        ? {
+            ...cat,
+            ...updatedFields,
+            weight_percentage: Number(
+              updatedFields.weight_percentage || cat.weight_percentage
+            ),
+          }
+        : cat
+    )
+  );
+};
+
+  // const updateCategory = (catPos: number, updatedFields: any) => {
+  //   setCategories((prev) =>
+  //     prev.map((cat) =>
+  //       cat.position === catPos
+  //         ? {
+  //             ...cat,
+  //             ...updatedFields,
+  //             weight_percentage: Number(
+  //               updatedFields.weight_percentage || cat.weight_percentage
+  //             ),
+  //           }
+  //         : cat
+  //     )
+  //   );
+  // };
 
   const updateSubcategory = (
     catPos: number,
@@ -420,12 +513,13 @@ const ReusablePersonaConfig = () => {
   };
 
   const validation = {
-    totalValid: Math.abs(getTotalWeight() - 100) < 0.01,
-    categoriesValid: categories.every(
-      (_, idx) => Math.abs(getCategorySkillTotal(idx) - 100) < 0.01
-    ),
-    hasName: personaName.trim().length > 0,
-  };
+  totalValid: Math.abs(getTotalWeight() - 100) < 0.01,
+  categoriesValid: categories.every(
+    (_, idx) => Math.abs(getCategorySkillTotal(idx) - 100) < 0.01
+  ),
+  hasName: personaName.trim().length > 0,
+  hasRangeViolations: hasRangeViolations, 
+};
 
   const canSave =
     validation.totalValid && validation.categoriesValid && validation.hasName;
@@ -454,6 +548,12 @@ const ReusablePersonaConfig = () => {
       return;
     }
     
+    if (hasRangeViolations) {
+      setShowRangeWarningDialog(true);
+      return;
+    }
+
+
     if (isEditMode) {
       // In edit mode, save directly without dialog
       confirmSavePersona();
@@ -603,18 +703,18 @@ const ReusablePersonaConfig = () => {
   };
 
   // Loading states
-  if (loading || personaLoading) {
-    return (
-      <Layout currentStep={isFlowMode ? 2 : undefined}>
-        <div className="flex flex-col items-center justify-center h-screen space-y-4">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
-          <p className="text-lg font-semibold text-gray-600">
-            {personaLoading ? "Loading Persona Configuration..." : "Generating Persona..."}
-          </p>
-        </div>
-      </Layout>
-    );
-  }
+  // if (loading || personaLoading) {
+  //   return (
+  //     <Layout currentStep={isFlowMode ? 2 : undefined}>
+  //       <div className="flex flex-col items-center justify-center h-screen space-y-4">
+  //         <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
+  //         <p className="text-lg font-semibold text-gray-600">
+  //           {personaLoading ? "Loading Persona Configuration..." : "Generating Persona..."}
+  //         </p>
+  //       </div>
+  //     </Layout>
+  //   );
+  // }
 
   // Get the selected role name for display
   const getSelectedRoleName = () => {
@@ -659,7 +759,14 @@ const ReusablePersonaConfig = () => {
                   <Label htmlFor="role">Role *</Label>
                   <Select value={selectedRole} onValueChange={(value) => {
                     setSelectedRole(value);
-                    setSelectedJD(""); // Reset JD when role changes
+                    setSelectedJD("");
+                    setCategories([]);
+                    setHasGeneratedPersona(false);
+                    setPersonaName("");
+                    setPersonaNotes("");
+                    setOriginalCategoryWeights({}); // ADD THIS
+                    setCategoryWarnings({}); // ADD THIS
+                    setHasRangeViolations(false);
                     const role = roles.find((r: any) => r.id === value);
                     if (role) {
                       setRoleName(role.name);
@@ -687,7 +794,16 @@ const ReusablePersonaConfig = () => {
                   <Label htmlFor="jd">Job Description *</Label>
                   <Select 
                     value={selectedJD} 
-                    onValueChange={setSelectedJD}
+                    onValueChange={(value)=> {
+                      setSelectedJD(value);
+                      setCategories([]);
+                      setHasGeneratedPersona(false);
+                      setPersonaName("");
+                      setPersonaNotes("");
+                      setOriginalCategoryWeights({});
+                      setCategoryWarnings({});
+                      setHasRangeViolations(false)
+                    }}
                     disabled={!selectedRole}
                   >
                     <SelectTrigger>
@@ -713,7 +829,12 @@ const ReusablePersonaConfig = () => {
               <div className="flex justify-end">
                 <Button
                   onClick={handleGeneratePersona}
-                  disabled={!selectedRole || !selectedJD || generatePersonaMutation.isPending}
+                  disabled={
+                    !selectedRole || 
+                    !selectedJD || 
+                    generatePersonaMutation.isPending ||
+                    hasGeneratedPersona
+                  }
                   className="bg-gradient-primary hover:opacity-90"
                 >
                   {generatePersonaMutation.isPending ? (
@@ -827,6 +948,7 @@ const ReusablePersonaConfig = () => {
                                     %
                                   </span>
                                 </div>
+                                
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>
@@ -835,6 +957,12 @@ const ReusablePersonaConfig = () => {
                                 </p>
                               </TooltipContent>
                             </Tooltip>
+                            {categoryWarnings[cat.position] && (
+                                  <div className="flex items-center gap-1 text-xs text-warning ml-2">
+                                    <AlertCircle className="w-3 h-3" />
+                                    <span className="whitespace-nowrap">{categoryWarnings[cat.position]}</span>
+                                  </div>
+                                )}
                           </div>
                           <div className="flex items-center space-x-2">
                             {isSkillTotalValid ? (
@@ -1382,6 +1510,54 @@ const ReusablePersonaConfig = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Range Warning Dialog */}
+<AlertDialog open={showRangeWarningDialog} onOpenChange={setShowRangeWarningDialog}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle className="flex items-center gap-2">
+        <AlertCircle className="w-5 h-5 text-warning" />
+        Category Weight Range Warning
+      </AlertDialogTitle>
+      <AlertDialogDescription className="space-y-2">
+        <p>Some category weights are outside their defined ranges:</p>
+        <ul className="list-disc pl-6 space-y-1">
+          {Object.entries(categoryWarnings).map(([pos, msg]) => (
+            <li key={pos} className="text-sm text-warning">
+              {categories.find(c => c.position === Number(pos))?.name}: {msg}
+            </li>
+          ))}
+        </ul>
+        <p className="pt-2">Do you want to save the persona anyway?</p>
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Go Back</AlertDialogCancel>
+      <AlertDialogAction
+        onClick={() => {
+          setShowRangeWarningDialog(false);
+          if (isEditMode) {
+            confirmSavePersona();
+          } else {
+            setShowSaveDialog(true);
+          }
+        }}
+        className="bg-warning hover:bg-warning/90"
+      >
+        Save Anyway
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+      {(loading || personaLoading) && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-background p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+              <div className="flex items-center space-x-3">
+                  <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
+                  <p className="text-lg font-semibold text-gray-600">
+                    {personaLoading ? "Loading Persona Configuration..." : "Generating Persona..."}
+                  </p>
+                </div>
+            </div>
+          </div>}
     </Layout>
   );
 };

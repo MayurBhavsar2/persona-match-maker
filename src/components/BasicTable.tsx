@@ -39,6 +39,7 @@ function BasicTable<T>({
   title,
   description,
   searchPlaceholder = "Search...",
+  initialSorting = [],
   enableSearch = true,
   enableSorting = true,
   enablePagination = true,
@@ -47,46 +48,70 @@ function BasicTable<T>({
   pageSizeOptions = [10, 20, 30, 40, 50],
   manualPagination = false,
   pageCount,
+  state,
   onPaginationChange,
   className = "",
 }: BasicTableProps<T>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState('');
-  const [pagination, setPagination] = useState<PaginationState>({
+ const [internalPagination, setInternalPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: initialPageSize,
   });
 
+    const currentPagination = state?.pagination || internalPagination;
+
   // Handle pagination changes
-  const handlePaginationChange = (updater: any) => {
-    const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
-    setPagination(newPagination);
+  // const handlePaginationChange = (updater: any) => {
+  //   const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
+  //   setPagination(newPagination);
+  //   if (onPaginationChange) {
+  //     onPaginationChange(newPagination);
+  //   }
+  // };
+
+    const handlePaginationChange = (updater: any) => {
+    const newPagination = typeof updater === 'function' ? updater(currentPagination) : updater;
+    
     if (onPaginationChange) {
+      // External pagination control
       onPaginationChange(newPagination);
+    } else {
+      // Internal pagination control
+      setInternalPagination(newPagination);
     }
   };
 
-  // Filter data based on search (client-side filtering)
-  const filteredData = useMemo(() => {
-    if (!enableSearch || !globalFilter) return data;
+  const indexedData = useMemo(() => {
+  return data.map((item, index) => ({
+    ...item,
+    _originalIndex: index, // Add original index
+  }));
+}, [data]);
 
-    return data.filter((item: any) => {
-      const searchStr = globalFilter.toLowerCase();
-      return Object.values(item).some((value: any) => {
-        if (value === null || value === undefined) return false;
-        return String(value).toLowerCase().includes(searchStr);
-      });
+  // Filter data based on search (client-side filtering)
+const filteredData = useMemo(() => {
+  if (!enableSearch || !globalFilter) return indexedData;
+
+  return indexedData.filter((item: any) => {
+    const searchStr = globalFilter.toLowerCase();
+    return Object.values(item).some((value: any) => {
+      if (value === null || value === undefined) return false;
+      // Skip the _originalIndex field in search
+      if (typeof value === 'number' && item._originalIndex === value) return false;
+      return String(value).toLowerCase().includes(searchStr);
     });
-  }, [data, globalFilter, enableSearch]);
+  });
+}, [indexedData, globalFilter, enableSearch]);
 
   // Table instance
   const table = useReactTable({
-    data: enableSearch ? filteredData : data,
+     data: enableSearch ? filteredData : indexedData,
     columns,
     state: {
       sorting: enableSorting ? sorting : [],
       globalFilter: enableSearch ? globalFilter : '',
-      pagination: enablePagination ? pagination : { pageIndex: 0, pageSize: data.length },
+      pagination: enablePagination ? currentPagination : { pageIndex: 0, pageSize: data.length },
     },
     onSortingChange: enableSorting ? setSorting : undefined,
     onGlobalFilterChange: enableSearch ? setGlobalFilter : undefined,
@@ -234,13 +259,13 @@ function BasicTable<T>({
         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span className="text-sm text-gray-700">
-              Page {pagination.pageIndex + 1} of {table.getPageCount()}
+              Page {currentPagination.pageIndex + 1} of {table.getPageCount()}
             </span>
             <Select
-              value={pagination.pageSize.toString()}
+              value={currentPagination.pageSize.toString()}
               onValueChange={(value) => {
                 handlePaginationChange({
-                  ...pagination,
+                  ...currentPagination,
                   pageSize: Number(value),
                   pageIndex: 0,
                 });
@@ -264,8 +289,8 @@ function BasicTable<T>({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handlePaginationChange({ ...pagination, pageIndex: 0 })}
-              disabled={pagination.pageIndex === 0}
+              onClick={() => handlePaginationChange({ ...currentPagination, pageIndex: 0 })}
+              disabled={currentPagination.pageIndex === 0}
               title="First page"
             >
               «
@@ -277,11 +302,11 @@ function BasicTable<T>({
               size="sm"
               onClick={() =>
                 handlePaginationChange({
-                  ...pagination,
-                  pageIndex: pagination.pageIndex - 1,
+                  ...currentPagination,
+                  pageIndex: currentPagination.pageIndex - 1,
                 })
               }
-              disabled={pagination.pageIndex === 0}
+              disabled={currentPagination.pageIndex === 0}
               title="Previous page"
             >
               ‹
@@ -290,7 +315,7 @@ function BasicTable<T>({
             {/* Page Numbers */}
             {(() => {
               const totalPages = table.getPageCount();
-              const currentPage = pagination.pageIndex;
+              const currentPage = currentPagination.pageIndex;
               const pages: (number | string)[] = [];
 
               if (totalPages <= 7) {
@@ -331,10 +356,10 @@ function BasicTable<T>({
                 typeof page === 'number' ? (
                   <Button
                     key={page}
-                    variant={pagination.pageIndex === page ? "default" : "outline"}
+                    variant={currentPagination.pageIndex === page ? "default" : "outline"}
                     size="sm"
                     onClick={() =>
-                      handlePaginationChange({ ...pagination, pageIndex: page })
+                      handlePaginationChange({ ...currentPagination, pageIndex: page })
                     }
                   >
                     {page + 1}
@@ -353,11 +378,11 @@ function BasicTable<T>({
               size="sm"
               onClick={() =>
                 handlePaginationChange({
-                  ...pagination,
-                  pageIndex: pagination.pageIndex + 1,
+                  ...currentPagination,
+                  pageIndex: currentPagination.pageIndex + 1,
                 })
               }
-              disabled={pagination.pageIndex >= table.getPageCount() - 1}
+              disabled={currentPagination.pageIndex >= table.getPageCount() - 1}
               title="Next page"
             >
               ›
@@ -369,11 +394,11 @@ function BasicTable<T>({
               size="sm"
               onClick={() =>
                 handlePaginationChange({
-                  ...pagination,
+                  ...currentPagination,
                   pageIndex: table.getPageCount() - 1,
                 })
               }
-              disabled={pagination.pageIndex >= table.getPageCount() - 1}
+              disabled={currentPagination.pageIndex >= table.getPageCount() - 1}
               title="Last page"
             >
               »

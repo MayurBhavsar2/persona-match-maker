@@ -1,7 +1,48 @@
 // types/candidate.ts
+// export interface UploadedCandidate {
+//   candidate_id: string;
+//   latest_cv_id: string;
+//   file_name: string;
+//   file_hash: string;
+//   version: number;
+//   s3_url: string;
+//   status: 'success' | 'duplicate' | 'error';
+//   is_new_candidate: boolean;
+//   is_new_cv: boolean;
+//   cv_text: string;
+// }
+
+export interface Candidate {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  cvs: any;
+  latest_cv_id: string | null;
+  personas: Array<{ persona_id: string }>;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+  created_by_name: string | null;
+  updated_by: string | null;
+  updated_by_name: string | null;
+}
+
+interface CandidateUploadProps {
+  onSuccess?: (uploaded: UploadedCandidate[]) => void;
+  onCancel?: () => void;
+  isModal?: boolean;
+  onCandidatesUploaded?: (candidates: Candidate[]) => void;
+}
+
 export interface UploadedCandidate {
-  candidate_id: string;
-  cv_id: string;
+  id?: string; // For backward compatibility
+  candidate_id?: string; // From API response
+  candidate_name: string; // full_name from API
+  email: string | null;
+  phone?: string | null;
+  cv_id?: string; // From API response
+  latest_cv_id?: string; // For backward compatibility
   file_name: string;
   file_hash: string;
   version: number;
@@ -10,15 +51,61 @@ export interface UploadedCandidate {
   is_new_candidate: boolean;
   is_new_cv: boolean;
   cv_text: string;
+  error?: string | null;
+  personas?: Array<{ persona_id: string }>;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string | null;
+  created_by_name?: string | null;
+  updated_by?: string | null;
+  updated_by_name?: string | null;
 }
 
 // types/jd.ts
 export interface JDOption {
   id: string;
   title: string;
+  role_id: string;
   role_name: string;
-  persona_count: number;
+
+  company_id: string | null;
+
+  notes: string | null;
+  tags: string[];
+
+  original_document_filename: string;
+  original_document_size: string;
+  original_document_extension: string;
+
+  document_word_count: string;
+  document_character_count: string;
+
+  selected_version: string;
+  selected_edited: boolean;
+  created_at: string;
+  created_by: string;
+  created_by_name: string;
+
+  updated_at: string;
+  updated_by: string;
+  updated_by_name: string;
+
+  personas: {
+    persona_id: string;
+    persona_name: string;
+  }[];
 }
+
+export const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString().slice(-2);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
 
 // types/persona.ts
 export interface PersonaOption {
@@ -26,6 +113,9 @@ export interface PersonaOption {
   name: string;
   jd_id: string;
   role_name: string;
+  created_at: string;
+  created_by: string;
+  created_by_name: string
 }
 
 // types/role.ts
@@ -102,7 +192,7 @@ export interface ScoreResponse {
   role_name: string;
 }
 
-export interface CandidateWithScore extends UploadedCandidate {
+export interface CandidateWithScore extends CandidateOption {
   score?: ScoreResponse;
 }
 
@@ -110,57 +200,11 @@ export interface CandidateWithScore extends UploadedCandidate {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
+import { CandidateOption } from './types';
+import axiosInstance from './utils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Upload candidates
-// export const useUploadCandidates = () => {
-//   const queryClient = useQueryClient();
-//   const { toast } = useToast();
-
-//   return useMutation({
-//     mutationFn: async (files: File[]) => {
-//       const formData = new FormData();
-//       files.forEach(file => formData.append("files", file));
-
-//       const response = await fetch(`${API_URL}/api/v1/candidate/upload`, {
-//         method: "POST",
-//         body: formData,
-//         headers: {
-//           Authorization: `Bearer ${localStorage.getItem("token")}`,
-//         },
-//       });
-
-//       if (!response.ok) {
-//         const error = await response.json();
-//         throw new Error(error.message || "Upload failed");
-//       }
-
-//       const data: UploadedCandidate[] = await response.json();
-//       return data;
-//     },
-//     onSuccess: (data) => {
-//       // Store in React Query cache
-//       queryClient.setQueryData(['uploadedCandidates'], data);
-
-//       const hasDuplicates = data.some(c => c.status === 'duplicate');
-//       if (hasDuplicates) {
-//         toast({
-//           title: "Duplicate CVs found",
-//           description: "Some CVs are duplicates and already exist in the system.",
-//           variant: "destructive",
-//         });
-//       }
-//     },
-//     onError: (error: Error) => {
-//       toast({
-//         title: "Upload failed",
-//         description: error.message || "Something went wrong.",
-//         variant: "destructive",
-//       });
-//     }
-//   });
-// };
 
 // Upload candidates
 export const useUploadCandidates = () => {
@@ -228,36 +272,66 @@ export const useUploadCandidates = () => {
   });
 };
 
-// Score candidates
+
 // export const useScoreCandidates = () => {
 //   const queryClient = useQueryClient();
 //   const navigate = useNavigate();
 //   const { toast } = useToast();
-//   const useMockData = true;
-//   return useMutation({mutationFn: async ({ candidates, persona_id,}: {candidates: UploadedCandidate[],persona_id: string}) => {
+//   const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
+//   return useMutation({
+//     mutationKey: ['scoreCandidates'],
+//     mutationFn: async ({
+//       candidates,
+//       persona_id,
+//     }: {
+//       candidates: CandidateOption[];
+//       persona_id: string;
+//     }) => {
 //       if (useMockData) {
-//       const { scoreWithAi } = await import('@/SampleResultEvaluationResponse');
-//       return [scoreWithAi];
-//     }
+//         const { scoreWithAi } = await import('@/SampleResultEvaluationResponse');
+//         return [scoreWithAi] as ScoreResponse[];
+//       }
 
 //       const results: ScoreResponse[] = [];
 
 //       for (const candidate of candidates) {
-//         const url = `${API_URL}/api/v1/candidate/score-with-ai?candidate_id=${candidate.candidate_id}&persona_id=${persona_id}&cv_id=${candidate.cv_id}&force_rescore=false`;
+//         console.log("candidate data from score function: ", candidate);
+        
+//         const cvId =
+//           candidate.latest_cv_id ??
+//           candidate.cvs?.[0]?.id ??
+//           null;
+
+//         if (!cvId) {
+//           console.error(
+//             `No CV ID found for candidate ${candidate.full_name} (${candidate.id}), skipping`
+//           );
+//           continue;
+//         }
+
+//         const url =
+//           `${API_URL}/api/v1/candidate/score-with-ai` +
+//           `?candidate_id=${candidate.id}` +
+//           `&persona_id=${persona_id}` +
+//           `&cv_id=${cvId}` +
+//           `&force_rescore=false`;
 
 //         const response = await fetch(url, {
-//           method: "POST",
+//           method: 'POST',
 //           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${localStorage.getItem("token")}`,
+//             'Content-Type': 'application/json',
+//             Authorization: `Bearer ${localStorage.getItem('token')}`,
 //           },
 //         });
 
 //         const data = await response.json();
 
 //         if (!response.ok) {
-//           console.error(`Failed to score ${candidate.file_name}:`, data.message);
+//           console.error(
+//             `Failed to score candidate ${candidate.full_name || candidate.id}:`,
+//             data.message
+//           );
 //           continue;
 //         }
 
@@ -267,124 +341,164 @@ export const useUploadCandidates = () => {
 //       return results;
 //     },
 //     onSuccess: (scores, variables) => {
-//       // Get uploaded candidates from cache
-//       const uploadedCandidates = queryClient.getQueryData<UploadedCandidate[]>(['uploadedCandidates']);
+//       const { candidates, persona_id } = variables;
 
-//       if (uploadedCandidates) {
-//         // Merge candidates with their scores
-//         const candidatesWithScores: CandidateWithScore[] = uploadedCandidates.map(candidate => {
-//           const score = scores.find(s => s.candidate_id === candidate.candidate_id);
+//       const candidatesWithScores: CandidateWithScore[] = candidates.map(
+//         (candidate) => {
+//           const score = scores.find(
+//             (s) => s.candidate_id === candidate.id
+//           );
 //           return { ...candidate, score };
-//         });
+//         }
+//       );
 
-//         // Store merged data in cache
-//         queryClient.setQueryData(['evaluatedCandidates'], {
-//           candidates: candidatesWithScores,
-//           scores,
-//           timestamp: Date.now()
-//         });
-//       }
+//       const evaluationData = {
+//         candidates: candidatesWithScores,
+//         scores,
+//         persona_id,
+//         timestamp: Date.now(),
+//       };
+
+//       // Store in React Query cache
+//       queryClient.setQueryData(
+//         ['evaluatedCandidates', persona_id], 
+//         evaluationData
+//       );
+
+//       // Store in session storage for page refresh persistence
+//       sessionStorage.setItem(
+//         `evaluation_${persona_id}`,
+//         JSON.stringify(evaluationData)
+//       );
 
 //       toast({
-//         title: "Evaluation completed",
+//         title: 'Evaluation completed',
 //         description: `${scores.length} candidates have been evaluated successfully.`,
 //       });
 
-//       // Navigate after short delay
-//       setTimeout(() => {
-//         navigate("/results");
-//       }, 500);
+//       // Navigate with state indicator
+//       navigate(`/results/${persona_id}`, { 
+//         replace: true,
+//         state: { fromEvaluation: true }
+//       });
 //     },
 //     onError: (error: Error) => {
 //       toast({
-//         title: "Evaluation failed",
-//         description: error.message || "Something went wrong.",
-//         variant: "destructive",
+//         title: 'Evaluation failed',
+//         description: error.message || 'Something went wrong.',
+//         variant: 'destructive',
 //       });
-//     }
+//     },
 //   });
 // };
 
-//Updated useScoreCandidates function
+//updated scoreCandidates hook 
 
-export const useScoreCandidates = () => {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
+// export const useScoreCandidates = () => {
+//   const queryClient = useQueryClient();
+//   const navigate = useNavigate();
+//   const { toast } = useToast();
+//   const useMockData = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
-  return useMutation({
-    mutationKey: ['scoreCandidates'],
-    mutationFn: async ({ candidates, persona_id }: {
-      candidates: UploadedCandidate[],
-      persona_id: string
-    }) => {
-      if (useMockData) {
-        const { scoreWithAi } = await import('@/SampleResultEvaluationResponse');
-        return [scoreWithAi];
-      }
+//   return useMutation({
+//     mutationKey: ['scoreCandidates'],
+//     mutationFn: async ({
+//       candidates,
+//       persona_id,
+//     }: {
+//       candidates: CandidateOption[];
+//       persona_id: string;
+//     }) => {
+//       if (useMockData) {
+//         const { scoreWithAi } = await import('@/SampleResultEvaluationResponse');
+//         return [scoreWithAi] as ScoreResponse[];
+//       }
 
-      const results: ScoreResponse[] = [];
+//       const results: ScoreResponse[] = [];
 
-      for (const candidate of candidates) {
-        const url = `${API_URL}/api/v1/candidate/score-with-ai?candidate_id=${candidate.candidate_id}&persona_id=${persona_id}&cv_id=${candidate.cv_id}&force_rescore=false`;
+//       for (const candidate of candidates) {
 
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+//         console.log("candidate data from score function: ", candidate)
+//         // Prefer latest_cv_id; if not present, try first CV as fallback
+//         const cvId =
+//           candidate.latest_cv_id ??
+//           candidate.cvs?.[0]?.id ??
+//           null;
 
-        const data = await response.json();
+//         if (!cvId) {
+//           console.error(
+//             `No CV ID found for candidate ${candidate.full_name} (${candidate.id}), skipping`
+//           );
+//           continue;
+//         }
 
-        if (!response.ok) {
-          console.error(`Failed to score ${candidate.file_name}:`, data.message);
-          continue;
-        }
+//         const url =
+//           `${API_URL}/api/v1/candidate/score-with-ai` +
+//           `?candidate_id=${candidate.id}` +
+//           `&persona_id=${persona_id}` +
+//           `&cv_id=${cvId}` +
+//           `&force_rescore=false`;
 
-        results.push(data);
-      }
+//         const response = await fetch(url, {
+//           method: 'POST',
+//           headers: {
+//             'Content-Type': 'application/json',
+//             Authorization: `Bearer ${localStorage.getItem('token')}`,
+//           },
+//         });
 
-      return results;
-    },
-    onSuccess: (scores, variables) => {
-      const uploadedCandidates = queryClient.getQueryData<UploadedCandidate[]>(['uploadedCandidates']);
+//         const data = await response.json();
 
-      if (uploadedCandidates) {
-        const candidatesWithScores: CandidateWithScore[] = uploadedCandidates.map(candidate => {
-          const score = scores.find(s => s.candidate_id === candidate.candidate_id);
-          return { ...candidate, score };
-        });
+//         if (!response.ok) {
+//           console.error(
+//             `Failed to score candidate ${candidate.full_name || candidate.id}:`,
+//             data.message
+//           );
+//           continue;
+//         }
 
-        queryClient.setQueryData(['evaluatedCandidates'], {
-          candidates: candidatesWithScores,
-          scores,
-          timestamp: Date.now()
-        });
-      }
+//         results.push(data);
+//       }
 
-      toast({
-        title: "Evaluation completed",
-        description: `${scores.length} candidates have been evaluated successfully.`,
-      });
+//       return results;
+//     },
+//     onSuccess: (scores, variables) => {
+//       const { candidates, persona_id } = variables;
 
-      // Navigate immediately, remove setTimeout
-      navigate("/results", { replace: true }); // 👈 Use replace to prevent back button issues
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Evaluation failed",
-        description: error.message || "Something went wrong.",
-        variant: "destructive",
-      });
-    }
-  });
-};
+//       const candidatesWithScores: CandidateWithScore[] = candidates.map(
+//         (candidate) => {
+//           const score = scores.find(
+//             (s) => s.candidate_id === candidate.id
+//           );
+//           return { ...candidate, score };
+//         }
+//       );
+
+//       // Store evaluated candidates in cache
+//       queryClient.setQueryData(['evaluatedCandidates'], {
+//         candidates: candidatesWithScores,
+//         scores,
+//         timestamp: Date.now(),
+//       });
+
+//       toast({
+//         title: 'Evaluation completed',
+//         description: `${scores.length} candidates have been evaluated successfully.`,
+//       });
+
+//       navigate(`/results/${persona_id}`, { replace: true });
+//     },
+//     onError: (error: Error) => {
+//       toast({
+//         title: 'Evaluation failed',
+//         description: error.message || 'Something went wrong.',
+//         variant: 'destructive',
+//       });
+//     },
+//   });
+// };
 
 
-// Get uploaded candidates from cache
 export const useUploadedCandidates = () => {
   return useQuery<UploadedCandidate[]>({
     queryKey: ['uploadedCandidates'],
@@ -471,16 +585,13 @@ export const fetchAllJDs = async (): Promise<JDOption[]> => {
 };
 
 // Fetch all Personas with pagination
-export const fetchAllPersonas = async (): Promise<PersonaOption[]> => {
-  const allPersonas: PersonaOption[] = [];
-  let page = 1;
-  let hasMore = true;
+export const fetchAllPersonas = async (jd_id): Promise<PersonaOption[]> => {
+
   const API_URL = import.meta.env.VITE_API_URL;
   
   try {
-    while (hasMore) {
       const response = await fetch(
-        `${API_URL}/api/v1/persona/?page=${page}&size=50`,
+        `${API_URL}/api/v1/persona/by-jd/${jd_id}`,
         {
           method: "GET",
           headers: {
@@ -502,23 +613,9 @@ export const fetchAllPersonas = async (): Promise<PersonaOption[]> => {
         throw new Error(errorData.message || `Failed to fetch personas: ${response.status}`);
       }
       
-      const data: PersonaListResponse = await response.json();
-      
-      // Transform API response to PersonaOption format
-      const transformedPersonas = data.personas.map(persona => ({
-        id: persona.id,
-        name: persona.name || 'Unnamed Persona',
-        jd_id: persona.job_description_id,
-        role_name: persona.role_name || 'Unknown Role',
-      }));
-      
-      allPersonas.push(...transformedPersonas);
-      
-      hasMore = data.has_next;
-      page++;
-    }
-    
-    return allPersonas;
+      const data: PersonaOption[] = await response.json();
+          
+    return data; 
   } catch (error) {
     console.error('Error fetching all personas:', error);
     throw error;
@@ -597,17 +694,148 @@ export const fetchJDsByRole = async (roleId: string): Promise<JDOption[]> => {
     }
     
     const data = await response.json();
-    const jds = Array.isArray(data) ? data : (data.jds || data.items || data.results || []);
     
     // Transform API response to JDOption format
-    return jds.map((jd: any) => ({
-      id: jd.id,
-      title: jd.title || jd.role,
-      role_name: jd.role_name || jd.role || '',
-      persona_count: jd.personas?.length || 0,
-    }));
+    return data.jds
   } catch (error) {
     console.error('Error fetching JDs by role:', error);
     throw error;
   }
 };
+
+
+interface EvaluationData {
+  candidates: any[];
+  scores: ScoreResponse[];
+  persona_id: string;
+  timestamp: number;
+}
+
+export const useEvaluationData = (
+  personaId: string | undefined,
+  fromEvaluation: boolean
+) => {
+  const API_URL = import.meta.env.VITE_API_URL;
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  };
+
+  return useQuery({
+    queryKey: ['evaluatedCandidates', personaId],
+    queryFn: async (): Promise<EvaluationData | null> => {
+      if (!personaId) return null;
+
+      // 1. Check React Query cache first
+      // (This is automatically checked by React Query)
+
+      // 2. Check session storage (for page refresh scenario)
+      const sessionData = sessionStorage.getItem(`evaluation_${personaId}`);
+      if (sessionData) {
+        const parsed = JSON.parse(sessionData);
+        // Only use session storage if it's recent (within last 30 minutes)
+        const isRecent = Date.now() - parsed.timestamp < 30 * 60 * 1000;
+        if (isRecent && fromEvaluation) {
+          return parsed;
+        }
+      }
+
+      // 3. Fetch from API (for viewing all evaluated candidates)
+      const response = await axios.get(
+        `${API_URL}/api/v1/candidate/scores?persona_id=${personaId}`,
+        { headers }
+      );
+
+      return {
+        candidates: response.data?.candidates || [],
+        scores: response.data?.scores || [],
+        persona_id: personaId,
+        timestamp: Date.now(),
+      };
+    },
+    enabled: !!personaId,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+  });
+};
+
+
+export const useSearchCandidates = (searchTerm: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ['candidates', 'search', searchTerm],
+    queryFn: async () => {
+      if (!searchTerm.trim()) {
+        return [];
+      }
+
+      const response = await axiosInstance.post('/api/v1/candidate/search', {
+        query: searchTerm,
+        page: 1,
+        size: 1000,
+      });
+
+      // Transform API response to CandidateOption format
+      const transformedCandidates: CandidateOption[] = (response.data.candidates || []).map(
+        (candidate: any) => ({
+          id: candidate.id,
+          full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+          email: candidate.email ?? null,
+          phone: candidate.phone ?? null,
+          latest_cv_id: candidate.latest_cv_id ?? null,
+          created_at: candidate.created_at || new Date().toISOString(),
+          created_by: candidate.created_by ?? null,
+          created_by_name: candidate.created_by_name ?? null,
+          updated_at: candidate.updated_at || candidate.created_at || new Date().toISOString(),
+          updated_by: candidate.updated_by ?? null,
+          updated_by_name: candidate.updated_by_name ?? null,
+          personas: candidate.personas || [],
+          cvs: candidate.cvs ?? null,
+        })
+      );
+
+      return transformedCandidates;
+    },
+    enabled: enabled && searchTerm.trim().length > 0,
+    staleTime: 30000, // Cache for 30 seconds
+    retry: 1,
+  });
+};
+
+
+export const usePaginatedCandidates = (page: number, size: number = 10) => {
+  return useQuery({
+    queryKey: ['candidates', 'paginated', page, size],
+    queryFn: async () => {
+      const response = await axiosInstance.get('/api/v1/candidate/', {
+        params: { page, size },
+      });
+
+      const transformedCandidates: CandidateOption[] = (response.data.candidates || []).map(
+        (candidate: any) => ({
+          id: candidate.id,
+          full_name: candidate.full_name || candidate.name || 'Unknown Candidate',
+          email: candidate.email ?? null,
+          phone: candidate.phone ?? null,
+          latest_cv_id: candidate.latest_cv_id ?? null,
+          created_at: candidate.created_at || new Date().toISOString(),
+          created_by: candidate.created_by ?? null,
+          created_by_name: candidate.created_by_name ?? null,
+          updated_at: candidate.updated_at || candidate.created_at || new Date().toISOString(),
+          updated_by: candidate.updated_by ?? null,
+          updated_by_name: candidate.updated_by_name ?? null,
+          personas: candidate.personas || [],
+          cvs: candidate.cvs ?? null,
+        })
+      );
+
+      return {
+        candidates: transformedCandidates,
+        hasMore: response.data.has_next || false,
+        total: response.data.total || 0,
+      };
+    },
+    staleTime: 60000, // Cache for 1 minute
+  });
+};
+
+

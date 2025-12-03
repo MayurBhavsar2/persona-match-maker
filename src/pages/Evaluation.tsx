@@ -1,20 +1,24 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "@/components/Layout";
 import EvaluationSelector from "@/components/EvaluationSelector";
-import { useScoreCandidates } from "@/lib/helper";
+import { useScoreCandidates } from "@/lib/hooks";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
+import { CandidateOption } from "@/lib/types";
 
 interface EvaluationParams {
   jdId: string;
   personaId: string;
-  candidateIds: string[];
+  candidates: CandidateOption[];
 }
 
 interface FlowModeJD {
   id: string;
   title: string;
   role_name: string;
+  created_by_name: string; 
+  created_by: string;
+  created_at: string;
 }
 
 interface FlowModePersona {
@@ -104,108 +108,161 @@ const Evaluation = () => {
     }
   }, [mode, navigate, toast]);
 
+  // const handleEvaluate = async (params: EvaluationParams) => {
+  //   try {
+  //     // Fetch all candidates to get their full data including CV information
+  //     let allCandidates: any[] = [];
+  //     let page = 1;
+  //     let hasMore = true;
+
+  //     // Fetch all pages of candidates
+  //     while (hasMore) {
+  //       const response = await fetch(
+  //         `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=${page}&size=50`,
+  //         {
+  //           method: "GET",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //           },
+  //         }
+  //       );
+
+  //       // Handle 401 errors with redirect to login
+  //       if (response.status === 401) {
+  //         localStorage.removeItem('token');
+  //         toast({
+  //           title: "Session Expired",
+  //           description: "Please login again to continue.",
+  //           variant: "destructive",
+  //         });
+  //         navigate('/login');
+  //         return;
+  //       }
+
+  //       if (!response.ok) {
+  //         const errorData = await response.json().catch(() => ({}));
+  //         throw new Error(errorData.message || "Failed to fetch candidates");
+  //       }
+
+  //       const data = await response.json();
+  //       allCandidates.push(...(data.candidates || []));
+  //       hasMore = data.has_next || false;
+  //       page++;
+  //     }
+      
+  //     // Filter candidates based on selected IDs
+  //     const selectedCandidates = allCandidates.filter((candidate: any) => 
+  //       params.candidateIds.includes(candidate.id)
+  //     );
+
+  //     if (selectedCandidates.length === 0) {
+  //       toast({
+  //         title: "No candidates found",
+  //         description: "Could not find the selected candidates.",
+  //         variant: "destructive",
+  //       });
+  //       return;
+  //     }
+
+  //     // Transform candidates to UploadedCandidate format expected by useScoreCandidates
+  //     const uploadedCandidates = selectedCandidates.map((candidate: any) => {
+  //       // Get the most recent CV for each candidate
+  //       const cvs = candidate.cvs || [];
+  //       const latestCv = Array.isArray(cvs) && cvs.length > 0 ? cvs[0] : null;
+        
+  //       return {
+  //         candidate_id: candidate.id,
+  //         cv_id: latestCv?.id || candidate.id, // Fallback to candidate ID if no CV
+  //         file_name: latestCv?.original_document_filename || candidate.full_name || 'Unknown',
+  //         file_hash: latestCv?.file_hash || '',
+  //         version: latestCv?.version || 1,
+  //         s3_url: latestCv?.s3_url || '',
+  //         status: 'success' as const,
+  //         is_new_candidate: false,
+  //         is_new_cv: false,
+  //         cv_text: latestCv?.cv_text || '',
+  //       };
+  //     });
+
+  //     // Start the scoring process
+  //     scoreCandidates(
+  //       { 
+  //         candidates: uploadedCandidates, 
+  //         persona_id: params.personaId 
+  //       },
+  //       {
+  //         onSuccess: (results) => {
+  //           console.log('Evaluation completed:', results);
+  //           // Navigation to results is handled by the hook
+  //         },
+  //         onError: (error) => {
+  //           console.error('Evaluation failed:', error);
+  //           const errorMessage = error instanceof Error ? error.message : "Evaluation failed. Please try again.";
+  //           toast({
+  //             title: "Evaluation Failed",
+  //             description: errorMessage,
+  //             variant: "destructive",
+  //           });
+  //         }
+  //       }
+  //     );
+
+  //   } catch (error) {
+  //     const errorMessage = error instanceof Error ? error.message : "Could not start the evaluation process. Please try again.";
+  //     console.error("Error starting evaluation:", error);
+  //     toast({
+  //       title: "Error starting evaluation",
+  //       description: errorMessage,
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
+
+
   const handleEvaluate = async (params: EvaluationParams) => {
     try {
-      // Fetch all candidates to get their full data including CV information
-      let allCandidates: any[] = [];
-      let page = 1;
-      let hasMore = true;
+      const { personaId, candidates } = params;
 
-      // Fetch all pages of candidates
-      while (hasMore) {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/v1/candidate/?page=${page}&size=50`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        // Handle 401 errors with redirect to login
-        if (response.status === 401) {
-          localStorage.removeItem('token');
-          toast({
-            title: "Session Expired",
-            description: "Please login again to continue.",
-            variant: "destructive",
-          });
-          navigate('/login');
-          return;
-        }
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || "Failed to fetch candidates");
-        }
-
-        const data = await response.json();
-        allCandidates.push(...(data.candidates || []));
-        hasMore = data.has_next || false;
-        page++;
-      }
-      
-      // Filter candidates based on selected IDs
-      const selectedCandidates = allCandidates.filter((candidate: any) => 
-        params.candidateIds.includes(candidate.id)
-      );
-
-      if (selectedCandidates.length === 0) {
+      if (!candidates.length) {
         toast({
-          title: "No candidates found",
-          description: "Could not find the selected candidates.",
+          title: "No candidates selected",
+          description: "Please select at least one candidate to evaluate.",
           variant: "destructive",
         });
         return;
       }
 
-      // Transform candidates to UploadedCandidate format expected by useScoreCandidates
-      const uploadedCandidates = selectedCandidates.map((candidate: any) => {
-        // Get the most recent CV for each candidate
-        const cvs = candidate.cvs || [];
-        const latestCv = Array.isArray(cvs) && cvs.length > 0 ? cvs[0] : null;
-        
-        return {
-          candidate_id: candidate.id,
-          cv_id: latestCv?.id || candidate.id, // Fallback to candidate ID if no CV
-          file_name: latestCv?.original_document_filename || candidate.full_name || 'Unknown',
-          file_hash: latestCv?.file_hash || '',
-          version: latestCv?.version || 1,
-          s3_url: latestCv?.s3_url || '',
-          status: 'success' as const,
-          is_new_candidate: false,
-          is_new_cv: false,
-          cv_text: latestCv?.cv_text || '',
-        };
-      });
-
-      // Start the scoring process
+      // Call the scoring hook directly with CandidateOption[]
+      // The hook will extract cv_id from latest_cv_id or cvs array
       scoreCandidates(
-        { 
-          candidates: uploadedCandidates, 
-          persona_id: params.personaId 
+        {
+          candidates,
+          persona_id: personaId,
         },
         {
           onSuccess: (results) => {
-            console.log('Evaluation completed:', results);
-            // Navigation to results is handled by the hook
+            console.log("Evaluation completed:", results);
           },
           onError: (error) => {
-            console.error('Evaluation failed:', error);
-            const errorMessage = error instanceof Error ? error.message : "Evaluation failed. Please try again.";
+            console.error("Evaluation failed:", error);
+            const errorMessage =
+              error instanceof Error
+                ? error.message
+                : "Evaluation failed. Please try again.";
             toast({
               title: "Evaluation Failed",
               description: errorMessage,
               variant: "destructive",
             });
-          }
+          },
         }
       );
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Could not start the evaluation process. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Could not start the evaluation process. Please try again.";
       console.error("Error starting evaluation:", error);
       toast({
         title: "Error starting evaluation",

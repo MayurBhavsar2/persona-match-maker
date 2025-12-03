@@ -28,15 +28,21 @@ import CandidateListPage from "./pages/CandidateListPage";
 import UpdatedJDUpload from "./pages/UpdatedJDUpload";
 import ReusableJDUpload from "./pages/ReusableJDUpload";
 import ReusablePersonaConfig from "./pages/ReusablePersonaConfig2";
+import UpdatedResults from "./pages/UpdatedResults";
+import PersistentNavbar, { SidebarContent, SidebarProvider } from "./components/PersistentNavbar";
 
 const queryClient = new QueryClient();
 
 const Layout: React.FC = () => {
   return (
-    <div className="min-h-screen relative w-full">
-      <EnhancedNavbar />
-      <Outlet />
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen relative w-full">
+        <PersistentNavbar />
+        <SidebarContent>
+          <Outlet />
+        </SidebarContent>
+      </div>
+    </SidebarProvider>
   );
 };
 
@@ -66,7 +72,7 @@ const App = () => {
               {/* <Route path="/jd-upload" element={<UpdatedJDUpload />} /> */}
               <Route path="/jd-comparison" element={<JDComparison />} />
               <Route path="/jd-comparison/:jdId" element={<JDComparison />} />
-              <Route path="/persona-config" element={<PersonaConfig />} />
+              {/* <Route path="/persona-config" element={<PersonaConfig />} /> */}
               {/* <Route path="/persona-config/:jdId" element={<PersonaConfig />} /> */}
               <Route path="/candidate-upload" element={<CandidateUpload />} />
               <Route path="/results" element={<Results />} />
@@ -96,7 +102,7 @@ const App = () => {
               <Route path="/evaluation" element={<Evaluation />} />
               <Route path="/evaluation/start" element={<Evaluation />} />
               <Route path="/evaluation/flow" element={<Evaluation />} />
-              <Route path="/evaluation/results" element={<Results />} />
+              <Route path="/results/:personaId" element={<UpdatedResults />} />
               <Route path="/evaluation/results/:evaluationId" element={<Results />} />
             </Route>
 

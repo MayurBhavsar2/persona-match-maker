@@ -73,7 +73,7 @@ const ReusableJDUpload = () => {
     const loadingRef = useRef<HTMLDivElement>(null);
     const [predefinedRoles, setPredefinedRoles] = useState<{ id: string; name: string }[]>([]);
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(10);
+    const [size, setSize] = useState(100);
     const [activeOnly, setActiveOnly] = useState(false);
     const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === 'true';
 
@@ -840,7 +840,7 @@ const ReusableJDUpload = () => {
 
     const handleProceedToPersona = () => {
         if (currentJdId) {
-            navigate(`/persona-config/${currentJdId}`);
+            navigate(`/persona/create/${currentJdId}`);
         }
     };
 

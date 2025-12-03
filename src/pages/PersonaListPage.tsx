@@ -147,11 +147,14 @@ const PersonaListPage: React.FC = () => {
           {
             accessorKey: 'candidate_count',
             header: 'Candidates Evaluated',
-            cell: (info) => (
-              <span className="inline-flex items-center capitalize">
+            cell: (info) => {
+              const persona = info.row.original;
+              return (
+                <span className="w-full text-center inline-flex items-center capitalize text-blue-500 font-medium hover:underline cursor-pointer" onClick={()=>handleShowEvaluations(persona.id)}>
                 {info.getValue() as number}
               </span>
-            ),
+              )
+            },
           },
       {
         accessorKey: 'created_by_name',
@@ -212,6 +215,10 @@ const PersonaListPage: React.FC = () => {
 
   const handleEdit = (personaId: string) => {
     navigate(`/persona/edit/${personaId}`);
+  };
+
+    const handleShowEvaluations = (personaId: string) => {
+    navigate(`/results/${personaId}`);
   };
 
   const handleDelete = async (personaId: string) => {
