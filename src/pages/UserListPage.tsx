@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ColumnDef } from '@tanstack/react-table';
+import { ColumnDef, PaginationState } from '@tanstack/react-table';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { Plus, SquarePen } from 'lucide-react';
 import BasicTable from '@/components/BasicTable';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -42,6 +42,10 @@ interface UsersApiResponse {
 const UserListPage: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+    const [pagination, setPagination] = useState<PaginationState>({
+      pageIndex: 0,
+      pageSize: 10,
+    });
   const [deactivateConfirm, setDeactivateConfirm] = useState<{ id: string; name: string; currentStatus: boolean } | null>(null);
 
   // Fetch users using React Query with 30 minutes caching
@@ -160,12 +164,15 @@ const UserListPage: React.FC = () => {
         ),
       },
       {
-        id: 'status',
-        header: 'Status',
+        id: 'actions',
+        header: 'Actions',
         cell: (info) => {
           const user = info.row.original;
           return (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center gap-5 w-full">
+              <SquarePen onClick={()=>navigate(`/users/edit/${user.id}`, { 
+  state: { userData: user } 
+})} className='cursor-pointer hover:opacity-80'/>
               <Switch
                 checked={user.is_active}
                 onCheckedChange={(checked) => handleToggleChange(user.id, checked, `${user.first_name} ${user.last_name}`.trim())}
@@ -186,6 +193,11 @@ const UserListPage: React.FC = () => {
   // Handlers
   const handleCreate = () => {
     navigate('/users/create');
+  };
+
+    const handlePaginationChange = (updater: any) => {
+    const newPagination = typeof updater === 'function' ? updater(pagination) : updater;
+    setPagination(newPagination);
   };
 
   const handleRefresh = () => {
@@ -229,6 +241,7 @@ const UserListPage: React.FC = () => {
           enableSorting={true}
           enablePagination={true}
           enableRefresh={true}
+          state={{pagination}}
           initialPageSize={10}
           pageSizeOptions={[10, 20, 30, 50]}
         />

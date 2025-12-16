@@ -344,6 +344,7 @@ const CandidateListPage: React.FC = () => {
           initialPageSize={10}
           pageSizeOptions={[10, 20, 30, 50]}
           manualPagination={true}
+          state={{pagination}}
           pageCount={pageCount}
           onPaginationChange={handlePaginationChange}
         />

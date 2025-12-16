@@ -202,6 +202,7 @@ const EvaluationSelector = ({
         created_by: preselectedJD.created_by,
         created_by_name: preselectedJD.created_by_name
       }]);
+      setLoading(false)
     }
   }, [mode, preselectedJD, preselectedPersona]);
 
@@ -272,8 +273,6 @@ const EvaluationSelector = ({
 
   }, [mode, selectedRole]); 
 
-  // Retry function for Roles
-
   const retryLoadRoles = async () => {
     if (mode !== 'start') return;
 
@@ -299,7 +298,6 @@ const EvaluationSelector = ({
     }
   };
 
-  // Retry function for JDs
   const retryLoadJDs = async () => {
     if (mode !== 'start' || !selectedRole) return;
 
@@ -325,7 +323,6 @@ const EvaluationSelector = ({
     }
   };
 
-  // Retry function for personas
   const retryLoadPersonas = async () => {
     if (mode !== 'start' || !selectedJD) return;
 
@@ -349,7 +346,6 @@ const EvaluationSelector = ({
   };
 
   const fetchCandidatesPage = useCallback(async (page: number) => {
-    // Prevent concurrent requests using ref
     if (loadingMoreRef.current) {
       return [];
     }
@@ -371,7 +367,6 @@ const EvaluationSelector = ({
         }
       );
 
-      // Handle 401 errors with redirect to login
       if (response.status === 401) {
         localStorage.removeItem('token');
         window.location.href = '/login';
@@ -385,7 +380,6 @@ const EvaluationSelector = ({
 
       const data = await response.json();
 
-      // Transform API response to CandidateOption format
       const transformedCandidates: CandidateOption[] = (data.candidates || []).map(
         (candidate: any) => ({
           id: candidate.id,
@@ -406,7 +400,6 @@ const EvaluationSelector = ({
       );
 
 
-      // Update hasMore flag based on has_next field
       setHasMoreCandidates(data.has_next || false);
 
       return transformedCandidates;
@@ -452,7 +445,6 @@ const EvaluationSelector = ({
   setSelectedPersona("");
 };
 
-// Updated handleSearchChange - FIXED to prevent multiple calls
 const searchCandidates = useCallback(async (query: string): Promise<CandidateOption[]> => {
   try {
     if (!query.trim()) {
@@ -465,7 +457,6 @@ const searchCandidates = useCallback(async (query: string): Promise<CandidateOpt
       size: 100,
     });
 
-    // Transform API response to CandidateOption format
     const transformedCandidates: CandidateOption[] = (response.data.candidates || []).map(
       (candidate: any) => ({
         id: candidate.id,
@@ -552,7 +543,6 @@ const loadPaginatedCandidates = async (page: number, size: number = 10) => {
 const handleSearchChange = useCallback(async (term: string) => {
   setSearchTerm(term);
 
-  // If search is cleared, restore pagination
   if (!term.trim()) {
     try {
       setLoadingMoreCandidates(true);
@@ -571,12 +561,11 @@ const handleSearchChange = useCallback(async (term: string) => {
     return;
   }
 
-  // Perform search
   try {
     setIsSearching(true);
     const results = await searchCandidates(term);
     setCandidates(results);
-    setHasMoreCandidates(false); // No pagination for search results
+    setHasMoreCandidates(false);
   } catch (error) {
     console.error("Search error:", error);
     setCandidates([]);
@@ -605,18 +594,6 @@ const handleLoadMore = useCallback(async () => {
     setLoadingMoreCandidates(false);
   }
 }, [candidatePage, hasMoreCandidates, loadingMoreCandidates, searchTerm]);
-
-// const handleCandidateToggle = useCallback((candidate: CandidateOption) => {
-//   setSelectedCandidates((prev) => {
-//     const isSelected = prev.some((c) => c.id === candidate.id);
-    
-//     if (isSelected) {
-//       return prev.filter((c) => c.id !== candidate.id);
-//     } else {
-//       return [...prev, candidate];
-//     }
-//   });
-// }, []);
 
 const handleCandidateToggle = useCallback((candidate: CandidateOption) => {
   setSelectedCandidates((prev) => {
@@ -680,7 +657,7 @@ const handleCandidateToggle = useCallback((candidate: CandidateOption) => {
 const handleCandidatesUploaded = useCallback((uploadedCandidates: any[]) => {
   const candidateOptions: CandidateOption[] = uploadedCandidates.map((uploaded) => ({
     id: uploaded.candidate_id,
-    full_name: uploaded.candidate_name || uploaded.file_name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "), // Use candidate_name from API
+    full_name: uploaded.candidate_name || uploaded.file_name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "), 
     email: uploaded.email || null, // Use email from API
     phone: uploaded.phone || null, // Use phone from API
     latest_cv_id: uploaded.cv_id,
@@ -745,7 +722,7 @@ const handleSelectAll = useCallback(() => {
     let isMounted = true;
 
     const loadInitialCandidates = async () => {
-      if (loadingMoreRef.current) return; // Prevent duplicate calls
+      if (loadingMoreRef.current) return; 
 
       try {
         setLoading(true);
@@ -816,7 +793,6 @@ const handleSelectAll = useCallback(() => {
     return () => {
       isMounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); 
 
   const retryLoadCandidates = async () => {
@@ -837,28 +813,6 @@ const handleSelectAll = useCallback(() => {
       setLoading(false);
     }
   };
-
-  // useEffect(() => {
-  //   if (!searchTerm) {
-  //     setIsSearching(false);
-  //     return;
-  //   }
-
-  //   setIsSearching(true);
-  //   const timer = setTimeout(async () => {
-  //     try {
-  //       const searchResults = await searchCandidates(searchTerm);
-  //       setCandidates(searchResults);
-  //       setIsSearching(false);
-  //     } catch (error) {
-  //       setIsSearching(false);
-  //     }
-  //   }, 300);
-
-  //   return () => clearTimeout(timer);
-  // }, [searchTerm, searchCandidates]);
-  
-  // Handle start evaluation
   
   const handleStartEvaluation = () => {
     setHasTriedEvaluation(true);
@@ -904,6 +858,20 @@ const handleSelectAll = useCallback(() => {
       </Card>
     );
   }
+
+  console.log('Debug Info:', {
+  isValid,
+  errors,
+  selectedRole,
+  selectedJD,
+  selectedPersona,
+  selectedCandidatesLength: selectedCandidates.length,
+  loadingRoles,
+  loadingJDs,
+  loadingPersonas,
+  isSearching,
+  loadingMoreCandidates
+});
 
   return (
     <div className="space-y-6">
@@ -1212,12 +1180,12 @@ const handleSelectAll = useCallback(() => {
 {/* Candidate Upload Dialog */}
       <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
   <DialogContent className="min-w-5xl max-w-5xl">
-    <DialogHeader>
+    {/* <DialogHeader>
       <DialogTitle>Upload candidates</DialogTitle>
       <DialogDescription>
         Upload new CVs to add candidates to this list.
       </DialogDescription>
-    </DialogHeader>
+    </DialogHeader> */}
 
     <CandidateUpload
       onSuccess={() => {

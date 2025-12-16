@@ -288,6 +288,7 @@ const PersonaListPage: React.FC = () => {
           pageSizeOptions={[10, 20, 30, 50]}
           manualPagination={true}
           pageCount={pageCount}
+          state={{pagination}}
           onPaginationChange={handlePaginationChange}
         />
 

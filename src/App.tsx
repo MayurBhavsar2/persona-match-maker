@@ -30,6 +30,8 @@ import ReusableJDUpload from "./pages/ReusableJDUpload";
 import ReusablePersonaConfig from "./pages/ReusablePersonaConfig2";
 import UpdatedResults from "./pages/UpdatedResults";
 import PersistentNavbar, { SidebarContent, SidebarProvider } from "./components/PersistentNavbar";
+import ReusableUserScreen from "./pages/ReusableUserScreen";
+import UpdatedReusablePersonaConfig from "./pages/UpdatedReusablePersonaConfigScreen";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +49,7 @@ const Layout: React.FC = () => {
 };
 
 const App = () => {
-  console.log("updated build: 29/10/2025 - contains persona input, role+persona value in results")
+  console.log("updated build: 15/12/2025 - neg value fix")
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -69,13 +71,13 @@ const App = () => {
               {/* Legacy routes for backward compatibility */}
               <Route path="/user-list" element={<UserList />} />
               <Route path="/add-user" element={<AddUser />} />
-              {/* <Route path="/jd-upload" element={<UpdatedJDUpload />} /> */}
+              <Route path="/company-configuration" element={<Configuration />} />
               <Route path="/jd-comparison" element={<JDComparison />} />
               <Route path="/jd-comparison/:jdId" element={<JDComparison />} />
               {/* <Route path="/persona-config" element={<PersonaConfig />} /> */}
               {/* <Route path="/persona-config/:jdId" element={<PersonaConfig />} /> */}
               <Route path="/candidate-upload" element={<CandidateUpload />} />
-              <Route path="/results" element={<Results />} />
+              <Route path="/results" element={<UpdatedResults />} />
               <Route path="/configuration" element={<Configuration />} />
 
               {/* New enhanced navigation routes */}
@@ -88,11 +90,18 @@ const App = () => {
               <Route path="/users/list" element={
                 <UserListPage />
               } />
+              <Route path="/users/create" element={
+                <ReusableUserScreen />
+              } />
+              <Route path="/users/edit/:userId" element={
+                <ReusableUserScreen />
+              } />
+
 
               {/* Persona Management routes */}
-              <Route path="/persona/create" element={<ReusablePersonaConfig />} />
-              <Route path="/persona/create/:jdId" element={<ReusablePersonaConfig />} />
-              <Route path="/persona/edit/:personaId" element={<ReusablePersonaConfig />} />
+              <Route path="/persona/create" element={<UpdatedReusablePersonaConfig />} />
+              <Route path="/persona/create/:jdId" element={<UpdatedReusablePersonaConfig />} />
+              <Route path="/persona/edit/:personaId" element={<UpdatedReusablePersonaConfig />} />
               <Route path="/persona/list" element={<PersonaListPage />} />
 
               {/* Candidate Processing routes */}
@@ -103,7 +112,7 @@ const App = () => {
               <Route path="/evaluation/start" element={<Evaluation />} />
               <Route path="/evaluation/flow" element={<Evaluation />} />
               <Route path="/results/:personaId" element={<UpdatedResults />} />
-              <Route path="/evaluation/results/:evaluationId" element={<Results />} />
+              <Route path="/evaluation/results/:evaluationId" element={<UpdatedResults />} />
             </Route>
 
             {/* Catch-all route */}

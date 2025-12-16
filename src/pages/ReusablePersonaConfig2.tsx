@@ -72,6 +72,28 @@ import {
 import axiosInstance, { isAxiosError } from "@/lib/utils";
 
 // API Functions
+// const fetchRoles = async () => {
+//   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?page=1&size=100&active_only=true`, {
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${localStorage.getItem("token")}`,
+//     },
+//   });
+//   if (!response.ok) {
+//     if (response.status === 401) {
+//       toast({
+//         title: "Session Expired",
+//         description: "Your session has expired. Please log in again.",
+//         variant: "destructive",
+//       });
+//       throw new Error("Unauthorized");
+//     }
+//     throw new Error("Failed to fetch roles");
+//   }
+//   const data = await response.json();
+//   return data.job_roles || data;
+// };
+
 const fetchRoles = async () => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/job-role/?page=1&size=100&active_only=true`, {
     headers: {
@@ -93,6 +115,28 @@ const fetchRoles = async () => {
   const data = await response.json();
   return data.job_roles || data;
 };
+
+// const fetchJDsByRole = async (roleId: string) => {
+//   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/by-role/${roleId}`, {
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${localStorage.getItem("token")}`,
+//     },
+//   });
+//   if (!response.ok) {
+//     if (response.status === 401) {
+//       toast({
+//         title: "Session Expired",
+//         description: "Your session has expired. Please log in again.",
+//         variant: "destructive",
+//       });
+//       throw new Error("Unauthorized");
+//     }
+//     throw new Error("Failed to fetch JDs");
+//   }
+//   const data = await response.json();
+//   return Array.isArray(data) ? data : (data.jds || data.items || data.results || []);
+// };
 
 const fetchJDsByRole = async (roleId: string) => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/jd/by-role/${roleId}`, {
@@ -116,7 +160,8 @@ const fetchJDsByRole = async (roleId: string) => {
   return Array.isArray(data) ? data : (data.jds || data.items || data.results || []);
 };
 
-const generatePersona = async ({ roleId, jdId }: { roleId: string; jdId: string }) => {
+
+const generatePersonaFromJD = async ({ roleId, jdId }: { roleId: string; jdId: string }) => {
   const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === "true";
   
   if (USE_MOCK_API) {
@@ -132,7 +177,24 @@ const generatePersona = async ({ roleId, jdId }: { roleId: string; jdId: string 
   return data;
 };
 
-const fetchPersona = async (personaId: string) => {
+// const generatePersona = async ({ roleId, jdId }: { roleId: string; jdId: string }) => {
+//   const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_DATA === "true";
+  
+//   if (USE_MOCK_API) {
+//     const data = await mockFetchPersona(jdId);
+//     return data;
+//   }
+  
+//   const { data } = await axiosInstance.post(
+//     `/api/v1/persona/generate-from-jd/${jdId}`,
+//     { job_description_id: jdId },
+//     { timeout: 90000 }
+//   );
+//   return data;
+// };
+
+
+const fetchPersonaById = async (personaId: string) => {
   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/${personaId}`, {
     headers: {
       "Content-Type": "application/json",
@@ -152,6 +214,27 @@ const fetchPersona = async (personaId: string) => {
   }
   return response.json();
 };
+
+// const fetchPersona = async (personaId: string) => {
+//   const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/persona/${personaId}`, {
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Bearer ${localStorage.getItem("token")}`,
+//     },
+//   });
+//   if (!response.ok) {
+//     if (response.status === 401) {
+//       toast({
+//         title: "Session Expired",
+//         description: "Your session has expired. Please log in again.",
+//         variant: "destructive",
+//       });
+//       throw new Error("Unauthorized");
+//     }
+//     throw new Error("Failed to fetch persona");
+//   }
+//   return response.json();
+// };
 
 const ReusablePersonaConfig = () => {
   const navigate = useNavigate();
@@ -201,7 +284,7 @@ const ReusablePersonaConfig = () => {
     gcTime: 45 * 60 * 1000,
   });
 
-  // Fetch JDs based on selected role
+  // 2. Fetch JDs based on selected role
   const { data: jdsData, isLoading: jdsLoading } = useQuery({
     queryKey: ['jds', selectedRole],
     queryFn: () => fetchJDsByRole(selectedRole),
@@ -212,34 +295,40 @@ const ReusablePersonaConfig = () => {
 
   const jds = Array.isArray(jdsData) ? jdsData : [];
 
-  // Generate persona mutation
-  const generatePersonaMutation = useMutation({
-    mutationFn: generatePersona,
-    onSuccess: (data) => {
-      const normalizedCategories = (data.categories || []).map((cat: any) => ({
-    ...cat,
-    weight_percentage: Number(cat.weight_percentage) || 0,
-    range_min: Number(cat.range_min) || 0,
-    range_max: Number(cat.range_max) || 0,
-    subcategories: (cat.subcategories || []).map((sub: any) => ({
-      ...sub,
-      weight_percentage: Number(sub.weight_percentage) || 0,
-      level_id: String(sub.level_id || "3"),
-      skillset: sub.skillset || { technologies: [] },
-    })),
-  }));
-      
-      const originalWeights: {[key: number]: number} = {};
-  normalizedCategories.forEach((cat: any) => {
-    originalWeights[cat.position] = Number(cat.weight_percentage);
+  // 3. Fetch existing persona by ID (Edit mode) - CACHED by personaId
+  const { 
+    data: existingPersona, 
+    isLoading: existingPersonaLoading 
+  } = useQuery({
+    queryKey: ['persona', personaId],
+    queryFn: () => fetchPersonaById(personaId!),
+    enabled: isEditMode && !!personaId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
   });
-  setOriginalCategoryWeights(originalWeights);
-  
-  setCategories(normalizedCategories);
-  setPersonaName(data.name || "");
-  setPersonaNotes(data.persona_notes || "");
-  setHasGeneratedPersona(true);
-  setLoading(false);
+
+
+    const { 
+    data: generatedPersona, 
+    isLoading: generatedPersonaLoading,
+    refetch: refetchGeneratedPersona 
+  } = useQuery({
+    queryKey: ['generated-persona', jdId, roleId],
+    queryFn: () => generatePersonaFromJD({ roleId, jdId: jdId! }),
+    enabled: isFlowMode && !!jdId && !!roleId,
+    staleTime: 10 * 60 * 1000, // 10 minutes - generated personas are more stable
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
+  });
+
+    const generatePersonaMutation = useMutation({
+    mutationFn: generatePersonaFromJD,
+    onSuccess: (data) => {
+      // Cache the generated persona
+      queryClient.setQueryData(['generated-persona', selectedJD, selectedRole], data);
+      
+      // Process and set the data
+      processPersonaData(data);
       
       toast({
         title: "Persona Generated",
@@ -247,7 +336,6 @@ const ReusablePersonaConfig = () => {
       });
     },
     onError: (error: any) => {
-      setLoading(false);
       toast({
         title: "Generation Failed",
         description: error.message || "Failed to generate persona. Please try again.",
@@ -256,19 +344,52 @@ const ReusablePersonaConfig = () => {
     },
   });
 
-  // Fetch existing persona for edit mode
-  const { data: existingPersona, isLoading: personaLoading } = useQuery({
-    queryKey: ['persona', personaId],
-    queryFn: () => fetchPersona(personaId!),
-    enabled: isEditMode && !!personaId,
-    staleTime: 30 * 60 * 1000,
-    gcTime: 45 * 60 * 1000,
-  });
+  // Generate persona mutation
+  // const generatePersonaMutation = useMutation({
+  //   mutationFn: generatePersona,
+  //   onSuccess: (data) => {
+  //     const normalizedCategories = (data.categories || []).map((cat: any) => ({
+  //   ...cat,
+  //   weight_percentage: Number(cat.weight_percentage) || 0,
+  //   range_min: Number(cat.range_min) || 0,
+  //   range_max: Number(cat.range_max) || 0,
+  //   subcategories: (cat.subcategories || []).map((sub: any) => ({
+  //     ...sub,
+  //     weight_percentage: Number(sub.weight_percentage) || 0,
+  //     level_id: String(sub.level_id || "3"),
+  //     skillset: sub.skillset || { technologies: [] },
+  //   })),
+  // }));
+      
+  //     const originalWeights: {[key: number]: number} = {};
+  // normalizedCategories.forEach((cat: any) => {
+  //   originalWeights[cat.position] = Number(cat.weight_percentage);
+  // });
+  // setOriginalCategoryWeights(originalWeights);
+  
+  // setCategories(normalizedCategories);
+  // setPersonaName(data.name || "");
+  // setPersonaNotes(data.persona_notes || "");
+  // setHasGeneratedPersona(true);
+  // setLoading(false);
+      
+  //     toast({
+  //       title: "Persona Generated",
+  //       description: "AI has generated the persona successfully. You can now review and modify it.",
+  //     });
+  //   },
+  //   onError: (error: any) => {
+  //     setLoading(false);
+  //     toast({
+  //       title: "Generation Failed",
+  //       description: error.message || "Failed to generate persona. Please try again.",
+  //       variant: "destructive",
+  //     });
+  //   },
+  // });
 
-  // Load persona data in edit mode
-  useEffect(() => {
-    if (existingPersona) {
-    const normalizedCategories = (existingPersona.categories || []).map((cat: any) => ({
+    const processPersonaData = (data: any) => {
+    const normalizedCategories = (data.categories || []).map((cat: any) => ({
       ...cat,
       weight_percentage: Number(cat.weight_percentage) || 0,
       range_min: Number(cat.range_min) || 0,
@@ -281,24 +402,88 @@ const ReusablePersonaConfig = () => {
       })),
     }));
     
-    // ADD THIS: Store original weights
     const originalWeights: {[key: number]: number} = {};
     normalizedCategories.forEach((cat: any) => {
       originalWeights[cat.position] = Number(cat.weight_percentage);
     });
-    setOriginalCategoryWeights(originalWeights);
     
+    setOriginalCategoryWeights(originalWeights);
     setCategories(normalizedCategories);
-    setPersonaName(existingPersona.name || "");
-    setPersonaNotes(existingPersona.persona_notes || existingPersona.notes || "");
-    setRoleName(existingPersona.role_name || "");
-    setRoleId(existingPersona.role_id || "");
+    setPersonaName(data.name || "");
+    setPersonaNotes(data.persona_notes || data.notes || "");
     setHasGeneratedPersona(true);
-    setLoading(false);
-  }
+  };
+
+  // Load persona data in edit mode
+  // useEffect(() => {
+  //   if (existingPersona) {
+  //   const normalizedCategories = (existingPersona.categories || []).map((cat: any) => ({
+  //     ...cat,
+  //     weight_percentage: Number(cat.weight_percentage) || 0,
+  //     range_min: Number(cat.range_min) || 0,
+  //     range_max: Number(cat.range_max) || 0,
+  //     subcategories: (cat.subcategories || []).map((sub: any) => ({
+  //       ...sub,
+  //       weight_percentage: Number(sub.weight_percentage) || 0,
+  //       level_id: String(sub.level_id || "3"),
+  //       skillset: sub.skillset || { technologies: [] },
+  //     })),
+  //   }));
+    
+  //   // ADD THIS: Store original weights
+  //   const originalWeights: {[key: number]: number} = {};
+  //   normalizedCategories.forEach((cat: any) => {
+  //     originalWeights[cat.position] = Number(cat.weight_percentage);
+  //   });
+  //   setOriginalCategoryWeights(originalWeights);
+    
+  //   setCategories(normalizedCategories);
+  //   setPersonaName(existingPersona.name || "");
+  //   setPersonaNotes(existingPersona.persona_notes || existingPersona.notes || "");
+  //   setRoleName(existingPersona.role_name || "");
+  //   setRoleId(existingPersona.role_id || "");
+  //   setHasGeneratedPersona(true);
+  //   setLoading(false);
+  // }
+  // }, [existingPersona]);
+
+  // // Load from localStorage in flow mode
+  // useEffect(() => {
+  //   if (isFlowMode && jdId) {
+  //     const storedJD = localStorage.getItem("jdData");
+  //     if (storedJD) {
+  //       const parsed = JSON.parse(storedJD);
+  //       setRoleName(parsed.role || "Unknown Role");
+  //       setRoleId(parsed.roleId || parsed.id || "");
+  //       setSelectedRole(parsed.roleId || parsed.id || "");
+  //       setSelectedJD(jdId);
+        
+  //       // Auto-generate persona in flow mode
+  //       setLoading(true);
+  //       generatePersonaMutation.mutate({ roleId: parsed.roleId || parsed.id, jdId });
+  //     }
+  //   } else if (isStandaloneCreate) {
+  //     setLoading(false);
+  //   }
+  // }, [isFlowMode, jdId]);
+
+
+    useEffect(() => {
+    if (existingPersona) {
+      processPersonaData(existingPersona);
+      setRoleName(existingPersona.role_name || "");
+      setRoleId(existingPersona.role_id || "");
+    }
   }, [existingPersona]);
 
-  // Load from localStorage in flow mode
+  // Effect: Load generated persona data (Flow mode)
+  useEffect(() => {
+    if (generatedPersona) {
+      processPersonaData(generatedPersona);
+    }
+  }, [generatedPersona]);
+
+  // Effect: Initialize flow mode from localStorage
   useEffect(() => {
     if (isFlowMode && jdId) {
       const storedJD = localStorage.getItem("jdData");
@@ -309,14 +494,35 @@ const ReusablePersonaConfig = () => {
         setSelectedRole(parsed.roleId || parsed.id || "");
         setSelectedJD(jdId);
         
-        // Auto-generate persona in flow mode
-        setLoading(true);
-        generatePersonaMutation.mutate({ roleId: parsed.roleId || parsed.id, jdId });
+        // The query will automatically run since roleId is now set
       }
-    } else if (isStandaloneCreate) {
-      setLoading(false);
     }
   }, [isFlowMode, jdId]);
+
+   const handleGeneratePersona = () => {
+    if (!selectedRole || !selectedJD) {
+      toast({
+        title: "Missing Information",
+        description: "Please select both role and JD to generate persona.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check cache first
+    const cachedPersona = queryClient.getQueryData(['generated-persona', selectedJD, selectedRole]);
+    
+    if (cachedPersona) {
+      toast({
+        title: "Persona Loaded",
+        description: "Loaded previously generated persona from cache.",
+      });
+      processPersonaData(cachedPersona);
+    } else {
+      // Generate new
+      generatePersonaMutation.mutate({ roleId: selectedRole, jdId: selectedJD });
+    }
+  };
 
   // Helper functions
   const getTotalWeight = () =>
@@ -524,19 +730,19 @@ const updateCategory = (catPos: number, updatedFields: any) => {
   const canSave =
     validation.totalValid && validation.categoriesValid && validation.hasName;
 
-  const handleGeneratePersona = () => {
-    if (!selectedRole || !selectedJD) {
-      toast({
-        title: "Missing Information",
-        description: "Please select both role and JD to generate persona.",
-        variant: "destructive",
-      });
-      return;
-    }
+  // const handleGeneratePersona = () => {
+  //   if (!selectedRole || !selectedJD) {
+  //     toast({
+  //       title: "Missing Information",
+  //       description: "Please select both role and JD to generate persona.",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
 
-    setLoading(true);
-    generatePersonaMutation.mutate({ roleId: selectedRole, jdId: selectedJD });
-  };
+  //   setLoading(true);
+  //   generatePersonaMutation.mutate({ roleId: selectedRole, jdId: selectedJD });
+  // };
 
   const handleSavePersona = () => {
     if (!canSave) {
@@ -728,7 +934,7 @@ const updateCategory = (catPos: number, updatedFields: any) => {
   // Main UI - Same as PersonaConfig
   return (
     <Layout currentStep={isFlowMode ? 2 : undefined}>
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-3">
         {/* Header */}
         <div className="text-center space-y-3">
           <div className="flex items-baseline justify-center gap-3">
@@ -753,7 +959,7 @@ const updateCategory = (catPos: number, updatedFields: any) => {
                 Choose a role and its corresponding job description to generate a persona
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="role">Role *</Label>
@@ -864,7 +1070,7 @@ const updateCategory = (catPos: number, updatedFields: any) => {
                   <CardTitle>Persona Details</CardTitle>
                   <CardDescription>Update the persona name and notes</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-2">
                   <div className="space-y-2">
                     <Label htmlFor="persona-name-edit">Persona Name</Label>
                     <Input
@@ -889,7 +1095,7 @@ const updateCategory = (catPos: number, updatedFields: any) => {
             )}
 
             {/* Sticky Tabs */}
-            <div className="bg-background border-b border-border sticky top-16 z-30 -mx-6 px-6 py-3">
+            <div className="bg-background border-b border-border sticky top-2 z-30 -mx-6 px-6 py-3">
               <Tabs
                 value={activeTab}
                 onValueChange={scrollToSection}
@@ -907,7 +1113,7 @@ const updateCategory = (catPos: number, updatedFields: any) => {
             </div>
 
             {/* Distribution Section */}
-            <div ref={distributionRef} className="space-y-6 mt-6">
+            <div ref={distributionRef} className="space-y-4 mt-2">
           <TooltipProvider>
             <Accordion type="multiple" className="space-y-0">
               {categories.map((cat) => {
@@ -1077,7 +1283,7 @@ const updateCategory = (catPos: number, updatedFields: any) => {
                                           className="border-0 p-1 h-8 bg-transparent focus-visible:ring-0 text-sm ml-3"
                                         />
                                       </TableCell>
-                                      <TableCell className="text-center p-0 align-middle">
+                                      {/* <TableCell className="text-center p-0 align-middle">
                                         <Input
                                           type="text"
                                           value={sub.weight_percentage}
@@ -1097,7 +1303,39 @@ const updateCategory = (catPos: number, updatedFields: any) => {
                                           max={100}
                                           step={0.1}
                                         />
-                                      </TableCell>
+                                      </TableCell> */}
+                                      <TableCell className="text-center p-0 align-middle">
+  <Input
+    type="number"
+    value={sub.weight_percentage}
+    onChange={(e) => {
+      const value = e.target.value === '' ? '' : parseFloat(e.target.value);
+      updateSubcategory(
+        cat.position,
+        sub.position,
+        {
+          weight_percentage: value,
+        }
+      )
+    }}
+    onBlur={(e) => {
+      // When user leaves the field, ensure it has a valid number
+      if (e.target.value === '' || isNaN(parseFloat(e.target.value))) {
+        updateSubcategory(
+          cat.position,
+          sub.position,
+          {
+            weight_percentage: 0,
+          }
+        )
+      }
+    }}
+    className="w-12 h-8 text-center text-[14.9px] border-muted ml-2"
+    min={0}
+    max={100}
+    step={0.1}
+  />
+</TableCell>
                                       <TableCell className="text-center p-0 align-middle">
                                         <Select
                                           value={String(sub.level_id)}
@@ -1548,12 +1786,12 @@ const updateCategory = (catPos: number, updatedFields: any) => {
     </AlertDialogFooter>
   </AlertDialogContent>
 </AlertDialog>
-      {(loading || personaLoading) && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      {(existingPersonaLoading || generatedPersonaLoading || generatePersonaMutation.isPending) && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-background p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
               <div className="flex items-center space-x-3">
                   <Loader2 className="w-12 h-12 animate-spin text-blue-500" />
                   <p className="text-lg font-semibold text-gray-600">
-                    {personaLoading ? "Loading Persona Configuration..." : "Generating Persona..."}
+                    {generatePersonaMutation.isPending ? "Generating Persona..." : "Loading Persona Configuration..."}
                   </p>
                 </div>
             </div>

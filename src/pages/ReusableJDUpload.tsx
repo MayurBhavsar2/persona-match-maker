@@ -845,7 +845,7 @@ const ReusableJDUpload = () => {
     };
 
     return (
-        <Layout currentStep={1}>
+        <Layout currentStep={undefined}>
             <div className="max-w-6xl mx-auto space-y-8">
                 <div className="text-center space-y-4">
                     <h1 className="text-3xl font-bold text-foreground">
@@ -1184,7 +1184,7 @@ const ReusableJDUpload = () => {
 
                         {/* Instructions */}
                         <div className="space-y-2">
-                            <Label htmlFor="instructions" className="text-base">Additional Instructions (Optional)</Label>
+                            {/* <Label htmlFor="instructions" className="text-base">Additional Instructions (Optional)</Label> */}
                             <Textarea
                                 id="instructions"
                                 placeholder="Add any specific requirements, preferences, or areas of focus for this role..."

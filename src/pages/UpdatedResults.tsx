@@ -12,10 +12,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useEvaluationResults } from "@/lib/hooks";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CandidateDetailsSidebar = lazy(() => import("@/components/CandidateDetailsSidebar"));
 
 const UpdatedResults = () => {
+  const queryClient = useQueryClient();
   const { personaId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -319,6 +321,65 @@ const UpdatedResults = () => {
     }
   }, [selectedCandidates, selectedPersona, personaId, selectedJD, evaluationData, navigate]);
 
+  // const handleStatusChange = useCallback(async (candidateId:string, selectionId: string, statusCode: string) => {
+  //   const selectedStatus = statuses.find(s => s.code === statusCode);
+    
+  //   if (!selectedStatus) {
+  //     console.error("Status not found");
+  //     return;
+  //   }
+
+  //   setUpdatingStatus(selectionId);
+
+  //   try {
+  //     const response = await fetch(
+  //       `${import.meta.env.VITE_API_URL}/api/v1/candidate/selections/${selectionId}`,
+  //       {
+  //         method: "PATCH",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("token")}`,
+  //         },
+  //         body: JSON.stringify({
+  //           "status": selectedStatus.code,
+  //           "priority": "high",
+  //           "selection_notes": "",
+  //           "change_notes": ""
+  //       }),
+  //       }
+  //     );
+
+  //     if (response.status === 401) {
+  //       localStorage.removeItem('token');
+  //       navigate('/login');
+  //       return;
+  //     }
+
+  //     if (!response.ok) {
+  //       const errorData = await response.json().catch(() => ({}));
+  //       throw new Error(errorData.message || "Failed to update status");
+  //     }
+
+  //     const data = await response.json();
+
+  //     setCandidates(prevCandidates =>
+  //       prevCandidates.map(candidate =>
+  //         candidate.candidate_id === candidateId
+  //           ? { ...candidate, current_status: selectedStatus.code }
+  //           : candidate
+  //       )
+  //     );
+
+  //     console.log("Status updated successfully:", data);
+  //   } catch (error) {
+  //     console.error("Error updating status:", error);
+  //     alert(error instanceof Error ? error.message : "Failed to update candidate status");
+  //   } finally {
+  //     setUpdatingStatus(null);
+  //   }
+  // }, [statuses, navigate]);
+
+
   const handleStatusChange = useCallback(async (candidateId:string, selectionId: string, statusCode: string) => {
     const selectedStatus = statuses.find(s => s.code === statusCode);
     
@@ -358,24 +419,32 @@ const UpdatedResults = () => {
         throw new Error(errorData.message || "Failed to update status");
       }
 
-      const data = await response.json();
+      await response.json();
 
+      // Update candidate status optimistically
       setCandidates(prevCandidates =>
         prevCandidates.map(candidate =>
-          candidate.candidate_id === candidateId
+          candidate.selection_id === selectionId
             ? { ...candidate, current_status: selectedStatus.code }
             : candidate
         )
       );
 
-      console.log("Status updated successfully:", data);
+      queryClient.invalidateQueries({ 
+        queryKey: ["candidateScores", candidateId] 
+      });
+
+      console.log("Status updated successfully");
     } catch (error) {
       console.error("Error updating status:", error);
       alert(error instanceof Error ? error.message : "Failed to update candidate status");
+      
+      // Revert the status change on error by refetching
+      refetch();
     } finally {
       setUpdatingStatus(null);
     }
-  }, [statuses, navigate]);
+  }, [statuses, navigate, refetch]);
 
   const totalCount = evaluationData?.total || 0;
   const pageCount = Math.ceil(totalCount / pagination.pageSize);
@@ -544,7 +613,7 @@ const UpdatedResults = () => {
   }, [refetch]);
 
   return (
-    <Layout currentStep={4}>
+    <Layout currentStep={undefined}>
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="flex items-center justify-between gap-3">
           <div>
